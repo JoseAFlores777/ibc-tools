@@ -7,24 +7,21 @@ import { es } from 'date-fns/locale/es';
 import dynamic from 'next/dynamic';
 import React from 'react';
 import { ProgramActivity, ProgramObject } from '../../interfaces/ProgramObject.interface';
-import { IbcHymnPdf } from './IbcHymnPdf';
+import { HymnPdf } from './HymnPdf';
 
-const PDFViewer = dynamic(
-  () => import("@react-pdf/renderer").then((mod) => mod.PDFViewer),
-  {
-    ssr: false,
-    loading: () => <p>Loading...</p>,
-  },
-);
+const PDFViewer = dynamic(() => import('@react-pdf/renderer').then((mod) => mod.PDFViewer), {
+  ssr: false,
+  loading: () => <p>Loading...</p>,
+});
 
-export interface IbcProgramPdfProps {
+export interface ProgramPdfProps {
   programObject: ProgramObject;
   activitiesOptions: ConditionalFormattingFiltered[];
 }
 
 Font.register({
   family: 'Adamina',
-  src: 'http://fonts.gstatic.com/s/adamina/v8/RUQfOodOMiVVYqFZcSlT9w.ttf'
+  src: 'http://fonts.gstatic.com/s/adamina/v8/RUQfOodOMiVVYqFZcSlT9w.ttf',
 });
 
 const styles = StyleSheet.create({
@@ -119,8 +116,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     textAlign: 'center',
     color: '#7f7f7f',
-    
-    
   },
   verseReference: {
     fontSize: 10,
@@ -132,13 +127,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 20,
     fontSize: 11,
-    
+
     height: '400px',
     display: 'flex',
     flexDirection: 'column',
     flexWrap: 'wrap',
-    
-    
   },
   activityText: {
     marginBottom: 20,
@@ -151,9 +144,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     color: '#9e7f19',
   },
-  hymnName: {
-    
-  },
+  hymnName: {},
   footer: {
     position: 'absolute',
     bottom: 0,
@@ -183,38 +174,39 @@ const styles = StyleSheet.create({
   },
 });
 
-export const IbcProgramPdf: React.FC<IbcProgramPdfProps> = ({
-  programObject,
-  activitiesOptions,
-}) => {
+export const ProgramPdf: React.FC<ProgramPdfProps> = ({ programObject, activitiesOptions }) => {
   const activities = programObject.program_activities.sort(
     (a: ProgramActivity, b: ProgramActivity) => a.activity_order - b.activity_order
   );
 
   const startDatetime = new Date(programObject.start_datetime);
   const formattedDate = format(startDatetime, "EEEE, d 'de' MMMM yyyy", { locale: es });
-  const startHour = format(startDatetime, "h:mm aaaa", { locale: es });
-
-  const verse = '"no sirviendo al ojo, como los que quieren agradar a los hombres, sino como siervos de Cristo, de corazón haciendo la voluntad de Dios..."';
-  const verseReference = 'Efesios 6:6';
-
-  
+  const startHour = format(startDatetime, 'h:mm aaaa', { locale: es });
 
   return (
-    <div style={{ width: '100%', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f7f7f7' }}>
+    <div
+      style={{
+        width: '100%',
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f7f7f7',
+      }}
+    >
       <PDFViewer width="100%" height="100%">
         <Document title={`${programObject.program_title} ${formattedDate}`}>
-          <Page size="LETTER" style={styles.page} >
+          <Page size="LETTER" style={styles.page}>
             <View style={styles.header}>
               <View style={styles.gradientOverlay} />
               <View style={styles.ImageOverlay}>
-              <Image src={'/altar.jpg'} style={styles.headerImage} />
+                <Image src={'/altar.jpg'} style={styles.headerImage} />
               </View>
-                <View style={styles.programHeaderTexts}>
-                  <Text style={styles.programTitle}>{programObject.program_title}</Text>
-                  <Text style={styles.programDate}>{formattedDate}</Text>
-                  <Text style={styles.programTime}>{startHour}</Text>
-                </View>
+              <View style={styles.programHeaderTexts}>
+                <Text style={styles.programTitle}>{programObject.program_title}</Text>
+                <Text style={styles.programDate}>{formattedDate}</Text>
+                <Text style={styles.programTime}>{startHour}</Text>
+              </View>
             </View>
             <Image src={'/IBC_Logo-min.png'} style={styles.logo} fixed />
             <View style={styles.content}>
@@ -225,8 +217,10 @@ export const IbcProgramPdf: React.FC<IbcProgramPdfProps> = ({
               </View>
               <View style={styles.activitiesSection}>
                 {activities.map((activity, index) => {
-                  const filteredOptions = activitiesOptions.filter(item => item.id === activity.activities);
-                  const optionsString = filteredOptions.map(option => option.text).join(', ');
+                  const filteredOptions = activitiesOptions.filter(
+                    (item) => item.id === activity.activities
+                  );
+                  const optionsString = filteredOptions.map((option) => option.text).join(', ');
                   return (
                     <Text key={index} style={styles.activityText}>
                       {activity.activity_order} -{' '}
@@ -235,13 +229,12 @@ export const IbcProgramPdf: React.FC<IbcProgramPdfProps> = ({
                       )}
                       {activity.activity_hymn && (
                         <>
-                         
-                          <Text style={styles.hymnName} >
-                          Himno # {activity.activity_hymn.hymn_number}{' '}
-                            {activity.activity_hymn.name}</Text>
+                          <Text style={styles.hymnName}>
+                            Himno # {activity.activity_hymn.hymn_number}{' '}
+                            {activity.activity_hymn.name}
+                          </Text>
                         </>
-                      )}
-                      {' '}
+                      )}{' '}
                       <Text style={styles.activityResponsible}>
                         {`( ${activity.activity_responsible.alias} )`}
                       </Text>
@@ -251,27 +244,17 @@ export const IbcProgramPdf: React.FC<IbcProgramPdfProps> = ({
               </View>
             </View>
             <View style={styles.footer}>
-              <Text style={styles.footerTitle}>
-                DIOS ES FIEL
-              </Text>
-              <Text style={styles.footerSubTitle}>
-                Iglesia Bautista El Calvario
-              </Text>
-</View>
+              <Text style={styles.footerTitle}>DIOS ES FIEL</Text>
+              <Text style={styles.footerSubTitle}>Iglesia Bautista El Calvario</Text>
+            </View>
           </Page>
-
 
           {programObject.program_activities.map((activity, index) => {
             if (activity.activity_hymn === null) {
               return null;
             }
-            return (
-              <IbcHymnPdf key={index} activityHymn={activity.activity_hymn} />
-            )
+            return <HymnPdf key={index} activityHymn={activity.activity_hymn} />;
           })}
-
-
-
         </Document>
       </PDFViewer>
     </div>

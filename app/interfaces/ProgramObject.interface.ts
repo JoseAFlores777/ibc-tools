@@ -37,12 +37,12 @@ export interface ActivityHymn {
     date_updated:         Date;
     name:                 string;
     hymn_number:          number;
-    hymnal:               string;
+    hymnal:               Hymnal;
     bible_reference:      number;
     bible_text:           string;
-    letter_author:        null;
-    trad_author:          null;
-    music_author:         null;
+    letter_author:        Author;
+    trad_author:          Author;
+    music_author:         Author;
     original_midi:        boolean;
     links_notes:          null;
     midi_file:            string;
@@ -71,4 +71,30 @@ export interface ActivityResponsible {
     last_name:    string;
     avatar:       string;
     alias:        string;
+}
+
+
+export interface Hymnal {
+    id:           string;
+    status:       string;
+    sort:         number;
+    user_created: string;
+    date_created: Date;
+    user_updated: string;
+    date_updated: Date;
+    name:         string;
+    publisher:    string;
+    cover:        string;
+    hymns:        string[];
+}
+
+export interface Author {
+    id:           string;
+    status:       string;
+    sort:         null;
+    user_created: string;
+    date_created: Date;
+    user_updated: null;
+    date_updated: null;
+    name:         string;
 }
