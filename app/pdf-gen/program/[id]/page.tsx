@@ -1,4 +1,7 @@
-import { ProgramPdf, ProgramPdfProps } from '@/app/components/pdf-components/ProgramPdf';
+import {
+  ProgramPagePdf,
+  ProgramPagePdfProps,
+} from '@/app/components/pdf-components/ProgramPagePdf';
 import {
   ConditionalFormatting,
   ConditionalFormattingFiltered,
@@ -17,7 +20,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   return (
     <BodyProviders>
-      <ProgramPdf activitiesOptions={activitiesOptions} programObject={program} />
+      <ProgramPagePdf activitiesOptions={activitiesOptions} programObject={program} />
     </BodyProviders>
   );
 }

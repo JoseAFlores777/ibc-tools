@@ -4,7 +4,7 @@ import { Font, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import React from 'react';
 import { ActivityHymn } from '../../interfaces/ProgramObject.interface';
 
-export interface HymnPdfProps {
+export interface HymnPagePdfProps {
   activityHymn: ActivityHymn;
 }
 
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export const HymnPdf: React.FC<HymnPdfProps> = ({ activityHymn }) => {
+export const HymnPagePdf: React.FC<HymnPagePdfProps> = ({ activityHymn }) => {
   const paragraphs = extractParagraphs(activityHymn.letter_hymn).slice(1);
 
   const keywords = ['CORO', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];

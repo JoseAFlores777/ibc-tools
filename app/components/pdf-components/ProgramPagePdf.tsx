@@ -7,14 +7,14 @@ import { es } from 'date-fns/locale/es';
 import dynamic from 'next/dynamic';
 import React from 'react';
 import { ProgramActivity, ProgramObject } from '../../interfaces/ProgramObject.interface';
-import { HymnPdf } from './HymnPdf';
+import { HymnPagePdf } from './HymnPagePdf';
 
 const PDFViewer = dynamic(() => import('@react-pdf/renderer').then((mod) => mod.PDFViewer), {
   ssr: false,
   loading: () => <p>Loading...</p>,
 });
 
-export interface ProgramPdfProps {
+export interface ProgramPagePdfProps {
   programObject: ProgramObject;
   activitiesOptions: ConditionalFormattingFiltered[];
 }
@@ -174,7 +174,10 @@ const styles = StyleSheet.create({
   },
 });
 
-export const ProgramPdf: React.FC<ProgramPdfProps> = ({ programObject, activitiesOptions }) => {
+export const ProgramPagePdf: React.FC<ProgramPagePdfProps> = ({
+  programObject,
+  activitiesOptions,
+}) => {
   const activities = programObject.program_activities.sort(
     (a: ProgramActivity, b: ProgramActivity) => a.activity_order - b.activity_order
   );
@@ -253,7 +256,7 @@ export const ProgramPdf: React.FC<ProgramPdfProps> = ({ programObject, activitie
             if (activity.activity_hymn === null) {
               return null;
             }
-            return <HymnPdf key={index} activityHymn={activity.activity_hymn} />;
+            return <HymnPagePdf key={index} activityHymn={activity.activity_hymn} />;
           })}
         </Document>
       </PDFViewer>
