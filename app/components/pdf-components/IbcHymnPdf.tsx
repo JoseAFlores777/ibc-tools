@@ -146,6 +146,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   activityTextTitle: {
+    marginTop: 5,
     marginBottom: 20,
     marginRight: 40,
     lineHeight: 0.2,
