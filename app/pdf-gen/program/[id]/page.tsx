@@ -32,7 +32,7 @@ async function getProgram(id: string): Promise<ProgramObject> {
     };
 
     const data = await directus.request(readItem('programs', id, queryItem)) as ProgramObject;
-    console.log('Programa:', data.program_activities.filter(activity => activity.activities === '1')[0].activity_responsible.alias);
+    //console.log('Programa:', data.program_activities.filter(activity => activity.activities === '1')[0].activity_responsible.alias);
     return data;
   } catch (error) {
     console.error('Error al obtener el programa:', error);
