@@ -7,6 +7,8 @@ export interface ProgramObject {
     user_updated:       string;
     date_updated:       Date;
     program_title:      string;
+    bible_reference:    number;
+    bible_text:         string;
     start_datetime:     Date;
     program_activities: ProgramActivity[];
 }
@@ -36,6 +38,8 @@ export interface ActivityHymn {
     name:                 string;
     hymn_number:          number;
     hymnal:               string;
+    bible_reference:      number;
+    bible_text:           string;
     letter_author:        null;
     trad_author:          null;
     music_author:         null;

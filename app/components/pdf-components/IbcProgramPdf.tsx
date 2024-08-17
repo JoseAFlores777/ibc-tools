@@ -7,6 +7,7 @@ import { es } from 'date-fns/locale/es';
 import dynamic from 'next/dynamic';
 import React from 'react';
 import { ProgramActivity, ProgramObject } from '../../interfaces/ProgramObject.interface';
+import { IbcHymnPdf } from './IbcHymnPdf';
 
 const PDFViewer = dynamic(
   () => import("@react-pdf/renderer").then((mod) => mod.PDFViewer),
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
   footerTitle: {
     justifyContent: 'center',
     alignItems: 'center',
-    top: 40,
+    top: 30,
     textAlign: 'center',
     color: '#c2c2c4',
     fontSize: 10,
@@ -175,7 +176,7 @@ const styles = StyleSheet.create({
   footerSubTitle: {
     justifyContent: 'center',
     alignItems: 'center',
-    top: 40,
+    top: 30,
     textAlign: 'center',
     color: '#c2c2c4',
     fontSize: 9,
@@ -219,8 +220,8 @@ export const IbcProgramPdf: React.FC<IbcProgramPdfProps> = ({
             <View style={styles.content}>
               <Text style={styles.title}>Programa</Text>
               <View style={styles.biblicalVerse}>
-                <Text style={styles.verseText}>{verse}</Text>
-                <Text style={styles.verseReference}>{verseReference}</Text>
+                <Text style={styles.verseText}>{programObject.bible_text}</Text>
+                <Text style={styles.verseReference}>{programObject.bible_reference}</Text>
               </View>
               <View style={styles.activitiesSection}>
                 {activities.map((activity, index) => {
@@ -258,6 +259,19 @@ export const IbcProgramPdf: React.FC<IbcProgramPdfProps> = ({
               </Text>
 </View>
           </Page>
+
+
+          {programObject.program_activities.map((activity, index) => {
+            if (activity.activity_hymn === null) {
+              return null;
+            }
+            return (
+              <IbcHymnPdf key={index} activityHymn={activity.activity_hymn} />
+            )
+          })}
+
+
+
         </Document>
       </PDFViewer>
     </div>
