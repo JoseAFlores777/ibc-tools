@@ -2,7 +2,7 @@
 
 import { Font, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import React from 'react';
-import { ActivityHymn } from '../../interfaces/ProgramObject.interface';
+import { ActivityHymn } from '../../../interfaces/ProgramObject.interface';
 
 export interface HymnPagePdfProps {
   activityHymn: ActivityHymn;

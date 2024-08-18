@@ -1,7 +1,4 @@
-import {
-  ProgramPagePdf,
-  ProgramPagePdfProps,
-} from '@/app/components/pdf-components/ProgramPagePdf';
+import { ProgramDocPdf } from '@/app/components/pdf-components/pdf-documents/ProgramDocPdf';
 import {
   ConditionalFormatting,
   ConditionalFormattingFiltered,
@@ -11,8 +8,8 @@ import { TranslationObject } from '@/app/interfaces/TranslationObject';
 import directus from '@/app/lib/directus';
 import BodyProviders from '@/app/providers/BodyProviders';
 import { Query, readField, readItem, readTranslations } from '@directus/sdk';
-import { Language } from '../../../interfaces/TranslationObject';
 import { ProgramObject } from '../../../interfaces/ProgramObject.interface';
+import { Language } from '../../../interfaces/TranslationObject';
 
 export default async function Page({ params }: { params: { id: string } }) {
   const program: ProgramObject = await getProgram(params.id);
@@ -20,7 +17,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   return (
     <BodyProviders>
-      <ProgramPagePdf activitiesOptions={activitiesOptions} programObject={program} />
+      <ProgramDocPdf activitiesOptions={activitiesOptions} programObject={program} />
     </BodyProviders>
   );
 }
@@ -33,8 +30,6 @@ async function getProgram(id: string): Promise<ProgramObject> {
     };
 
     const data = (await directus.request(readItem('programs', id, queryItem))) as ProgramObject;
-    // console.log('Programa:', data.program_activities[0].activity_hymn);
-    //console.log('Programa:', data.program_activities.filter(activity => activity.activities === '1')[0].activity_responsible.alias);
     return data;
   } catch (error) {
     console.error('Error al obtener el programa:', error);
