@@ -1,3 +1,4 @@
+
 import { ProgramDocPdf } from '@/app/components/pdf-components/pdf-documents/ProgramDocPdf';
 import {
   ConditionalFormatting,
@@ -7,29 +8,90 @@ import {
 import { TranslationObject } from '@/app/interfaces/TranslationObject';
 import directus from '@/app/lib/directus';
 import BodyProviders from '@/app/providers/BodyProviders';
-import { Query, readField, readItem, readTranslations } from '@directus/sdk';
-import { ProgramObject } from '../../../interfaces/ProgramObject.interface';
+import { auth, Query, readField, readItem, readTranslations } from '@directus/sdk';
+
 import { Language } from '../../../interfaces/TranslationObject';
+import { ProgramData } from '@/app/interfaces/Program.interface';
 
 export default async function Page({ params }: { params: { id: string } }) {
-  const program: ProgramObject = await getProgram(params.id);
+  const program: ProgramData = await getProgram(params.id);
   const activitiesOptions: ConditionalFormattingFiltered[] = await getActivitiesOptions();
 
   return (
     <BodyProviders>
-      <ProgramDocPdf activitiesOptions={activitiesOptions} programObject={program} />
+      <ProgramDocPdf activitiesOptions={activitiesOptions} programData={program} />
     </BodyProviders>
   );
 }
 
 // Función para obtener un programa por su ID
-async function getProgram(id: string): Promise<ProgramObject> {
+async function getProgram(id: string): Promise<ProgramData> {
   try {
     const queryItem = {
-      fields: ['*.*.*.*'],
+      fields: [
+        'program_title',
+        'start_datetime',
+        'bible_text',
+        'bible_reference', {
+          program_activities: [
+            'activity_order',
+            'activities', {
+              activity_hymn: [
+                'name',
+                'bible_text',
+                'bible_reference',
+                'hymn_number',
+                'hymn_time_signature',
+                'letter_hymn', {
+                  hymnal: [
+                    'name',
+                    'publisher'
+                  ],
+                  authors: [
+                    'authors_id.name',
+                    'author_roles.author_roles_id.description',
+                    'author_roles.author_roles_id.rol_abbr'
+                  ]
+                }
+              ],
+              activity_responsible: [
+                'last_name',
+                'avatar',
+                'alias'
+              ]
+            }
+          ]
+        }
+      ],
     };
+    // const queryItem = {
+    //   fields: [
+    //     '*', {
+    //       program_activities: [
+    //         '*', {
+    //           activity_hymn: [
+    //             '*', {
+    //               hymnal: [
+    //                 'name',
+    //                 'publisher'
+    //               ],
+    //               authors: [
+    //                 'author_roles.author_roles_id.description',
+    //                 'author_roles.author_roles_id.rol_abbr'
+    //               ]
+    //             }
+    //           ],
+    //           activity_responsible: [
+    //             '*'
+    //           ]
+    //         }
+    //       ]
+    //     }
+    //   ],
+    // };
 
-    const data = (await directus.request(readItem('programs', id, queryItem))) as ProgramObject;
+    const data = (await directus.request(readItem('programs', id, queryItem))) as ProgramData;
+    console.log('Programa obtenido:', data);
     return data;
   } catch (error) {
     console.error('Error al obtener el programa:', error);

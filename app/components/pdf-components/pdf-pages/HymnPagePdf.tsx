@@ -1,8 +1,8 @@
 'use client';
 
+import { ActivityHymn } from '@/app/interfaces/Program.interface';
 import { Font, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import React from 'react';
-import { ActivityHymn } from '../../../interfaces/ProgramObject.interface';
 
 export interface HymnPagePdfProps {
   activityHymn: ActivityHymn;
@@ -203,15 +203,34 @@ export const HymnPagePdf: React.FC<HymnPagePdfProps> = ({ activityHymn }) => {
 
   const keywords = ['CORO', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 
+  const roleDescriptionsArray = Array.from(
+    new Set(
+      activityHymn.authors.flatMap((author) => {
+        return author.author_roles.map((role) => role.author_roles_id.description);
+      })
+    )
+  );
+
+  console.log('roles', roleDescriptionsArray);
+
+  const authorsTemplate = roleDescriptionsArray.map((roleDescription) => {
+    return findAuthorsByRole(roleDescription, activityHymn);
+  });
+
   return (
     <Page size="LETTER" style={styles.page}>
       <View style={styles.header}>
         <View style={styles.gradientOverlay} />
         <View style={styles.ImageOverlay}></View>
         <View style={styles.programHeaderTexts}>
-          <Text style={styles.programDate}>{`Himno # ${activityHymn.hymn_number}`}</Text>
+          {activityHymn.hymn_number || activityHymn.hymn_number !=  0 ? (
+            <Text style={styles.programDate}>{`Himno # ${activityHymn.hymn_number}`}</Text>
+          ) : (
+            <Text style={styles.programDate}>{`Himno`}</Text>
+          )}
+
           <Text style={styles.programTitle}>{activityHymn.name}</Text>
-          <Text style={styles.programTime}>{'Himnos Majestuosos'}</Text>
+          <Text style={styles.programTime}>{activityHymn.hymnal.name}</Text>
           <View style={styles.biblicalVerse}>
             <Text style={styles.verseText}>{activityHymn.bible_text}</Text>
             <Text style={styles.verseReference}>{activityHymn.bible_reference}</Text>
@@ -239,19 +258,10 @@ export const HymnPagePdf: React.FC<HymnPagePdfProps> = ({ activityHymn }) => {
 
       <View style={styles.footer}>
         <View style={styles.footerHymnInfo}>
-          {activityHymn.letter_author && (
+          {authorsTemplate}
+          {activityHymn.hymn_time_signature && (
             <Text style={styles.hymnInfoText}>
-              Letra: {activityHymn.letter_author.name ? activityHymn.letter_author.name : ' '}
-            </Text>
-          )}
-          {activityHymn.music_author && (
-            <Text style={styles.hymnInfoText}>
-              Música: {activityHymn.music_author.name ? activityHymn.music_author.name : ' '}
-            </Text>
-          )}
-          {activityHymn.trad_author && (
-            <Text style={styles.hymnInfoText}>
-              Trad.: {activityHymn.trad_author.name ? activityHymn.trad_author.name : ' '}
+              {`Compás: ${activityHymn.hymn_time_signature}`}
             </Text>
           )}
           {activityHymn.hymnal.publisher && (
@@ -299,4 +309,27 @@ function extractParagraphs(htmlString: string): string[] {
   });
 
   return textArray;
+}
+
+function findAuthorsByRole(roleDescription: string, activityHymn: ActivityHymn): React.ReactNode {
+  let abbr: string = '';
+  const authors = activityHymn.authors
+  .filter((author) =>
+    author.author_roles.some((role) => role.author_roles_id.description === roleDescription)
+)
+.map((author) => {
+  abbr = author.author_roles.filter((role) => role.author_roles_id.description === roleDescription)[0].author_roles_id.rol_abbr
+      return author.authors_id.name;
+    })
+    .join(', ');
+
+  return (
+    <>
+      {authors && (
+        <Text style={styles.hymnInfoText}>
+          {abbr}: {authors ? authors : ' '}
+        </Text>
+      )}
+    </>
+  );
 }

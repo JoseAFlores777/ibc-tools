@@ -1,8 +1,9 @@
 import { HymnDocPdf } from '@/app/components/pdf-components/pdf-documents/HymnDocPdf';
+import { ActivityHymn } from '@/app/interfaces/Program.interface';
 import directus from '@/app/lib/directus';
 import BodyProviders from '@/app/providers/BodyProviders';
 import { readItem } from '@directus/sdk';
-import { ActivityHymn } from '../../../interfaces/ProgramObject.interface';
+
 
 export default async function Page({ params }: { params: { id: string } }) {
   const hymn = await getHymn(params.id);

@@ -3,9 +3,10 @@
 import { Document } from '@react-pdf/renderer';
 import dynamic from 'next/dynamic';
 import React from 'react';
-import { ActivityHymn } from '../../../interfaces/ProgramObject.interface';
+
 
 import { HymnPagePdf } from '../pdf-pages/HymnPagePdf';
+import { ActivityHymn } from '@/app/interfaces/Program.interface';
 
 const PDFViewer = dynamic(() => import('@react-pdf/renderer').then((mod) => mod.PDFViewer), {
   ssr: false,

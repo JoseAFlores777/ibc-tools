@@ -1,15 +1,16 @@
 'use client';
 
 import { ConditionalFormattingFiltered } from '@/app/interfaces/FileObject.interface';
+import { ProgramActivity, ProgramData } from '@/app/interfaces/Program.interface';
 import { Font, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale/es';
 import React from 'react';
-import { ProgramActivity, ProgramObject } from '../../../interfaces/ProgramObject.interface';
+
 
 
 export interface ProgramPagePdfProps {
-  programObject: ProgramObject;
+  programData: ProgramData;
   activitiesOptions: ConditionalFormattingFiltered[];
 }
 
@@ -169,14 +170,16 @@ const styles = StyleSheet.create({
 });
 
 export const ProgramPagePdf: React.FC<ProgramPagePdfProps> = ({
-  programObject,
+  programData,
   activitiesOptions,
 }) => {
-  const activities = programObject.program_activities.sort(
+  const activities = programData.program_activities.sort(
     (a: ProgramActivity, b: ProgramActivity) => a.activity_order - b.activity_order
   );
 
-  const startDatetime = new Date(programObject.start_datetime);
+  console.log('Programa:', programData);
+
+  const startDatetime = new Date(programData.start_datetime);
   const formattedDate = format(startDatetime, "EEEE, d 'de' MMMM yyyy", { locale: es });
   const startHour = format(startDatetime, 'h:mm aaaa', { locale: es });
 
@@ -188,7 +191,7 @@ export const ProgramPagePdf: React.FC<ProgramPagePdfProps> = ({
                 <Image src={'/altar.jpg'} style={styles.headerImage} />
               </View>
               <View style={styles.programHeaderTexts}>
-                <Text style={styles.programTitle}>{programObject.program_title}</Text>
+                <Text style={styles.programTitle}>{programData.program_title}</Text>
                 <Text style={styles.programDate}>{formattedDate}</Text>
                 <Text style={styles.programTime}>{startHour}</Text>
               </View>
@@ -197,8 +200,8 @@ export const ProgramPagePdf: React.FC<ProgramPagePdfProps> = ({
             <View style={styles.content}>
               <Text style={styles.title}>Programa</Text>
               <View style={styles.biblicalVerse}>
-                <Text style={styles.verseText}>{programObject.bible_text}</Text>
-                <Text style={styles.verseReference}>{programObject.bible_reference}</Text>
+                <Text style={styles.verseText}>{programData.bible_text}</Text>
+                <Text style={styles.verseReference}>{programData.bible_reference}</Text>
               </View>
               <View style={styles.activitiesSection}>
                 {activities.map((activity, index) => {

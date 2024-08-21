@@ -6,10 +6,11 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale/es';
 import dynamic from 'next/dynamic';
 import React from 'react';
-import { ProgramActivity, ProgramObject } from '../../../interfaces/ProgramObject.interface';
+
 
 import { HymnPagePdf } from '../pdf-pages/HymnPagePdf';
 import { ProgramPagePdf } from '../pdf-pages/ProgramPagePdf';
+import { ProgramActivity, ProgramData } from '@/app/interfaces/Program.interface';
 
 const PDFViewer = dynamic(() => import('@react-pdf/renderer').then((mod) => mod.PDFViewer), {
   ssr: false,
@@ -17,19 +18,21 @@ const PDFViewer = dynamic(() => import('@react-pdf/renderer').then((mod) => mod.
 });
 
 export interface ProgramDocPdfProps {
-  programObject: ProgramObject;
+  programData: ProgramData;
   activitiesOptions: ConditionalFormattingFiltered[];
 }
 
 export const ProgramDocPdf: React.FC<ProgramDocPdfProps> = ({
-  programObject,
+  programData,
   activitiesOptions,
 }) => {
-  const activities = programObject.program_activities.sort(
+  const activities = programData.program_activities.sort(
     (a: ProgramActivity, b: ProgramActivity) => a.activity_order - b.activity_order
   );
 
-  const startDatetime = new Date(programObject.start_datetime);
+  console.log('programData:', programData);
+
+  const startDatetime = new Date(programData.start_datetime);
   const formattedDate = format(startDatetime, "EEEE, d 'de' MMMM yyyy", { locale: es });
   const startHour = format(startDatetime, 'h:mm aaaa', { locale: es });
 
@@ -45,13 +48,13 @@ export const ProgramDocPdf: React.FC<ProgramDocPdfProps> = ({
       }}
     >
       <PDFViewer width="100%" height="100%">
-        <Document title={`${programObject.program_title} ${formattedDate}`}>
+        <Document title={`${programData.program_title} ${formattedDate}`}>
           <ProgramPagePdf
-            programObject={programObject}
+            programData={programData}
             activitiesOptions={activitiesOptions}
           ></ProgramPagePdf>
 
-          {programObject.program_activities.map((activity, index) => {
+          {programData.program_activities.map((activity, index) => {
             if (activity.activity_hymn === null) {
               return null;
             }
