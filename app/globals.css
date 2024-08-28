@@ -2,7 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+@layer base {
+  :root {
+    --background: 210 40% 96.1%; /* slate-100 */
+    --foreground: 242.2 47.4% 34.3%; /* indigo-900 */
+    --card: 214.3 31.8% 91.4%; /* slate-200 */
+    --card-foreground: 242.2 47.4% 34.3%; /* indigo-900 */
+    --popover: 210 40% 96.1%; /* slate-100 */
+    --popover-foreground: 215.4 16.3% 46.9%; /* slate-500 */
+    --primary: 242.2 47.4% 34.3%; /* indigo-900 */
+    --primary-foreground: 0 0% 98%; /* neutral-50 */
+    --secondary: 212.7 26.8% 83.9%; /* slate-300 */
+    --secondary-foreground: 242.2 47.4% 34.3%; /* indigo-900 */
+    --muted: 214.3 31.8% 91.4%; /* slate-200 */
+    --muted-foreground: 215.4 16.3% 46.9%; /* slate-500 */
+    --accent: 212.7 26.8% 83.9%; /* slate-300 */
+    --accent-foreground: 215.3 25% 26.7%; /* slate-700 */
+    --destructive: 0 72.2% 50.6%; /* red-600 */
+    --destructive-foreground: 0 0% 98%; /* neutral-50 */
+    --border: 212.7 26.8% 83.9%; /* slate-300 */
+    --input: 215 20.2% 65.1%; /* slate-400 */
+    --ring: 215.3 19.3% 34.5%; /* slate-600 */
+    --radius: 0.5rem;
 
+    --chart-1: 242.2 47.4% 34.3%; /* indigo-900 */
+    --chart-2: 242.2 47.4% 34.3%; /* indigo-900 */
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+     --background: 222.2 47.4% 11.2%; /* slate-900 */
+    --foreground: 214.3 31.8% 91.4%; /* slate-200 */
+    --card: 217.2 32.6% 17.5%; /* slate-800 */
+    --card-foreground: 214.3 31.8% 91.4%; /* slate-200 */
+    --popover: 215.3 25% 26.7%; /* slate-700 */
+    --popover-foreground: 216 12.2% 83.9%; /* gray-300 */
+    --primary: 212.7 26.8% 83.9%; /* slate-300 */
+    --primary-foreground: 222.2 47.4% 11.2%; /* slate-900 */
+    --secondary: 215 13.8% 34.1%; /* gray-600 */
+    --secondary-foreground: 0 0% 98%; /* neutral-50 */
+    --muted: 215.3 25% 26.7%; /* slate-700 */
+    --muted-foreground: 214.3 31.8% 91.4%; /* slate-200 */
+    --accent: 215.4 16.3% 46.9%; /* slate-500 */
+    --accent-foreground: 214.3 31.8% 91.4%; /* slate-200 */
+    --destructive: 0 90.6% 70.8%; /* red-400 */
+    --destructive-foreground: 0 0% 98%; /* neutral-50 */
+    --border: 215.3 25% 26.7%; /* slate-700 */
+    --input: 215.3 19.3% 34.5%; /* slate-600 */
+    --ring: 215.4 16.3% 46.9%; /* slate-500 */
+
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
 }
 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    @apply scroll-smooth;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* font-feature-settings: "rlig" 1, "calt" 1; */
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+@layer utilities {
+  .step {
+    counter-increment: step;
+  }
+
+  .step:before {
+    @apply absolute w-9 h-9 bg-muted rounded-full font-mono font-medium text-center text-base inline-flex items-center justify-center -indent-px border-4 border-background;
+    @apply ml-[-50px] mt-[-4px];
+    content: counter(step);
+  }
+
+  .chunk-container {
+    @apply shadow-none;
+  }
+
+  .chunk-container::after {
+    content: "";
+    @apply absolute -inset-4 shadow-xl rounded-xl border;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    @apply px-4;
+  }
+}

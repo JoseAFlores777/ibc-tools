@@ -258,12 +258,12 @@ export const HymnPagePdf: React.FC<HymnPagePdfProps> = ({ activityHymn }) => {
 
       <View style={styles.footer}>
         <View style={styles.footerHymnInfo}>
-          {authorsTemplate}
           {activityHymn.hymn_time_signature && (
             <Text style={styles.hymnInfoText}>
               {`Compás: ${activityHymn.hymn_time_signature}`}
             </Text>
           )}
+          {authorsTemplate}
           {activityHymn.hymnal.publisher && (
             <Text style={styles.hymnInfoText}>
               {activityHymn.hymnal.publisher
