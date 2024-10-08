@@ -19,7 +19,24 @@ export default async function Page({ params }: { params: { id: string } }) {
 async function getHymn(id: string): Promise<ActivityHymn> {
   try {
     const queryItem = {
-      fields: ['*.*'],
+      fields: [
+        'name',
+        'bible_text',
+        'bible_reference',
+        'hymn_number',
+        'hymn_time_signature',
+        'letter_hymn', {
+          hymnal: [
+            'name',
+            'publisher'
+          ],
+          authors: [
+            'authors_id.name',
+            'author_roles.author_roles_id.description',
+            'author_roles.author_roles_id.rol_abbr'
+          ]
+        }
+      ],
     };
 
     const data = (await directus.request(readItem('hymn', id, queryItem))) as ActivityHymn;
