@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import Navbar from './sections/Navbar';
 import { Button } from '@/lib/shadcn/ui';
+import Link from 'next/link';
 
 
 
@@ -26,17 +27,32 @@ export default async function HomePage() {
 
 				<div className="absolute inset-0 flex items-center justify-center z-20 px-5">
 					<div className="flex flex-col gap-5 items-center text-center">
-						<h1 className="text-5xl font-extrabold text-slate-600">¡Bienvenido al Calvario!</h1>
-						<p className="text-xl text-slate-700">Una Familia con Amor</p>
+						<h1 className="text-5xl font-extrabold text-slate-600">¡En Construcción!</h1>
+						<p className="text-xl text-slate-700">Muy Pronto ...</p>
+						<p className="text-lg font-bold text-slate-700">Visita nuestras redes:</p>
 						<div className="flex flex-col mt-5 gap-5 w-10/12">
-						<Button size={'lg'} variant="outline"> Declaración de Fe</Button>
-						<Button size={'lg'} variant="outline">Servicios</Button>
+						<Button size={'lg'} variant="outline" asChild>
+							<Link href={'https://www.facebook.com/ibcunafamiliaconamor'} target='_blank'>Facebook</Link>
+						</Button>
+
+						<Button size={'lg'} variant="outline" asChild>
+							<Link href={'https://www.youtube.com/@ibchn'} target='_blank'>Youtube</Link>
+						</Button>
+
+						<Button size={'lg'} variant="outline" asChild>
+							<Link href={'https://stream-172.zeno.fm/rjmlzssxpi4uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJyam1senNzeHBpNHV2IiwiaG9zdCI6InN0cmVhbS0xNzIuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6InhiQWt2MXJuU25pM1NpWjBWYUxiZnciLCJpYXQiOjE3MjgzNjkzOTMsImV4cCI6MTcyODM2OTQ1M30.HO23TAbWb0E5Ny5omqKts230P-G7v5CRJP0M3Mp53Ao&inappbrowser=true'} target='_blank'>Radio IBC</Link>
+						</Button>
+
+						<Button size={'lg'} variant="outline" asChild>
+							<Link href={'https://onelink.to/ibchn'} target='_blank'>Descarga nuestra App</Link>
+						</Button>
+
 						</div>
 					</div>
 					</div>
 
 			</div>
-			<div className="h-[1000px] bg-slate-500">asdas</div>
+			<div className="h-auto bg-slate-500"></div>
 		</div>
 	);
 }
