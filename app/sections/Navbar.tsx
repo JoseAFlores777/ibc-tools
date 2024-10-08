@@ -64,7 +64,7 @@ const NavbarHeader: FC<NavbarHeaderProps> = ({ isOpen, onClick }) => (
 const NavbarMenu: FC = () => (
   <div className="h-auto max-h-full overflow-hidden bg-white/10 backdrop-blur-lg transition duration-500 ease-in-out transform">
     <Separator orientation="horizontal" />
-    <ScrollArea className="h-svh px-5 pt-5 ">
+    <ScrollArea className="h-svh px-5 pt-5 pb-32">
       {/* <Nav
         className="flex flex-col gap-4 pb-[300px]"
         isCollapsed={false}
