@@ -277,7 +277,7 @@ export const HymnPagePdf: React.FC<HymnPagePdfProps> = ({ activityHymn }) => {
             <Text style={styles.footerChurchInfoTextsTitle}>DIOS ES FIEL</Text>
             <Text style={styles.footerChurchInfoTextsSubTitle}>Iglesia Bautista El Calvario</Text>
           </View>
-          <Image src={'/IBC_Logo-min.png'} style={styles.footerChurchInfoLogo} fixed />
+          <Image src={'/images/IBC_Logo-min.png'} style={styles.footerChurchInfoLogo} fixed />
         </View>
       </View>
     </Page>

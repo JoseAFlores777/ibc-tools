@@ -1,18 +1,15 @@
 "use client"
 
-import * as React from "react"
 import { addDays, format } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
+import { Calendar, Calendar as CalendarIcon } from "lucide-react"
+import * as React from "react"
 import { DateRange } from "react-day-picker"
 
-import { cn } from "@/app/lib/shadcn/utils"
-import { Button } from "@/registry/default/ui/button"
-import { Calendar } from "@/registry/default/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/registry/default/ui/popover"
+
+import { Button, Popover, PopoverContent, PopoverTrigger } from '@/lib/shadcn/ui';
+import { cn } from "@/lib/shadcn"
+
+
 
 export default function DatePickerWithRange({
   className,

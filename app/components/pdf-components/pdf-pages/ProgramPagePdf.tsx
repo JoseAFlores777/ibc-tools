@@ -188,7 +188,7 @@ export const ProgramPagePdf: React.FC<ProgramPagePdfProps> = ({
             <View style={styles.header}>
               <View style={styles.gradientOverlay} />
               <View style={styles.ImageOverlay}>
-                <Image src={'/altar.jpg'} style={styles.headerImage} />
+                <Image src={'/images/altar_2.jpg'} style={styles.headerImage} />
               </View>
               <View style={styles.programHeaderTexts}>
                 <Text style={styles.programTitle}>{programData.program_title}</Text>
@@ -196,7 +196,7 @@ export const ProgramPagePdf: React.FC<ProgramPagePdfProps> = ({
                 <Text style={styles.programTime}>{startHour}</Text>
               </View>
             </View>
-            <Image src={'/IBC_Logo-min.png'} style={styles.logo} fixed />
+            <Image src={'/images/IBC_Logo-min.png'} style={styles.logo} fixed />
             <View style={styles.content}>
               <Text style={styles.title}>Programa</Text>
               <View style={styles.biblicalVerse}>

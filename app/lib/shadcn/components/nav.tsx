@@ -5,6 +5,7 @@ import { LucideIcon } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { buttonVariants } from "../ui"
 import { cn } from "../utils"
+import clsx from "clsx"
 
 
 
@@ -16,13 +17,14 @@ interface NavProps {
     icon: LucideIcon
     variant: "default" | "ghost"
   }[]
+  className?: string | any
 }
 
-export function Nav({ links, isCollapsed }: NavProps) {
+export function Nav({ links, isCollapsed, className = '' }: NavProps) {
   return (
     <div
       data-collapsed={isCollapsed}
-      className="group flex flex-col gap-4 py-2 data-[collapsed=true]:py-2"
+      className={" group flex flex-col gap-4 py-2 data-[collapsed=true]:py-2 "+clsx(className)}
     >
       <nav className="grid gap-1 px-2 group-[[data-collapsed=true]]:justify-center group-[[data-collapsed=true]]:px-2">
         {links.map((link, index) =>

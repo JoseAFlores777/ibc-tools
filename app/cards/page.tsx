@@ -12,7 +12,8 @@ import { DemoPaymentMethod } from "./components/payment-method"
 import { DemoReportAnIssue } from "./components/report-an-issue"
 import { DemoShareDocument } from "./components/share-document"
 import { DemoTeamMembers } from "./components/team-members"
-import { Navbar } from '../sections/Navbar';
+import Navbar from '../sections/Navbar';
+
 
 export const metadata: Metadata = {
   title: "Cards",
