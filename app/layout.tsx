@@ -10,8 +10,8 @@ const inter = Inter({
 
 
 export const metadata: Metadata = {
-  title: "IBC - Docs",
-  description: "Docs generator for IBC",
+  title: "IBC | El Calvario",
+  description: "Iglesia Bautista El Calvario",
   icons: {
     icon: {
       url: '/favicon_io/favicon-32x32.png',
