@@ -91,6 +91,7 @@ async function getProgram(id: string): Promise<ProgramData> {
     // };
 
     const data = (await directus.request(readItem('programs', id, queryItem))) as ProgramData;
+    console.log('Programa obtenido:', id);
     console.log('Programa obtenido:', data);
     return data;
   } catch (error) {
