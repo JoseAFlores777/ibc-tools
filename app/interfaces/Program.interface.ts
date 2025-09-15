@@ -11,6 +11,7 @@ export interface ProgramActivity {
   activities:           string;
   activity_hymn:        ActivityHymn | null;
   activity_responsible: ActivityResponsible;
+  description:          string;
 }
 
 export interface ActivityHymn {

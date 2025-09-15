@@ -1,6 +1,8 @@
 import { HymnDocPdf } from '@/app/components/pdf-components/pdf-documents/HymnDocPdf';
 import { ActivityHymn } from '@/app/interfaces/Program.interface';
-import directus from '@/app/lib/directus';
+import getDirectus from '@/app/lib/directus';
+export const dynamic = 'force-dynamic';
+const directus = getDirectus();
 import BodyProviders from '@/app/providers/BodyProviders';
 import { readItem } from '@directus/sdk';
 
@@ -39,7 +41,7 @@ async function getHymn(id: string): Promise<ActivityHymn> {
       ],
     };
 
-    const data = (await directus.request(readItem('hymn', id, queryItem))) as ActivityHymn;
+    const data = (await directus.request(readItem<any, any, any>('hymn', id as any, queryItem as any))) as ActivityHymn;
     return data;
   } catch (error) {
     console.error('Error al obtener el programa:', error);

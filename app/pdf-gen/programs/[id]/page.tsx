@@ -6,12 +6,15 @@ import {
   FieldObject,
 } from '@/app/interfaces/FileObject.interface';
 import { TranslationObject } from '@/app/interfaces/TranslationObject';
-import directus from '@/app/lib/directus';
+import getDirectus from '@/app/lib/directus';
+export const dynamic = 'force-dynamic';
+const directus = getDirectus();
 import BodyProviders from '@/app/providers/BodyProviders';
 import { auth, Query, readField, readItem, readTranslations } from '@directus/sdk';
 
 import { Language } from '../../../interfaces/TranslationObject';
 import { ProgramData } from '@/app/interfaces/Program.interface';
+import { Description } from '@radix-ui/react-alert-dialog';
 
 export default async function Page({ params }: { params: { id: string } }) {
   const program: ProgramData = await getProgram(params.id);
@@ -58,8 +61,9 @@ async function getProgram(id: string): Promise<ProgramData> {
                 'last_name',
                 'avatar',
                 'alias'
-              ]
-            }
+              ],
+              'description':[]
+            },
           ]
         }
       ],
@@ -90,7 +94,7 @@ async function getProgram(id: string): Promise<ProgramData> {
     //   ],
     // };
 
-    const data = (await directus.request(readItem('programs', id, queryItem))) as ProgramData;
+    const data = (await directus.request(readItem<any, any, any>('programs', id as any, queryItem as any))) as ProgramData;
     console.log('Programa obtenido:', id);
     console.log('Programa obtenido:', data);
     return data;

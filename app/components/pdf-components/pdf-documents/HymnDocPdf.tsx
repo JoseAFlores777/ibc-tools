@@ -13,30 +13,82 @@ const PDFViewer = dynamic(() => import('@react-pdf/renderer').then((mod) => mod.
   loading: () => <p>Loading...</p>,
 });
 
+const PDFDownloadLink = dynamic(() => import('@react-pdf/renderer').then((mod) => mod.PDFDownloadLink), {
+  ssr: false,
+});
 export interface HymnDocPdfProps {
   activityHymn: ActivityHymn;
 }
 
-export const HymnDocPdf: React.FC<HymnDocPdfProps> = ({
-  activityHymn
-}) => {
+// export const HymnDocPdf: React.FC<HymnDocPdfProps> = ({
+//   activityHymn
+// }) => {
 
+//   return (
+//     <div
+//       style={{
+//         width: '100%',
+//         height: '100vh',
+//         display: 'flex',
+//         justifyContent: 'center',
+//         alignItems: 'center',
+//         backgroundColor: '#f7f7f7',
+//       }}
+//     >
+//       <PDFViewer width="100%" height="100%">
+//         <Document title={`${activityHymn.hymn_number} - ${activityHymn.name}`}>
+//           <HymnPagePdf activityHymn={activityHymn} />
+//         </Document>
+//       </PDFViewer>
+//     </div>
+//   );
+// };
+
+
+
+
+const MyDoc: React.FC<HymnDocPdfProps> = ({ activityHymn }) => {
+
+  return (
+    <Document title={`#${activityHymn.hymn_number} ${activityHymn.name} (${activityHymn.hymnal.name})`}>
+      <HymnPagePdf activityHymn={activityHymn} />
+    </Document>
+  );
+};
+
+export const HymnDocPdf: React.FC<HymnDocPdfProps> = ({ activityHymn }) => {
+    
+    
   return (
     <div
       style={{
         width: '100%',
         height: '100vh',
         display: 'flex',
+        flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f7f7f7',
+        backgroundColor: 'rgb(189, 189, 189)',
       }}
     >
-      <PDFViewer width="100%" height="100%">
-        <Document title={`${activityHymn.hymn_number} - ${activityHymn.name}`}>
-          <HymnPagePdf activityHymn={activityHymn} />
-        </Document>
+      <PDFViewer width="100%" height="90%">
+        <MyDoc activityHymn={activityHymn} />
       </PDFViewer>
+      <PDFDownloadLink
+        document={<MyDoc activityHymn={activityHymn} />}
+        fileName={`${activityHymn.hymn_number} - ${activityHymn.name}.pdf`}
+        style={{
+          alignSelf: 'center',
+          margin: 'auto',
+          padding: '10px 20px',
+          backgroundColor: '#007bff',
+          color: 'white',
+          textDecoration: 'none',
+          borderRadius: '5px',
+        }}
+      >
+        {({ loading }) => (loading ? 'Generating document...' : 'Descargar PDF')}
+      </PDFDownloadLink>
     </div>
   );
 };

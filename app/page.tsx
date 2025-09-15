@@ -11,7 +11,7 @@ export default async function HomePage() {
   
 	return (
 		<div className="">
-			<div className="relative h-screen">
+			<div className="relative h-screen ">
 				<Navbar />
 					<Image
 						className="
@@ -22,11 +22,11 @@ export default async function HomePage() {
 						object-cover
 						object-[50%_70%]
 						" src="/images/altar_2.jpg" alt="hero" width={1920} height={1080} />
-				<div className="absolute inset-0 bg-gradient-to-t from-white via-white/60 to-white z-20">
+				<div className="absolute -inset-1 bg-gradient-to-t from-white via-white/60 to-white z-20">
 				</div>
 
 				<div className="absolute inset-0 flex items-center justify-center z-20 px-5">
-					<div className="flex flex-col gap-5 items-center text-center">
+					{/* <div className="flex flex-col gap-5 items-center text-center">
 						<h1 className="text-5xl font-extrabold text-slate-600">¡En Construcción!</h1>
 						<p className="text-xl text-slate-700">Muy Pronto ...</p>
 						<p className="text-lg font-bold text-slate-700">Visita nuestras redes:</p>
@@ -48,11 +48,11 @@ export default async function HomePage() {
 						</Button>
 
 						</div>
-					</div>
+					</div> */}
 					</div>
 
 			</div>
-			<div className="h-auto bg-slate-500"></div>
+			<div className="h-[1000px] bg-white"></div>
 		</div>
 	);
 }

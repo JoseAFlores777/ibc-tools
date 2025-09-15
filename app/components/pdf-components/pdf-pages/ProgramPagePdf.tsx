@@ -139,6 +139,12 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     color: '#9e7f19',
   },
+  subText: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+    marginLeft: 20,
+  },
   hymnName: {},
   footer: {
     position: 'absolute',
@@ -226,6 +232,15 @@ export const ProgramPagePdf: React.FC<ProgramPagePdfProps> = ({
                       <Text style={styles.activityResponsible}>
                         {`( ${activity.activity_responsible.alias} )`}
                       </Text>
+                      {' '}
+                      {/* <Text style={styles.subText}>
+                        {`${activity.description}`}
+                      </Text>
+                      {activity.description && (
+                      <Text style={styles.subText}>
+                        {`${activity.description}`}
+                      </Text>
+                      )} */}
                     </Text>
                   );
                 })}
