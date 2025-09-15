@@ -17,7 +17,7 @@ pipeline {
     stage('Cargar .env (Secret file)') {
       steps {
         withCredentials([file(credentialsId: env.CI_ENV_FILE_CREDENTIALS_ID, variable: 'CI_ENV_FILE')]) {
-          // 1) Saneamos el .env (quitamos comentarios y espacios) y lo guardamos en workspace
+          // 1) Sanea el .env (elimina comentarios y espacios) y deja pares KEY=VALUE
           sh '''
             set -eu
             if [ ! -s "$CI_ENV_FILE" ]; then
@@ -35,10 +35,18 @@ pipeline {
                  print key, val
                }' "$CI_ENV_FILE" > .ci_env_sanitized
           '''
-          // 2) Leemos el archivo saneado y subimos cada par K=V al env de Jenkins
+          // 2) Lee el archivo saneado y sube cada par K=V al env de Jenkins (sin readProperties)
           script {
-            def props = readProperties file: '.ci_env_sanitized'
-            props.each { k, v -> env[k] = v }
+            def content = readFile '.ci_env_sanitized'
+            content.split('\n').each { line ->
+              if (!line?.trim() || line.trim().startsWith('#')) return
+              int idx = line.indexOf('=')
+              if (idx > 0) {
+                def k = line.substring(0, idx).trim()
+                def v = line.substring(idx + 1).trim()
+                env[k] = v
+              }
+            }
           }
           echo "[OK] Variables del .env cargadas a env de Jenkins."
           echo "DOCKERHUB_NAMESPACE=${env.DOCKERHUB_NAMESPACE}"
