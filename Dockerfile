@@ -1,47 +1,52 @@
 # syntax=docker/dockerfile:1.7
 
-# Base image
+# ---------- Base ----------
 FROM node:20-alpine AS base
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install dependencies (with dev deps) to build
+# ---------- deps ----------
 FROM base AS deps
 WORKDIR /app
 RUN apk add --no-cache libc6-compat
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
 
-# Build the Next.js app
+# ---------- builder ----------
 FROM deps AS builder
 WORKDIR /app
 COPY . .
-ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build-args para variables públicas (ajusta/añade las que uses)
+ARG NEXT_PUBLIC_DIRECTUS_URL
+ENV NEXT_PUBLIC_DIRECTUS_URL=${NEXT_PUBLIC_DIRECTUS_URL}
+
 RUN npm run build
 
-# Production runtime image
-FROM base AS runner
+# ---------- runner (standalone) ----------
+FROM node:20-alpine AS runner
 WORKDIR /app
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV HOSTNAME=0.0.0.0
 
-# Install runtime tools needed for healthcheck
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0
+
+# Herramienta para healthcheck
 RUN apk add --no-cache curl
 
-# Create non-root user
+# Usuario no-root
 RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 
-# Copy only what we need to run the app
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/.next ./.next
+# Copia el bundle standalone + estáticos + public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=deps /app/node_modules ./node_modules
 
 EXPOSE 3000
 
-# Simple healthcheck for Dokploy/Compose
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD curl -fsS http://localhost:3000/ || exit 1
+# Healthcheck simple
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD curl -fsS http://localhost:3000/ || exit 1
 
 USER nextjs
-
-# Start Next.js in production mode on port 3000
-CMD ["npm", "start", "--", "-p", "3000", "-H", "0.0.0.0"]
+CMD ["node", "server.js"]
