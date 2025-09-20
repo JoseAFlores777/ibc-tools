@@ -71,6 +71,13 @@ DOCKER_REGISTRY=${registry}
     }
 
     stage('Docker Build') {
+      agent {
+        docker {
+          image 'docker:27.1.2-cli'
+          args  '-v /var/run/docker.sock:/var/run/docker.sock'
+          reuseNode true
+        }
+      }
 			steps {
 				script {
 					// Carga pares K=V desde .ci_env_sanitized y .ci_runtime_env y los inyecta al entorno de ESTA etapa
@@ -103,6 +110,13 @@ DOCKER_REGISTRY=${registry}
     }
 
     stage('Push a Docker Hub (solo main)') {
+      agent {
+        docker {
+          image 'docker:27.1.2-cli'
+          args  '-v /var/run/docker.sock:/var/run/docker.sock'
+          reuseNode true
+        }
+      }
 			when { branch 'main' }
       steps {
 				script {
