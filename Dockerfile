@@ -22,7 +22,7 @@ ENV NEXT_PUBLIC_DIRECTUS_URL=${NEXT_PUBLIC_DIRECTUS_URL}
 
 RUN npm run build
 
-# ---------- runner (standalone) ----------
+# ---------- runner (standalone) --------
 FROM node:20-alpine AS runner
 WORKDIR /app
 
