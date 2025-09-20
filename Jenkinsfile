@@ -96,7 +96,7 @@ pipeline {
     stage('Trigger redeploy en Dokploy') {
 			when { branch 'main' }
       steps {
-				withCredentials([string(credentialsId: 'dokploy-webhook', variable: 'IBC-TOOLS-DOKPLOY_WEBHOOK_URL')]) {
+				withCredentials([string(credentialsId: 'IBC-TOOLS-DOKPLOY_WEBHOOK_URL', variable: 'IBC-TOOLS-DOKPLOY_WEBHOOK_URL')]) {
 					sh '''
             set -eu
             echo "[INFO] Disparando redeploy en Dokploy (usando imagen :latest)..."
