@@ -71,9 +71,9 @@ DOCKER_REGISTRY=${registry}
     }
 
     stage('Docker Build') {
-      agent {
-        docker {
-          image 'docker:27.1.2-cli'
+			agent {
+				docker {
+					image 'docker:27.1.2-cli'
           args  '-v /var/run/docker.sock:/var/run/docker.sock'
           reuseNode true
         }
@@ -98,21 +98,24 @@ DOCKER_REGISTRY=${registry}
             } else {
 							echo "[INFO] No se detectaron variables NEXT_PUBLIC_*."
             }
-            // Wrapper del plugin Docker de Jenkins
-            def ctx = "."
-            def imgRef = "${IMAGE_REPO}:${IMAGE_TAG}"
-            def buildOpts = [buildArgs, ctx].findAll { it && it.trim() }.join(' ')
-            echo "Construyendo imagen con docker wrapper: ${imgRef}"
-            def app = docker.build(imgRef, buildOpts)
+            // Build con CLI dentro del agent docker
+            sh """
+              set -eu
+              echo "[INFO] Docker CLI:" && docker version --format '{{.Client.Version}}' || docker version || true
+              docker build ${buildArgs} \\
+                -t "${IMAGE_REPO}:${IMAGE_TAG}" \\
+                -t "${IMAGE_REPO}:latest" \\
+                .
+            """
           }
         }
       }
     }
 
     stage('Push a Docker Hub (solo main)') {
-      agent {
-        docker {
-          image 'docker:27.1.2-cli'
+			agent {
+				docker {
+					image 'docker:27.1.2-cli'
           args  '-v /var/run/docker.sock:/var/run/docker.sock'
           reuseNode true
         }
@@ -135,12 +138,13 @@ DOCKER_REGISTRY=${registry}
               usernameVariable: 'DOCKERHUB_USERNAME',
               passwordVariable: 'DOCKERHUB_TOKEN'
             )]) {
-							def imgRef = "${IMAGE_REPO}:${IMAGE_TAG}"
-              docker.withRegistry("https://${DOCKER_REGISTRY}", DOCKERHUB_CREDENTIALS_ID) {
-								def app = docker.image(imgRef)
-                app.push()
-                app.push('latest')
-              }
+							sh '''
+                set -eu
+                echo "$DOCKERHUB_TOKEN" | docker login "${DOCKER_REGISTRY}" -u "$DOCKERHUB_USERNAME" --password-stdin
+                docker push "${IMAGE_REPO}:${IMAGE_TAG}"
+                docker push "${IMAGE_REPO}:latest"
+                docker logout || true
+              '''
             }
           }
         }
