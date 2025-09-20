@@ -91,10 +91,12 @@ DOCKER_REGISTRY=${registry}
             } else {
 							echo "[INFO] No se detectaron variables NEXT_PUBLIC_*."
             }
-            sh """
-              set -eu
-              docker build ${buildArgs} -t "\${IMAGE_REPO}:\${IMAGE_TAG}" -t "\${IMAGE_REPO}:latest" .
-            """
+            // Wrapper del plugin Docker de Jenkins
+            def ctx = "."
+            def imgRef = "${IMAGE_REPO}:${IMAGE_TAG}"
+            def buildOpts = [buildArgs, ctx].findAll { it && it.trim() }.join(' ')
+            echo "Construyendo imagen con docker wrapper: ${imgRef}"
+            def app = docker.build(imgRef, buildOpts)
           }
         }
       }
@@ -119,13 +121,12 @@ DOCKER_REGISTRY=${registry}
               usernameVariable: 'DOCKERHUB_USERNAME',
               passwordVariable: 'DOCKERHUB_TOKEN'
             )]) {
-							sh '''
-                set -eu
-                echo "$DOCKERHUB_TOKEN" | docker login "${DOCKER_REGISTRY}" -u "$DOCKERHUB_USERNAME" --password-stdin
-                docker push "${IMAGE_REPO}:${IMAGE_TAG}"
-                docker push "${IMAGE_REPO}:latest"
-                docker logout || true
-              '''
+							def imgRef = "${IMAGE_REPO}:${IMAGE_TAG}"
+              docker.withRegistry("https://${DOCKER_REGISTRY}", DOCKERHUB_CREDENTIALS_ID) {
+								def app = docker.image(imgRef)
+                app.push()
+                app.push('latest')
+              }
             }
           }
         }
