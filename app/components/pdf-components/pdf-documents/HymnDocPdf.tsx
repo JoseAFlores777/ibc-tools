@@ -20,6 +20,8 @@ export interface HymnDocPdfProps {
   activityHymn: ActivityHymn;
 }
 
+//
+
 // export const HymnDocPdf: React.FC<HymnDocPdfProps> = ({
 //   activityHymn
 // }) => {
