@@ -21,16 +21,8 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: 'ibc-directus-917c1c-31-97-132-201.traefik.me'
-      },
-      {
         protocol: 'https',
         hostname: 'admin.ibchn.org'
-      },
-      {
-       protocol: 'https',
-       hostname: 'ibchn.org'
       }
       // Si usas HTTPS o otro dominio, agrégalo aquí.
     ],
