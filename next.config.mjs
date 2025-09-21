@@ -22,9 +22,16 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: 'ibc-directus-917c1c-31-97-132-201.traefik.me',
-        // pathname: '/**', // descomenta si quieres restringir rutas
+        hostname: 'ibc-directus-917c1c-31-97-132-201.traefik.me'
       },
+      {
+        protocol: 'https',
+        hostname: process.env.NEXT_PUBLIC_DIRECTUS_HOST
+      },
+      {
+       protocol: 'https',
+       hostname: process.env.DIRECTUS_HOST
+      }
       // Si usas HTTPS o otro dominio, agrégalo aquí.
     ],
   },
