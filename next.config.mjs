@@ -10,6 +10,12 @@ const nextConfig = {
   // 🔹 Asegura que /pdf-gen no se cachee (debe ser async)
   headers: async () => [
     {
+      source: '/:path*',
+      headers: [
+        { key: 'Content-Security-Policy', value: 'upgrade-insecure-requests' },
+      ],
+    },
+    {
       source: '/pdf-gen',
       headers: [
         { key: 'Cache-Control', value: 'no-store' },
