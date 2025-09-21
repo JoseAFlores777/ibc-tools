@@ -26,11 +26,11 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: process.env.NEXT_PUBLIC_DIRECTUS_HOST
+        hostname: 'admin.ibchn.org'
       },
       {
        protocol: 'https',
-       hostname: process.env.DIRECTUS_HOST
+       hostname: 'ibchn.org'
       }
       // Si usas HTTPS o otro dominio, agrégalo aquí.
     ],
