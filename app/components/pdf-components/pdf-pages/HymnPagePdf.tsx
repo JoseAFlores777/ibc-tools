@@ -8,10 +8,10 @@ export interface HymnPagePdfProps {
   activityHymn: ActivityHymn;
 }
 
-// Font.register({
-//   family: 'Adamina',
-//   src: '/fonts/adamina/Adamina.ttf',
-// });
+Font.register({
+  family: 'Adamina',
+  src: '/fonts/adamina/Adamina.ttf',
+});
 
 const styles = StyleSheet.create({
   page: {

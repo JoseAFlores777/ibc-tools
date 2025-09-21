@@ -23,7 +23,11 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'admin.ibchn.org'
-      }
+      },
+      {
+        protocol: 'http',
+        hostname: 'fonts.gstatic.com'
+      },
       // Si usas HTTPS o otro dominio, agrégalo aquí.
     ],
   },
