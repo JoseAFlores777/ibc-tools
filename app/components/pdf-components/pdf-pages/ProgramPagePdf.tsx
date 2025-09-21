@@ -16,7 +16,7 @@ export interface ProgramPagePdfProps {
 
 Font.register({
   family: 'Adamina',
-  src: 'https://fonts.gstatic.com/s/adamina/v8/RUQfOodOMiVVYqFZcSlT9w.ttf',
+  src: '/fonts/adamina/Adamina.ttf',
 });
 
 const styles = StyleSheet.create({
