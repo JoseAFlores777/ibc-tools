@@ -42,6 +42,9 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
+# Asegurar permisos para cache de Next.js (evita EACCES en /app/.next/cache)
+RUN mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app
+
 EXPOSE 3000
 
 # Healthcheck simple
