@@ -36,7 +36,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
-    NEXT_CACHE_DIR=/app/.next/cache \
+    NEXT_CACHE_DIR=/tmp/next-cache \
     PORT=3000 \
     HOSTNAME=0.0.0.0
 
@@ -51,8 +51,8 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-# Asegurar permisos para cache de Next.js (evita EACCES en /app/.next/cache)
-RUN mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app
+# Asegurar permisos para cache de Next.js (uso de /tmp para evitar EACCES)
+RUN mkdir -p /tmp/next-cache && chown -R nextjs:nodejs /tmp/next-cache
 
 EXPOSE 3000
 
