@@ -11,8 +11,13 @@ WORKDIR /app
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 make g++ ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-COPY package.json package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci
+
+# Copiamos SOLO package.json (sin lockfile)
+COPY package.json ./
+
+# Instalar desde package.json (sin lock); incluye dev deps para el build
+ENV NPM_CONFIG_AUDIT=false NPM_CONFIG_FUND=false
+RUN --mount=type=cache,target=/root/.npm npm install --include=dev
 
 # ---------- builder ----------
 FROM deps AS builder
