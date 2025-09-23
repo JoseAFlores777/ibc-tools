@@ -7,7 +7,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # ---------- deps ----------
 FROM base AS deps
 WORKDIR /app
-RUN apk add --no-cache libc6-compat
+# Dependencias del sistema necesarias para compilar sharp en Alpine
+RUN apk add --no-cache libc6-compat python3 make g++
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
 
@@ -28,6 +29,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
+    NEXT_CACHE_DIR=/app/.next/cache \
     PORT=3000 \
     HOSTNAME=0.0.0.0
 
