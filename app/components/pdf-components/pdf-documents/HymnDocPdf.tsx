@@ -13,7 +13,7 @@ const PDFViewer = dynamic(() => import('@react-pdf/renderer').then((mod) => mod.
   loading: () => <p>Loading...</p>,
 });
 
-const PDFDownloadLink = dynamic(() => import('@react-pdf/renderer').then((mod) => mod.PDFDownloadLink), {
+const PDFDownloadLink = dynamic<any>(() => import('@react-pdf/renderer').then((mod) => mod.PDFDownloadLink), {
   ssr: false,
 });
 export interface HymnDocPdfProps {
@@ -89,7 +89,7 @@ export const HymnDocPdf: React.FC<HymnDocPdfProps> = ({ activityHymn }) => {
           borderRadius: '5px',
         }}
       >
-        {({ loading }) => (loading ? 'Generating document...' : 'Descargar PDF')}
+        {({ loading }: { loading: boolean }) => (loading ? 'Generating document...' : 'Descargar PDF')}
       </PDFDownloadLink>
     </div>
   );
