@@ -69,12 +69,12 @@ interface NavbarHeaderProps {
 }
 
 const NavbarHeader: FC<NavbarHeaderProps> = ({ isOpen, onClick }) => (
-  <div className="w-full h-auto p-5 bg-transparent flex justify-between items-center transition duration-500 ease-in-out transform">
+  <div className="w-full h-auto p-5 bg-transparent flex justify-center items-center transition duration-500 ease-in-out transform">
     <Image src="/images/IBC_Logo-min.png" alt="logo" width={80} height={80} />
-    <span className="text-lg text-primary font-normal">El Calvario</span>
-    <Button onClick={onClick} variant="link" size="icon" className="bg-transparent">
-      {isOpen ? <Cross1Icon className="h-7 w-7 text-primary" /> : <HamburgerMenuIcon className="h-7 w-7 text-primary" />}
-    </Button>
+    {/*<span className="text-lg text-primary font-normal">El Calvario</span>*/}
+    {/*<Button onClick={onClick} variant="link" size="icon" className="bg-transparent">*/}
+    {/*  {isOpen ? <Cross1Icon className="h-7 w-7 text-primary" /> : <HamburgerMenuIcon className="h-7 w-7 text-primary" />}*/}
+    {/*</Button>*/}
   </div>
 );
 
