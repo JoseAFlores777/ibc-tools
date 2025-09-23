@@ -52,7 +52,8 @@ export default async function HomePage() {
 					</div>
 
 			</div>
-			<div className="h-[1000px] bg-white"></div>
+      <div className="h-auto bg-slate-500"></div>
+      {/*<div className="h-[1000px] bg-white"></div>*/}
 		</div>
 	);
 }
