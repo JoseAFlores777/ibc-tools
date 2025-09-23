@@ -94,32 +94,32 @@ pipeline {
     }
 
     stage('Trigger redeploy en Dokploy') {
-			when { branch 'main' }
+      when { branch 'main' }
       steps {
-				withCredentials([string(credentialsId: 'IBC_TOOLS_DOKPLOY_WEBHOOK_URL', variable: 'IBC_TOOLS_DOKPLOY_WEBHOOK_URL')]) {
-                    sh '''
-                      set -euo pipefail
-                      echo "[INFO] Disparando redeploy en Dokploy (force=true)..."
+        withCredentials([string(credentialsId: 'IBC_TOOLS_DOKPLOY_WEBHOOK_URL', variable: 'IBC_TOOLS_DOKPLOY_WEBHOOK_URL')]) {
+          sh '''
+            set -eu
+            echo "[INFO] Dokploy: redeploy con force=true y pull=true..."
 
-                      payload='{"force": true}'
-                      code=$(curl -sS -o /tmp/dokploy_resp.txt -w "%{http_code}" \
-                        -X POST "$IBC_TOOLS_DOKPLOY_WEBHOOK_URL" \
-                        -H "Content-Type: application/json" \
-                        --data "$payload")
+            payload='{"force":true,"pull":true}'
+            code=$(curl -sS -o /tmp/dokploy_resp.txt -w "%{http_code}" \
+              -X POST "$IBC_TOOLS_DOKPLOY_WEBHOOK_URL" \
+              -H "Content-Type: application/json" \
+              --data "$payload")
 
-                      echo "[INFO] Respuesta Dokploy (HTTP $code):"
-                      cat /tmp/dokploy_resp.txt || true
+            echo "[INFO] Respuesta Dokploy (HTTP $code):"
+            cat /tmp/dokploy_resp.txt || true
 
-                      if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
-                        echo "[ERROR] Dokploy devolvió HTTP $code" >&2
-                        exit 1
-                      fi
-
-                      echo "[OK] Redeploy solicitado correctamente a Dokploy."
-                    '''
+            if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+              echo "[ERROR] Dokploy devolvió HTTP $code" >&2
+              exit 1
+            fi
+            echo "[OK] Redeploy (force+pull) solicitado correctamente."
+          '''
         }
       }
     }
+
   }
 
   post {
