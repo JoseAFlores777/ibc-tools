@@ -1,14 +1,16 @@
 # syntax=docker/dockerfile:1.7
 
 # ---------- Base ----------
-FROM node:20-alpine AS base
+FROM node:20-bookworm-slim AS base
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # ---------- deps ----------
 FROM base AS deps
 WORKDIR /app
-# Dependencias del sistema necesarias para compilar sharp en Alpine
-RUN apk add --no-cache libc6-compat python3 make g++
+# Dependencias del sistema necesarias para sharp (en Debian/Bookworm suelen existir binarios precompilados)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 make g++ ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
 
@@ -24,7 +26,7 @@ ENV NEXT_PUBLIC_DIRECTUS_URL=${NEXT_PUBLIC_DIRECTUS_URL}
 RUN npm run build
 
 # ---------- runner (standalone) --------
-FROM node:20-alpine AS runner
+FROM node:20-bookworm-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production \
@@ -34,10 +36,10 @@ ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0
 
 # Herramienta para healthcheck
-RUN apk add --no-cache curl
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
 # Usuario no-root
-RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
+RUN groupadd -g 1001 nodejs && useradd -m -u 1001 -g nodejs nextjs
 
 # Copia el bundle standalone + estáticos + public
 COPY --from=builder /app/.next/standalone ./
