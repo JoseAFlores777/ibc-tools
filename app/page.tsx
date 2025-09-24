@@ -27,7 +27,7 @@ export default async function HomePage() {
 
 				<div className="absolute inset-0 flex items-center justify-center z-20 px-5">
 					 <div className="flex flex-col gap-5 items-center text-center">
-						<h1 className="text-5xl font-extrabold text-slate-600">¡Bienvenidos!</h1>
+						<h1 className="text-5xl font-extrabold text-slate-600">Bienvenidos!</h1>
 						<p className="text-xl text-slate-700">Encuéntranos en nuestra redes sociales</p>
 						<p className="text-lg font-bold text-slate-700">Haz click en uno de estos enlaces:</p>
 						<div className="flex flex-col mt-5 gap-5 w-10/12">
