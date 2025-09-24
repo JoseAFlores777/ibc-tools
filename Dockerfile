@@ -19,7 +19,7 @@ COPY package.json ./
 ENV NPM_CONFIG_AUDIT=false NPM_CONFIG_FUND=false
 RUN --mount=type=cache,target=/root/.npm npm install --include=dev
 
-# ---------- builder ---------
+# ---------- builder ----------
 FROM deps AS builder
 WORKDIR /app
 COPY . .
