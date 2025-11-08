@@ -29,7 +29,8 @@ export async function fetchChurchEvents(options?: { limit?: number }) {
   ] as const;
 
   const items = await client.request(
-    readItems('church_events', {
+  // @ts-ignore
+    readItems('church_events' as any, {
       sort: ['start_datetime'],
       fields: fields as unknown as string[],
       filter: {
