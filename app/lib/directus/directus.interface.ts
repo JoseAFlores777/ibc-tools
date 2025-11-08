@@ -480,11 +480,13 @@ export type EventAudiences = {
 
 export type EventLocations = {
   address?: string | null;
+  googleMaps_link?: string | null;
   id: string;
   latitude?: number | null;
   longitude?: number | null;
   name?: string | null;
   room?: string | null;
+  waze_link?: string | null;
 };
 
 export type EventOrganizers = {

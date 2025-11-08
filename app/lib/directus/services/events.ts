@@ -25,6 +25,10 @@ export async function fetchChurchEvents(options?: { limit?: number }) {
     'cover_image',
     'location.name',
     'location.address',
+    'location.latitude',
+    'location.longitude',
+    'location.waze_link',
+    'location.googleMaps_link',
     'recurrence',
   ] as const;
 

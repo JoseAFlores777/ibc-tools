@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/lib/shadcn/ui';
-import { CalendarPlus } from 'lucide-react';
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, buttonVariants } from '@/lib/shadcn/ui';
+import { CalendarPlus, MapPin, Navigation } from 'lucide-react';
 
 type Recurrence = {
   frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
@@ -20,9 +20,19 @@ type ChurchEventListItem = {
   is_online?: boolean | null;
   meeting_link?: string | null;
   cover_image?: string | null;
-  location?: { name?: string | null; address?: string | null } | string | null;
+  location?: { name?: string | null; address?: string | null; latitude?: number | null; longitude?: number | null; waze_link?: string | null; googleMaps_link?: string | null } | string | null;
   recurrence?: Recurrence | string | null;
 };
+
+function formatTime12(d: Date) {
+  let h = d.getHours();
+  const m = d.getMinutes();
+  const am = h < 12;
+  h = h % 12;
+  if (h === 0) h = 12;
+  const mm = String(m).padStart(2, '0');
+  return `${h}:${mm} ${am ? 'am' : 'pm'}`;
+}
 
 function formatDateRange(start?: string | null, end?: string | null) {
   if (!start && !end) return 'Fecha por definir';
@@ -32,14 +42,14 @@ function formatDateRange(start?: string | null, end?: string | null) {
   if (startDate && endDate) {
     const sameDay = startDate.toDateString() === endDate.toDateString();
     const datePart = startDate.toLocaleDateString(locale, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    const startTime = startDate.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
-    const endTime = endDate.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+    const startTime = formatTime12(startDate);
+    const endTime = formatTime12(endDate);
     return sameDay ? `${datePart} · ${startTime} – ${endTime}` : `${datePart} · ${startTime} – ${endDate.toLocaleDateString(locale)} ${endTime}`;
   }
   if (startDate) {
-    return `${startDate.toLocaleDateString(locale, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} · ${startDate.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`;
+    return `${startDate.toLocaleDateString(locale, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} · ${formatTime12(startDate)}`;
   }
-  return `Hasta el ${endDate!.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })} a las ${endDate!.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`;
+  return `Hasta el ${endDate!.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })} a las ${formatTime12(endDate!)}`;
 }
 
 function parseRecurrence(rec?: Recurrence | string | null): Recurrence | null {
@@ -57,8 +67,8 @@ function formatRecurrenceLabel(rec: Recurrence, start?: string | null, end?: str
   const locale = 'es-ES';
   const startDate = start ? new Date(start) : null;
   const endDate = end ? new Date(end) : null;
-  const startTime = startDate ? startDate.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }) : '';
-  const endTime = endDate ? endDate.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }) : '';
+  const startTime = startDate ? formatTime12(startDate) : '';
+  const endTime = endDate ? formatTime12(endDate) : '';
 
   // Helper to render time range
   const timeRange = startTime && endTime ? ` • de ${startTime} a ${endTime}` : startTime ? ` • a las ${startTime}` : '';
@@ -153,6 +163,42 @@ function buildICS(ev: ChurchEventListItem) {
     rrule = `RRULE:${parts.join(';')}`;
   }
 
+  // Build description including map links
+  const descriptionLine = (() => {
+    const base = (ev.description || '').replace(/\n|\r/g, ' ').trim();
+    const loc: any = (ev as any)?.location;
+    let lat: number | undefined;
+    let lon: number | undefined;
+    let waze = '';
+    let gmaps = '';
+    if (loc && typeof loc === 'object') {
+      lat = loc?.latitude ?? undefined;
+      lon = loc?.longitude ?? undefined;
+      if (loc?.waze_link) waze = String(loc.waze_link);
+      if (loc?.googleMaps_link) gmaps = String(loc.googleMaps_link);
+    }
+    if (!waze && lat != null && lon != null) {
+      waze = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
+    }
+    if (!gmaps && lat != null && lon != null) {
+      gmaps = `https://www.google.com/maps?q=${lat},${lon}`;
+    }
+    const parts: string[] = [];
+    if (base) parts.push(base);
+    if (waze) parts.push(`Waze: ${waze}`);
+    if (gmaps) parts.push(`Google Maps: ${gmaps}`);
+    if (parts.length === 0) return '';
+    return `DESCRIPTION:${parts.join(' | ')}`;
+  })();
+
+  const geoLine = (() => {
+    const loc: any = (ev as any)?.location;
+    if (loc && typeof loc === 'object' && loc?.latitude != null && loc?.longitude != null) {
+      return `GEO:${loc.latitude};${loc.longitude}`;
+    }
+    return '';
+  })();
+
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -164,7 +210,7 @@ function buildICS(ev: ChurchEventListItem) {
     dtStart ? `DTSTART:${dtStart}` : '',
     dtEnd ? `DTEND:${dtEnd}` : '',
     `SUMMARY:${(ev.title || 'Evento').replace(/\n|\r/g,' ')}`,
-    ev.description ? `DESCRIPTION:${ev.description.replace(/\n|\r/g,' ')}` : '',
+    descriptionLine,
     (() => {
       const loc = (ev as any)?.location;
       if (!loc) return '';
@@ -173,6 +219,7 @@ function buildICS(ev: ChurchEventListItem) {
       const addr = loc?.address ? `, ${loc.address}` : '';
       return `LOCATION:${(name + addr).trim()}`;
     })(),
+    geoLine,
     rrule,
     'END:VEVENT',
     'END:VCALENDAR',
@@ -275,10 +322,79 @@ export default function HorariosClient() {
               {locationName ? (
                 <p className="text-xs text-slate-500 mt-2">Lugar: {locationName}</p>
               ) : null}
-              <div className="mt-3">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
                 <Button size="sm" variant="outline" onClick={() => downloadICS(ev)} className="gap-2">
                   <CalendarPlus className="h-4 w-4" /> Agregar al calendario
                 </Button>
+                {(() => {
+                  const loc: any = (ev as any)?.location;
+                  const lat = typeof loc === 'object' ? loc?.latitude : undefined;
+                  const lon = typeof loc === 'object' ? loc?.longitude : undefined;
+                  const hasLinks = typeof loc === 'object' && (loc?.waze_link || loc?.googleMaps_link);
+                  const canShow = (!!lat && !!lon) || hasLinks;
+                  return canShow ? (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button size="sm" variant="link" className="gap-2">
+                          <MapPin className="h-4 w-4" /> Cómo llegar
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-xl">
+                        <DialogHeader>
+                          <DialogTitle>Ubicación</DialogTitle>
+                          {typeof loc === 'object' && (loc?.name || loc?.address) ? (
+                            <DialogDescription>
+                              {[loc?.name, loc?.address].filter(Boolean).join(' · ')}
+                            </DialogDescription>
+                          ) : null}
+                        </DialogHeader>
+                        <div className="w-full">
+                          {lat && lon ? (
+                            <div className="w-full h-64 overflow-hidden rounded-md border">
+                              <iframe
+                                title="Mapa"
+                                className="w-full h-full"
+                                src={`https://www.openstreetmap.org/export/embed.html?bbox=${(lon - 0.005).toFixed(6)}%2C${(lat - 0.003).toFixed(6)}%2C${(lon + 0.005).toFixed(6)}%2C${(lat + 0.003).toFixed(6)}&layer=mapnik&marker=${lat.toFixed(6)}%2C${lon.toFixed(6)}`}
+                              />
+                            </div>
+                          ) : (
+                            <p className="text-sm text-slate-600">No hay coordenadas disponibles para mostrar el mapa.</p>
+                          )}
+                        </div>
+                        <DialogFooter className="flex gap-2 justify-end">
+                          {(() => {
+                            function buildWazeLink() {
+                              if (typeof loc === 'object' && loc?.waze_link) return loc.waze_link as string;
+                              if (lat && lon) return `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
+                              return '';
+                            }
+                            function buildGoogleLink() {
+                              if (typeof loc === 'object' && loc?.googleMaps_link) return loc.googleMaps_link as string;
+                              if (lat && lon) return `https://www.google.com/maps?q=${lat},${lon}`;
+                              return '';
+                            }
+                            const waze = buildWazeLink();
+                            const gmaps = buildGoogleLink();
+                            return (
+                              <>
+                                {waze ? (
+                                  <a href={waze} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md border bg-white hover:bg-slate-50">
+                                    <Navigation className="h-4 w-4" /> Dirección con Waze
+                                  </a>
+                                ) : null}
+                                {gmaps ? (
+                                  <a href={gmaps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md border bg-white hover:bg-slate-50">
+                                    <MapPin className="h-4 w-4" /> Dirección con Google Maps
+                                  </a>
+                                ) : null}
+                              </>
+                            );
+                          })()}
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  ) : null;
+                })()}
               </div>
             </CardContent>
           </Card>
