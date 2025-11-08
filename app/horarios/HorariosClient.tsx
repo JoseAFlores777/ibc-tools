@@ -339,7 +339,7 @@ export default function HorariosClient() {
                           <MapPin className="h-4 w-4" /> Cómo llegar
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="sm:max-w-xl">
+                      <DialogContent className="w-[calc(100vw-2rem)] sm:w-auto sm:max-w-xl md:max-w-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-xl border border-slate-200/50 bg-white/20 backdrop-blur-2xl shadow-xl p-4 sm:p-6">
                         <DialogHeader>
                           <DialogTitle>Ubicación</DialogTitle>
                           {typeof loc === 'object' && (loc?.name || loc?.address) ? (
