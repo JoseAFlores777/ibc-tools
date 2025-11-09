@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, buttonVariants } from '@/lib/shadcn/ui';
-import { CalendarPlus, MapPin, Navigation } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 type Recurrence = {
   frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
@@ -248,6 +248,141 @@ function getAssetUrl(id?: string | null) {
   return `${baseUrl.replace(/\/$/, '')}/assets/${id}?fit=cover&width=600&height=340&quality=80`;
 }
 
+function getNextOccurrence(ev: ChurchEventListItem, from = new Date()): Date | null {
+  const rec = parseRecurrence(ev.recurrence);
+  const start = ev.start_datetime ? new Date(ev.start_datetime) : null;
+  const end = ev.end_datetime ? new Date(ev.end_datetime) : null;
+
+  const clampByUntil = (d: Date | null) => {
+    if (!rec?.endDate || !d) return d;
+    const until = new Date(rec.endDate);
+    // End of day
+    until.setHours(23,59,59,999);
+    return d.getTime() <= until.getTime() ? d : null;
+  };
+
+  // If no recurrence: next is start if it's in the future
+  if (!rec) {
+    if (start && start.getTime() >= from.getTime()) return start;
+    return null;
+  }
+
+  // Daily recurrence
+  if (rec.frequency === 'daily') {
+    const interval = Math.max(1, rec.interval || 1);
+    if (!start) return null;
+    // Determine base day/time from start
+    const base = new Date(start);
+    // If from is before base, next is base
+    if (from.getTime() <= base.getTime()) return clampByUntil(base);
+    // Compute days difference
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const diffDays = Math.floor((from.getTime() - base.getTime()) / msPerDay);
+    const steps = Math.floor(diffDays / interval) + 1;
+    const next = new Date(base.getTime() + steps * interval * msPerDay);
+    // Keep original time of day from start
+    next.setHours(base.getHours(), base.getMinutes(), base.getSeconds(), base.getMilliseconds());
+    return clampByUntil(next);
+  }
+
+  // Weekly recurrence
+  if (rec.frequency === 'weekly') {
+    const interval = Math.max(1, rec.interval || 1);
+    const days = (rec.daysOfWeek && rec.daysOfWeek.length ? rec.daysOfWeek : [ (start ? start.getDay() : from.getDay()) ]).sort((a,b)=>a-b);
+    if (!start) return null;
+
+    // Find the Monday-based week index from base start
+    // We'll iterate upcoming weeks by interval and pick earliest matching day >= from
+    const candidateDates: Date[] = [];
+
+    // Consider the current week window starting from 'from' going ahead up to interval*2 weeks to be safe
+    for (let w = 0; w < 12; w++) {
+      // Compute the start of this cycle window: base + w*interval weeks
+      const cycleStart = new Date(start);
+      cycleStart.setDate(start.getDate() + w * interval * 7);
+
+      // For each day in daysOfWeek, compute that day's date with the time from start
+      for (const dow of days) {
+        const d = new Date(cycleStart);
+        // Move to the requested weekday within this week
+        const delta = dow - d.getDay();
+        d.setDate(d.getDate() + delta);
+        d.setHours(start.getHours(), start.getMinutes(), start.getSeconds(), start.getMilliseconds());
+        if (d.getTime() >= from.getTime()) candidateDates.push(d);
+      }
+
+      // If we found any in this window, stop early after pushing all candidates of this window
+      if (candidateDates.length) break;
+    }
+
+    // If none in the first windows, approximate by jumping forward by interval weeks from from date
+    if (!candidateDates.length) {
+      const fromCycleAligned = new Date(from);
+      // Align to start's weekday time first
+      fromCycleAligned.setHours(start.getHours(), start.getMinutes(), start.getSeconds(), start.getMilliseconds());
+      // Try next few weeks respecting interval
+      for (let w = 0; w < 12 && !candidateDates.length; w++) {
+        for (const dow of days) {
+          const d = new Date(fromCycleAligned);
+          const deltaToDow = (dow - d.getDay() + 7) % 7;
+          d.setDate(d.getDate() + deltaToDow + w * interval * 7);
+          if (d.getTime() >= from.getTime()) candidateDates.push(d);
+        }
+      }
+    }
+
+    const next = candidateDates.sort((a,b)=>a.getTime()-b.getTime())[0] || null;
+    return clampByUntil(next);
+  }
+
+  // Monthly / yearly (basic fallback): if original start is in the future, use it; else no next (to keep logic simple)
+  if (start && start.getTime() >= from.getTime()) return clampByUntil(start);
+  return null;
+}
+
+// If an event is currently active (now between start and end), treat it as the nearest
+function getActiveOrNext(ev: ChurchEventListItem, from = new Date()): Date | null {
+  const start = ev.start_datetime ? new Date(ev.start_datetime) : null;
+  const end = ev.end_datetime ? new Date(ev.end_datetime) : null;
+  if (start && end) {
+    if (from.getTime() >= start.getTime() && from.getTime() < end.getTime()) {
+      // Keep it as the nearest until it ends
+      return new Date(from);
+    }
+  }
+  return getNextOccurrence(ev, from);
+}
+
+function useCountdown(target: Date | null) {
+  const [now, setNow] = useState<Date>(() => new Date());
+  useEffect(() => {
+    if (!target) return;
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, [target]);
+  const diff = target ? Math.max(0, target.getTime() - now.getTime()) : 0;
+  const totalSeconds = Math.floor(diff / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return { days, hours, minutes, seconds, over: totalSeconds <= 0 };
+}
+
+function Countdown({ target }: { target: Date }) {
+  const { days, hours, minutes, seconds, over } = useCountdown(target);
+  if (over) return null;
+  const parts: string[] = [];
+  if (days) parts.push(`${days}d`);
+  parts.push(`${hours}h`, `${minutes}m`, `${seconds}s`);
+  return (
+    <div className="mb-1 inline-flex items-center gap-1.5 text-[11px] text-slate-500">
+      <Icon icon="mdi:clock-outline" className="h-3 w-3 text-slate-400" />
+      <span>Comienza en {parts.join(' ')}</span>
+    </div>
+  );
+}
+
 export default function HorariosClient() {
   const [events, setEvents] = useState<ChurchEventListItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -274,6 +409,15 @@ export default function HorariosClient() {
     };
   }, []);
 
+  // Prepare nearest event and countdown unconditionally to keep hook order stable
+  const now = new Date();
+  const nextMap = new Map((events ?? []).map((e) => [e.id, getActiveOrNext(e, now)] as const));
+  const nearestEntry = Array.from(nextMap.entries()).filter(([, d]) => !!d).sort((a, b) => (a[1]!.getTime() - b[1]!.getTime()))[0];
+  const nearestId = nearestEntry ? nearestEntry[0] : undefined;
+  const nearestDate = nearestEntry ? nearestEntry[1]! : null;
+  // Countdown ticking state for the nearest event to enable the 10-minute switch
+  const nearestCountdown = useCountdown(nearestDate);
+
   if (error) {
     return <div className="text-center text-slate-600 py-10">{error}</div>;
   }
@@ -286,9 +430,19 @@ export default function HorariosClient() {
     return <div className="text-center text-slate-600 py-10">No hay eventos programados por ahora.</div>;
   }
 
+  // Ordenar por el evento más próximo usando el mapa ya calculado
+  const sortedEvents = [...(events ?? [])].sort((a, b) => {
+    const da = nextMap.get(a.id);
+    const db = nextMap.get(b.id);
+    if (da && db) return da.getTime() - db.getTime();
+    if (da) return -1;
+    if (db) return 1;
+    return 0;
+  });
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      {events.map((ev) => {
+      {sortedEvents.map((ev) => {
         const dateLabel = formatEventDateLabel(ev);
         const isOnline = !!ev.is_online;
         const locationName = (ev as any)?.location?.name as string | undefined;
@@ -323,77 +477,110 @@ export default function HorariosClient() {
                 <p className="text-xs text-slate-500 mt-2">Lugar: {locationName}</p>
               ) : null}
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <Button size="sm" variant="outline" onClick={() => downloadICS(ev)} className="gap-2">
-                  <CalendarPlus className="h-4 w-4" /> Agregar al calendario
-                </Button>
+                {ev.id === nearestId && nearestDate ? (
+                  <Countdown target={nearestDate} />
+                ) : null}
                 {(() => {
-                  const loc: any = (ev as any)?.location;
-                  const lat = typeof loc === 'object' ? loc?.latitude : undefined;
-                  const lon = typeof loc === 'object' ? loc?.longitude : undefined;
-                  const hasLinks = typeof loc === 'object' && (loc?.waze_link || loc?.googleMaps_link);
-                  const canShow = (!!lat && !!lon) || hasLinks;
-                  return canShow ? (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button size="sm" variant="link" className="gap-2">
-                          <MapPin className="h-4 w-4" /> Cómo llegar
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="w-[calc(100vw-2rem)] sm:w-auto sm:max-w-xl md:max-w-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-xl border border-slate-200/50 bg-white/20 backdrop-blur-2xl shadow-xl p-4 sm:p-6">
-                        <DialogHeader>
-                          <DialogTitle>Ubicación</DialogTitle>
-                          {typeof loc === 'object' && (loc?.name || loc?.address) ? (
-                            <DialogDescription>
-                              {[loc?.name, loc?.address].filter(Boolean).join(' · ')}
-                            </DialogDescription>
-                          ) : null}
-                        </DialogHeader>
-                        <div className="w-full">
-                          {lat && lon ? (
-                            <div className="w-full h-64 overflow-hidden rounded-md border">
-                              <iframe
-                                title="Mapa"
-                                className="w-full h-full"
-                                src={`https://www.openstreetmap.org/export/embed.html?bbox=${(lon - 0.005).toFixed(6)}%2C${(lat - 0.003).toFixed(6)}%2C${(lon + 0.005).toFixed(6)}%2C${(lat + 0.003).toFixed(6)}&layer=mapnik&marker=${lat.toFixed(6)}%2C${lon.toFixed(6)}`}
-                              />
-                            </div>
-                          ) : (
-                            <p className="text-sm text-slate-600">No hay coordenadas disponibles para mostrar el mapa.</p>
-                          )}
-                        </div>
-                        <DialogFooter className="flex gap-2 justify-end">
-                          {(() => {
-                            function buildWazeLink() {
-                              if (typeof loc === 'object' && loc?.waze_link) return loc.waze_link as string;
-                              if (lat && lon) return `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
-                              return '';
-                            }
-                            function buildGoogleLink() {
-                              if (typeof loc === 'object' && loc?.googleMaps_link) return loc.googleMaps_link as string;
-                              if (lat && lon) return `https://www.google.com/maps?q=${lat},${lon}`;
-                              return '';
-                            }
-                            const waze = buildWazeLink();
-                            const gmaps = buildGoogleLink();
-                            return (
-                              <>
-                                {waze ? (
-                                  <a href={waze} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md border bg-white hover:bg-slate-50">
-                                    <Navigation className="h-4 w-4" /> Dirección con Waze
-                                  </a>
+                  // Mostrar botón de transmisión si faltan <= 10 minutos para el evento más próximo o si el evento está en curso, y hay meeting_link
+                  const isActive = (() => {
+                    const start = ev.start_datetime ? new Date(ev.start_datetime) : null;
+                    const end = ev.end_datetime ? new Date(ev.end_datetime) : null;
+                    return !!(start && end && now >= start && now < end);
+                  })();
+                  const remainingMs = (() => {
+                    if (!nearestId || !nearestDate) return Infinity;
+                    // nearestCountdown is ticking for the nearest event
+                    // @ts-ignore - declared in component scope
+                    const nc = nearestCountdown as { days: number; hours: number; minutes: number; seconds: number; over: boolean } | undefined;
+                    if (!nc || nc.over) return Infinity;
+                    return (((nc.days * 24 + nc.hours) * 60 + nc.minutes) * 60 + nc.seconds) * 1000;
+                  })();
+                  const showJoin = ev.id === nearestId && !!ev.meeting_link && (isActive || remainingMs <= 10 * 60 * 1000);
+                  if (showJoin) {
+                    return (
+                      <Button size="sm" className="gap-2" variant={'outline'} asChild>
+                        <a href={ev.meeting_link as string} target="_blank" rel="noopener noreferrer">
+                          <Icon icon="fluent:live-20-filled" className="h-4 w-4" /> Transmisión en vivo
+                        </a>
+                      </Button>
+                    );
+                  }
+                  return (
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => downloadICS(ev)} className="gap-2">
+                        <Icon icon="mdi:calendar-plus" className="h-4 w-4" /> Agregar al calendario
+                      </Button>
+                      {(() => {
+                        const loc: any = (ev as any)?.location;
+                        const lat = typeof loc === 'object' ? loc?.latitude : undefined;
+                        const lon = typeof loc === 'object' ? loc?.longitude : undefined;
+                        const hasLinks = typeof loc === 'object' && (loc?.waze_link || loc?.googleMaps_link);
+                        const canShow = (!!lat && !!lon) || hasLinks;
+                        return canShow ? (
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button size="sm" variant="link" className="gap-2">
+                                <Icon icon="mdi:map-marker" className="h-4 w-4" /> Cómo llegar
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="w-[calc(100vw-2rem)] sm:w-auto sm:max-w-xl md:max-w-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-xl border border-slate-200/50 bg-white/20 backdrop-blur-2xl shadow-xl p-4 sm:p-6">
+                              <DialogHeader>
+                                <DialogTitle>Ubicación</DialogTitle>
+                                {typeof loc === 'object' && (loc?.name || loc?.address) ? (
+                                  <DialogDescription>
+                                    {[loc?.name, loc?.address].filter(Boolean).join(' · ')}
+                                  </DialogDescription>
                                 ) : null}
-                                {gmaps ? (
-                                  <a href={gmaps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md border bg-white hover:bg-slate-50">
-                                    <MapPin className="h-4 w-4" /> Dirección con Google Maps
-                                  </a>
-                                ) : null}
-                              </>
-                            );
-                          })()}
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  ) : null;
+                              </DialogHeader>
+                              <div className="w-full">
+                                {lat && lon ? (
+                                  <div className="w-full h-64 overflow-hidden rounded-md border">
+                                    <iframe
+                                      title="Mapa"
+                                      className="w-full h-full"
+                                      src={`https://www.openstreetmap.org/export/embed.html?bbox=${(lon - 0.005).toFixed(6)}%2C${(lat - 0.003).toFixed(6)}%2C${(lon + 0.005).toFixed(6)}%2C${(lat + 0.003).toFixed(6)}&layer=mapnik&marker=${lat.toFixed(6)}%2C${lon.toFixed(6)}`}
+                                    />
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-slate-600">No hay coordenadas disponibles para mostrar el mapa.</p>
+                                )}
+                              </div>
+                              <DialogFooter className="flex gap-2 justify-end">
+                                {(() => {
+                                  function buildWazeLink() {
+                                    if (typeof loc === 'object' && loc?.waze_link) return loc.waze_link as string;
+                                    if (lat && lon) return `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
+                                    return '';
+                                  }
+                                  function buildGoogleLink() {
+                                    if (typeof loc === 'object' && loc?.googleMaps_link) return loc.googleMaps_link as string;
+                                    if (lat && lon) return `https://www.google.com/maps?q=${lat},${lon}`;
+                                    return '';
+                                  }
+                                  const waze = buildWazeLink();
+                                  const gmaps = buildGoogleLink();
+                                  return (
+                                    <>
+                                      {waze ? (
+                                        <a href={waze} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md border bg-white hover:bg-slate-50">
+                                          <Icon icon="fa7-brands:waze" className="h-4 w-4" /> Dirección con Waze
+                                        </a>
+                                      ) : null}
+                                      {gmaps ? (
+                                        <a href={gmaps} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md border bg-white hover:bg-slate-50">
+                                          <Icon icon="mdi:map-marker" className="h-4 w-4" /> Dirección con Google Maps
+                                        </a>
+                                      ) : null}
+                                    </>
+                                  );
+                                })()}
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        ) : null;
+                      })()}
+                    </>
+                  );
                 })()}
               </div>
             </CardContent>

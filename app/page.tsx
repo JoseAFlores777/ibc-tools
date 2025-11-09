@@ -25,7 +25,7 @@ export default async function HomePage() {
 				<div className="absolute -inset-1 bg-gradient-to-t from-white via-white/60 to-white z-20">
 				</div>
 
-				<div className="absolute inset-0 flex items-center justify-center z-20 px-5">
+				<div className="absolute inset-0 flex  justify-center z-20 px-5 py-60 pb-10">
 					 <div className="flex flex-col gap-5 items-center text-center">
 						<h1 className="text-5xl font-extrabold text-slate-600">¡Bienvenidos!</h1>
 						<p className="text-xl text-slate-700">Encuéntranos en nuestra redes sociales</p>
