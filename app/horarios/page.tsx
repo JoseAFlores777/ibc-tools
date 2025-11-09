@@ -13,7 +13,7 @@ export default async function HorariosPage() {
       <div className="relative min-h-screen">
         <Navbar />
         <Image
-          className="absolute top-0 w-full h-screen object-cover object-[50%_70%]"
+          className="absolute top-0 w-full h-full md:h-screen object-cover object-[50%_70%]"
           src="/images/altar_2.jpg"
           alt="hero"
           width={1920}
