@@ -11,14 +11,14 @@ export default async function HomePage() {
   
 	return (
 		<div className="">
-			<div className="relative min-h-[100dvh] ">
+			<div className="relative h-screen ">
 				<Navbar />
 					<Image
 						className="
 						absolute
 						top-0
 						w-full
-						min-h-[100dvh]
+						h-screen
 						object-cover
 						object-[50%_70%]
 						" src="/images/altar_2.jpg" alt="hero" width={1920} height={1080} />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, buttonVariants } from '@/lib/shadcn/ui';
+import { Badge, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, buttonVariants } from '@/lib/shadcn/ui';
 import { Icon } from '@iconify/react';
 
 type Recurrence = {
@@ -449,7 +449,7 @@ export default function HorariosClient() {
         const cover = getAssetUrl((ev as any)?.cover_image as string | undefined);
 
         return (
-          <Card key={ev.id} className="overflow-hidden border-slate-200/50 bg-white/20 backdrop-blur-2xl shadow-lg">
+          <Card key={ev.id} className="relative flex flex-col overflow-hidden border-slate-200/50 bg-white/20 backdrop-blur-2xl shadow-lg">
             {cover ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={cover} alt={ev.title || 'cover'} className="w-full h-[140px] object-cover" />
@@ -467,7 +467,7 @@ export default function HorariosClient() {
                 {dateLabel}
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-0 pb-4">
+            <CardContent className="pt-0 pb-4 flex-1">
               {ev.description ? (
                 <p className="text-xs text-slate-700 line-clamp-3">
                   {ev.description}
@@ -584,6 +584,19 @@ export default function HorariosClient() {
                 })()}
               </div>
             </CardContent>
+            {nearestId === ev.id && (() => {
+              const start = ev.start_datetime ? new Date(ev.start_datetime) : null;
+              const end = ev.end_datetime ? new Date(ev.end_datetime) : null;
+              const active = !!(start && end && now >= start && now < end);
+              const label = active ? 'Evento en curso' : 'Próximo evento';
+              return (
+                <CardFooter className="p-0">
+                  <div className="w-full text-card-foreground text-center text-xs font-medium py-2 border-t border-slate-200/50 bg-white/20 backdrop-blur-2xl shadow-lg">
+                    {label}
+                  </div>
+                </CardFooter>
+              );
+            })()}
           </Card>
         );
       })}
