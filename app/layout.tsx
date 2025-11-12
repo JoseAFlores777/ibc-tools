@@ -29,11 +29,31 @@ export default function RootLayout({
     <html lang="en">
       <head>
         {process.env.NODE_ENV === "production" && (
-          <Script
-            src="https://analytics.joseiz.com/script.js"
-            data-website-id="097889f1-b030-4066-9a99-29e6e308ac27"
-            strategy="afterInteractive"
-          />
+          <>
+            <Script
+              src="https://analytics.joseiz.com/script.js"
+              data-website-id="097889f1-b030-4066-9a99-29e6e308ac27"
+              strategy="afterInteractive"
+            />
+            {process.env.NEXT_PUBLIC_CHATWOOT_BASE_URL &&
+              process.env.NEXT_PUBLIC_CHATWOOT_WEBSITE_TOKEN && (
+                <Script
+                  id="chatwoot-sdk"
+                  src={`${process.env.NEXT_PUBLIC_CHATWOOT_BASE_URL}/packs/js/sdk.js`}
+                  strategy="afterInteractive"
+                  onLoad={() => {
+                    const w = window as unknown as { chatwootSDK?: any };
+                    if (w.chatwootSDK && typeof w.chatwootSDK.run === "function") {
+                      w.chatwootSDK.run({
+                        websiteToken:
+                          process.env.NEXT_PUBLIC_CHATWOOT_WEBSITE_TOKEN,
+                        baseUrl: process.env.NEXT_PUBLIC_CHATWOOT_BASE_URL,
+                      });
+                    }
+                  }}
+                />
+              )}
+          </>
         )}
       </head>
       <body

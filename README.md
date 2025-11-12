@@ -43,6 +43,8 @@ Configura las variables necesarias para ejecutar la app y para CI/CD.
 Aplicación:
 - DIRECTUS_URL: URL base del servidor Directus utilizada por el backend de Next.js (Node). Ejemplo: http://localhost:8055
 - NEXT_PUBLIC_DIRECTUS_URL: URL pública de Directus expuesta al navegador. Si no se define, se usa DIRECTUS_URL.
+- NEXT_PUBLIC_CHATWOOT_BASE_URL: URL base de tu instancia de Chatwoot (se usa para cargar el SDK y en el navegador).
+- NEXT_PUBLIC_CHATWOOT_WEBSITE_TOKEN: Token del sitio de Chatwoot para inicializar el widget en el navegador.
 
 CI/CD (Jenkins con Secret file .env):
 - DOCKERHUB_NAMESPACE: Namespace/usuario de Docker Hub (p. ej., myorg o myuser).
