@@ -36,6 +36,49 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 
 
+## Diagnóstico y Solución Chatwoot (Checklist)
+
+Usa esta lista cuando el widget de Chatwoot funcione en local pero no en el servidor/CI.
+
+1) Variables de entorno en CI/CD
+- En el Secret .env de Jenkins define con valores reales:
+  - NEXT_PUBLIC_CHATWOOT_BASE_URL=https://tu-chatwoot.dominio
+  - NEXT_PUBLIC_CHATWOOT_WEBSITE_TOKEN=xxxxxxxx
+- El Jenkinsfile solo pasa NEXT_PUBLIC_* a docker build. Evita nombres sin ese prefijo.
+- Desde este cambio, el Dockerfile acepta esos build args y los exporta al build de Next.js (se "hornean" en el bundle).
+
+2) Verificar en la imagen final
+- Tras el build en Jenkins, corre la imagen y comprueba que el widget se inicializa en el navegador.
+- Alternativa rápida: en el HTML/bundle servido, busca referencias a CHATWOOT_BASE_URL/WEBSITE_TOKEN.
+
+3) Dominio permitido en Chatwoot
+- En tu instancia de Chatwoot, el canal Website debe permitir el dominio de producción.
+- Usa el website token correcto para ese canal.
+
+4) Carga del SDK y CSP/CORS
+- En Network/Console verifica que se carga /packs/js/sdk.js desde tu BASE_URL sin 404/CORS.
+- Si usas CSP, permite en script-src y connect-src el host de Chatwoot (y su CDN si aplica).
+
+5) WebSockets a través del proxy
+- Chatwoot usa ActionCable en /cable. Tu proxy (Nginx/Traefik) debe reenviar Upgrade/Connection.
+  Ejemplo Nginx:
+  location /cable {
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $host;
+    proxy_pass http://chatwoot:3000/cable; # ajusta el upstream
+  }
+
+6) SSR seguro en Next.js
+- El widget se inicializa solo en producción y solo si existen las variables, en app/layout.tsx.
+- No se accede a window durante SSR.
+
+7) Pasos rápidos de validación
+- Rebuild en Jenkins tras actualizar el Secret .env.
+- Abre el sitio en producción, revisa Console y Network; sin errores de JS ni 404 del SDK.
+- Verifica que el dominio esté permitido en Chatwoot y que /cable funcione (sin 101/Upgrade fallidos).
+
 ## Variables de Entorno
 
 Configura las variables necesarias para ejecutar la app y para CI/CD.
