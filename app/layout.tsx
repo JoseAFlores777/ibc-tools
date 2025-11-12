@@ -38,18 +38,23 @@ export default function RootLayout({
             {process.env.NEXT_PUBLIC_CHATWOOT_BASE_URL &&
               process.env.NEXT_PUBLIC_CHATWOOT_WEBSITE_TOKEN && (
                 <Script
-                  id="chatwoot-sdk"
-                  src={`${process.env.NEXT_PUBLIC_CHATWOOT_BASE_URL}/packs/js/sdk.js`}
+                  id="chatwoot-inline"
                   strategy="afterInteractive"
-                  onLoad={() => {
-                    const w = window as unknown as { chatwootSDK?: any };
-                    if (w.chatwootSDK && typeof w.chatwootSDK.run === "function") {
-                      w.chatwootSDK.run({
-                        websiteToken:
-                          process.env.NEXT_PUBLIC_CHATWOOT_WEBSITE_TOKEN,
-                        baseUrl: process.env.NEXT_PUBLIC_CHATWOOT_BASE_URL,
-                      });
-                    }
+                  dangerouslySetInnerHTML={{
+                    __html: `
+                      (function(d,t){
+                        var BASE_URL='${process.env.NEXT_PUBLIC_CHATWOOT_BASE_URL}';
+                        var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+                        g.src=BASE_URL+'/packs/js/sdk.js';
+                        g.defer=true; g.async=true;
+                        s.parentNode.insertBefore(g,s);
+                        g.onload=function(){
+                          if (window && window.chatwootSDK && typeof window.chatwootSDK.run === 'function') {
+                            window.chatwootSDK.run({ websiteToken:'${process.env.NEXT_PUBLIC_CHATWOOT_WEBSITE_TOKEN}', baseUrl: BASE_URL });
+                          }
+                        };
+                      })(document,'script');
+                    `,
                   }}
                 />
               )}

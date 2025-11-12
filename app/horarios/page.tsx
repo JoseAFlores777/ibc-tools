@@ -3,11 +3,23 @@ import Navbar from '../sections/Navbar';
 import HorariosClient from './HorariosClient';
 import { Button } from '@/lib/shadcn/ui';
 import Link from 'next/link';
+import { unstable_cache } from 'next/cache';
+import { fetchChurchEvents } from '@/app/lib/directus/services/events';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 300; // cache de 5 minutos
 
 export default async function HorariosPage() {
+  // Cacheamos la consulta de eventos en el servidor para que la página cargue rápido incluso en refresh
+  const getEvents = unstable_cache(
+    async () => {
+      return await fetchChurchEvents({ limit: 50 });
+    },
+    ['church-events', 'list'],
+    { revalidate }
+  );
+
+  const events = await getEvents();
+
   return (
     <div className="">
       <div className="relative min-h-screen">
@@ -32,7 +44,7 @@ export default async function HorariosPage() {
               </Button>
             </div>
 
-            <HorariosClient />
+            <HorariosClient initialEvents={events} />
           </div>
         </div>
       </div>

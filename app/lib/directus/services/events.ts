@@ -2,8 +2,11 @@ import { readItems } from '@directus/sdk';
 import { getDirectus } from '@/app/lib/directus';
 import type { ChurchEvents } from '@/app/lib/directus/directus.interface';
 
-export type ChurchEventListItem = Partial<ChurchEvents> & {
-  location?: { name?: string | null; address?: string | null } | string | null;
+export type ChurchEventListItem = Omit<Partial<ChurchEvents>, 'id' | 'recurrence'> & {
+  id: string;
+  // Recurrence is stored as JSON in Directus; keep it loose to match the client type expectations
+  recurrence?: any;
+  location?: { name?: string | null; address?: string | null; latitude?: number | null; longitude?: number | null; waze_link?: string | null; googleMaps_link?: string | null } | string | null;
   cover_image?: string | null;
 };
 

@@ -383,16 +383,17 @@ function Countdown({ target }: { target: Date }) {
   );
 }
 
-export default function HorariosClient() {
-  const [events, setEvents] = useState<ChurchEventListItem[] | null>(null);
+export default function HorariosClient({ initialEvents }: { initialEvents?: ChurchEventListItem[] }) {
+  const [events, setEvents] = useState<ChurchEventListItem[] | null>(initialEvents ?? null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (initialEvents && initialEvents.length > 0) return; // ya tenemos datos iniciales del servidor
     let cancelled = false;
     async function run() {
       try {
         setError(null);
-        const res = await fetch('/api/events?limit=50', { cache: 'no-store' });
+        const res = await fetch('/api/events?limit=50', { next: { revalidate: 300 } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         if (!cancelled) setEvents(json.data as ChurchEventListItem[]);
@@ -407,7 +408,7 @@ export default function HorariosClient() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialEvents]);
 
   // Prepare nearest event and countdown unconditionally to keep hook order stable
   const now = new Date();
