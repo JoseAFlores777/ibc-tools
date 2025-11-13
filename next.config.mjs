@@ -28,6 +28,10 @@ const nextConfig = {
         protocol: 'http',
         hostname: 'fonts.gstatic.com'
       },
+      {
+        protocol: 'https',
+        hostname: 's3.joseiz.com'
+      },
       // Si usas HTTPS o otro dominio, agrégalo aquí.
     ],
   },
