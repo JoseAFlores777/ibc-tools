@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { fetchChurchEvents } from '@/app/lib/directus/services/events';
 
+// Este handler es dinámico por naturaleza y no se debe prerender
+export const dynamic = 'force-dynamic';
 // Cache del handler por 5 minutos para llamadas desde el cliente
 export const revalidate = 300;
 

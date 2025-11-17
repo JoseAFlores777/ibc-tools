@@ -194,6 +194,7 @@ export const ProgramPagePdf: React.FC<ProgramPagePdfProps> = ({
             <View style={styles.header}>
               <View style={styles.gradientOverlay} />
               <View style={styles.ImageOverlay}>
+                {/* eslint-disable-next-line jsx-a11y/alt-text */}
                 <Image src={'/images/altar_2.jpg'} style={styles.headerImage} />
               </View>
               <View style={styles.programHeaderTexts}>
@@ -202,6 +203,7 @@ export const ProgramPagePdf: React.FC<ProgramPagePdfProps> = ({
                 <Text style={styles.programTime}>{startHour}</Text>
               </View>
             </View>
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
             <Image src={'/images/IBC_Logo-min.png'} style={styles.logo} fixed />
             <View style={styles.content}>
               <Text style={styles.title}>Programa</Text>

@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { unstable_cache } from 'next/cache';
 import { fetchChurchEvents } from '@/app/lib/directus/services/events';
 
+// Esta ruta usa datos externos (Directus) y no debe prerenderse en build
+export const dynamic = 'force-dynamic';
 export const revalidate = 300; // cache de 5 minutos
 
 export default async function HorariosPage() {
