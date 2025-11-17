@@ -24,7 +24,7 @@ FROM deps AS builder
 WORKDIR /app
 COPY . .
 
-# Build-args para variables públicas (ajusta/añade las que uses)
+# Build-args para variables públicas (ajusta/añade las que uses
 ARG NEXT_PUBLIC_DIRECTUS_URL
 ARG NEXT_PUBLIC_CHATWOOT_BASE_URL
 ARG NEXT_PUBLIC_CHATWOOT_WEBSITE_TOKEN
