@@ -14,7 +14,7 @@ pipeline {
   stages {
     stage('Clean') {
       steps {
-        deleteDir() // ⬅️ limpia completamente el workspace (evita .git corrupto)
+        deleteDir() // ⬅️ limpia completamente el workspace (evita .git corrupto) 
       }
     }
 
