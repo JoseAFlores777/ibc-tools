@@ -5,6 +5,8 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useWizardReducer } from '@/app/empaquetador/hooks/useWizardReducer';
 import WizardStepper from '@/app/empaquetador/components/WizardStepper';
 import StepSeleccion from '@/app/empaquetador/components/StepSeleccion';
+import StepConfiguracion from '@/app/empaquetador/components/StepConfiguracion';
+import StepDescarga from '@/app/empaquetador/components/StepDescarga';
 import { Button } from '@/lib/shadcn/ui';
 
 export default function EmpaquetadorPage() {
@@ -53,9 +55,9 @@ export default function EmpaquetadorPage() {
       case 1:
         return <StepSeleccion state={state} dispatch={dispatch} />;
       case 2:
-        return <div className="py-8 text-center text-muted-foreground">Paso 2: Configurar</div>;
+        return <StepConfiguracion state={state} dispatch={dispatch} />;
       case 3:
-        return <div className="py-8 text-center text-muted-foreground">Paso 3: Descargar</div>;
+        return <StepDescarga state={state} dispatch={dispatch} />;
     }
   };
 

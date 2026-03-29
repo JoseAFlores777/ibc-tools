@@ -36,6 +36,10 @@ export default async function HomePage() {
 						</Button>
 
 						<Button size={'lg'} variant="outline" asChild>
+							<Link href={'/empaquetador'}>Empaquetador de Himnos</Link>
+						</Button>
+
+						<Button size={'lg'} variant="outline" asChild>
 							<Link href={'https://www.facebook.com/ibcunafamiliaconamor'} target='_blank'>Facebook</Link>
 						</Button>
 
