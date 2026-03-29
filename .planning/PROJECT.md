@@ -20,6 +20,9 @@ Cualquier hermano puede armar un paquete de himnos (letras impresas + pistas de 
 - Server-side PDF rendering con renderToBuffer() para himnos (1-per-page y 2-per-page, decorated y plain) — Validated in Phase 2: PDF Generation for Server-Side Rendering
 - HTML parser para letras de himnos (parseHymnHtml, extractPlainText) — Validated in Phase 1: Foundation and Data Layer
 - Servicio fetchHymnForPdf y searchHymns para consultas de himnos — Validated in Phase 1: Foundation and Data Layer
+- API route GET /api/hymns/search con filtros (numero, nombre, himnario, categoria) — Validated in Phase 3: API Routes and ZIP Streaming
+- API route POST /api/hymns/package genera ZIP streaming con PDFs y archivos de audio — Validated in Phase 3: API Routes and ZIP Streaming
+- Streaming ZIP via archiver + Web ReadableStream bridge (sin buffering completo en memoria) — Validated in Phase 3: API Routes and ZIP Streaming
 
 ### Active
 
@@ -60,7 +63,7 @@ Cualquier hermano puede armar un paquete de himnos (letras impresas + pistas de 
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| ZIP server-side via API route | Archivos de audio viven en Directus server, mas eficiente generar ZIP ahi | -- Pending |
+| ZIP server-side via API route | Archivos de audio viven en Directus server, mas eficiente generar ZIP ahi | Phase 3: POST /api/hymns/package with archiver streaming |
 | Wizard multi-step (3 pasos) | Simplifica la UX para usuarios no tecnicos, flujo guiado | -- Pending |
 | Reutilizar componentes PDF existentes | Ya hay HymnPagePdf/HymnDocPdf, adaptarlos para los nuevos layouts | Phase 2: Created new server-safe components (HymnPageDecorated, HymnPagePlain, HymnPageTwoUp) alongside existing client-side ones |
 | Filtros avanzados con multiples criterios | Hay muchos himnos, necesitan encontrar rapidamente lo que buscan | -- Pending |
@@ -83,4 +86,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-29 after Phase 2 completion*
+*Last updated: 2026-03-29 after Phase 3 completion*
