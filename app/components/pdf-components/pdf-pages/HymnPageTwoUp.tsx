@@ -1,5 +1,6 @@
 import React from 'react';
 import { Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer';
+import type { Style } from '@react-pdf/types';
 import path from 'path';
 import type { HymnForPdf, ParsedVerse } from '@/app/interfaces/Hymn.interface';
 import '@/app/components/pdf-components/shared/pdf-fonts';
@@ -258,9 +259,9 @@ function formatAuthors(
 function renderVerses(
   verses: ParsedVerse[],
   styles: {
-    verseBlock: object;
-    verseMarker: object;
-    lyricLine: object;
+    verseBlock: Style;
+    verseMarker: Style;
+    lyricLine: Style;
   },
 ) {
   return verses.map((verse, idx) => (
