@@ -44,12 +44,12 @@ Font: Inter (loaded via `next/font/google`, variable `--font-sans`).
 
 | Role | Size | Weight | Line Height | Tailwind Class |
 |------|------|--------|-------------|----------------|
-| Page title | 28px | 700 (bold) | 1.2 | `text-2xl font-bold leading-tight` |
+| Page title | 28px | 600 (semibold) | 1.2 | `text-2xl font-semibold leading-tight` |
 | Step heading | 20px | 600 (semibold) | 1.3 | `text-xl font-semibold` |
 | Body / labels | 16px | 400 (regular) | 1.5 | `text-base font-normal leading-relaxed` |
 | Caption / helper | 14px | 400 (regular) | 1.5 | `text-sm font-normal` |
 
-**Weights used:** 400 (regular) and 600 (semibold). Exception: page title uses 700 (bold) for the single `<h1>`.
+**Weights used:** 400 (regular) and 600 (semibold). The 28px size on the page title provides sufficient visual anchoring without a third weight.
 
 ## 4. Color Contract
 
