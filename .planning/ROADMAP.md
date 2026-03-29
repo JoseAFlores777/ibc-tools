@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md -- Test framework setup, Hymn interfaces, and test scaffolds (Wave 1)
+- [x] 01-01-PLAN.md -- Test framework setup, Hymn interfaces, and test scaffolds (Wave 1)
 - [ ] 01-02-PLAN.md -- Hymn service layer: searchHymns, fetchHymnForPdf, getAssetUrl (Wave 2)
 - [ ] 01-03-PLAN.md -- Server-safe HTML-to-PDF parser: parseHymnHtml, extractPlainText (Wave 2)
 
