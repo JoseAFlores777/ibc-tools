@@ -13,6 +13,7 @@
     "@headlessui/react": "^2.1.2",
     "@heroicons/react": "^2.1.5",
     "@hookform/resolvers": "^3.9.0",
+    "@iconify/react": "^6.0.2",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-aspect-ratio": "^1.1.0",
@@ -52,9 +53,9 @@
     "framer-motion": "^11.11.1",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.429.0",
-    "@iconify/react": "^6.0.2",
     "next": "16.1.1",
     "next-themes": "^0.3.0",
+    "node-html-parser": "^7.1.0",
     "react": "19.2.3",
     "react-day-picker": "^8.10.1",
     "react-dom": "19.2.3",
@@ -79,7 +80,8 @@
     "postcss": "^8",
     "prettier": "^3.3.3",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.2"
   },
   "overrides": {
     "@types/react": "19.2.8",
