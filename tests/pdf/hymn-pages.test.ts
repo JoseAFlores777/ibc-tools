@@ -6,6 +6,7 @@ import {
   sampleHymnMinimal,
   sampleVersesFull,
   sampleVersesMinimal,
+  sampleVersesLong,
 } from '../fixtures/hymn-pdf-samples';
 
 describe('HymnPageDecorated', () => {
@@ -75,5 +76,79 @@ describe('HymnPagePlain', () => {
     );
     const buffer = await renderToBuffer(doc);
     expect(buffer.length).toBeGreaterThan(0);
+  });
+});
+
+describe('HymnPageTwoUp', () => {
+  it('renders decorated 2-per-page with two hymns', async () => {
+    const { HymnPageTwoUp } = await import(
+      '@/app/components/pdf-components/pdf-pages/HymnPageTwoUp'
+    );
+    const doc = React.createElement(
+      Document,
+      null,
+      React.createElement(HymnPageTwoUp, {
+        hymnA: { hymn: sampleHymnForPdf, verses: sampleVersesFull },
+        hymnB: { hymn: sampleHymnMinimal, verses: sampleVersesMinimal },
+        style: 'decorated',
+      }),
+    );
+    const buffer = await renderToBuffer(doc);
+    expect(buffer.length).toBeGreaterThan(0);
+    expect(buffer.toString('latin1', 0, 5)).toBe('%PDF-');
+  });
+
+  it('renders plain 2-per-page with two hymns', async () => {
+    const { HymnPageTwoUp } = await import(
+      '@/app/components/pdf-components/pdf-pages/HymnPageTwoUp'
+    );
+    const doc = React.createElement(
+      Document,
+      null,
+      React.createElement(HymnPageTwoUp, {
+        hymnA: { hymn: sampleHymnForPdf, verses: sampleVersesFull },
+        hymnB: { hymn: sampleHymnMinimal, verses: sampleVersesMinimal },
+        style: 'plain',
+      }),
+    );
+    const buffer = await renderToBuffer(doc);
+    expect(buffer.length).toBeGreaterThan(0);
+    expect(buffer.toString('latin1', 0, 5)).toBe('%PDF-');
+  });
+
+  it('renders with only one hymn (hymnB null)', async () => {
+    const { HymnPageTwoUp } = await import(
+      '@/app/components/pdf-components/pdf-pages/HymnPageTwoUp'
+    );
+    const doc = React.createElement(
+      Document,
+      null,
+      React.createElement(HymnPageTwoUp, {
+        hymnA: { hymn: sampleHymnForPdf, verses: sampleVersesFull },
+        hymnB: null,
+        style: 'decorated',
+      }),
+    );
+    const buffer = await renderToBuffer(doc);
+    expect(buffer.length).toBeGreaterThan(0);
+    expect(buffer.toString('latin1', 0, 5)).toBe('%PDF-');
+  });
+
+  it('renders with long verses without error', async () => {
+    const { HymnPageTwoUp } = await import(
+      '@/app/components/pdf-components/pdf-pages/HymnPageTwoUp'
+    );
+    const doc = React.createElement(
+      Document,
+      null,
+      React.createElement(HymnPageTwoUp, {
+        hymnA: { hymn: sampleHymnForPdf, verses: sampleVersesLong },
+        hymnB: { hymn: sampleHymnMinimal, verses: sampleVersesLong },
+        style: 'plain',
+      }),
+    );
+    const buffer = await renderToBuffer(doc);
+    expect(buffer.length).toBeGreaterThan(0);
+    expect(buffer.toString('latin1', 0, 5)).toBe('%PDF-');
   });
 });
