@@ -47,6 +47,8 @@ All layouts use LETTER paper (612 x 792 pt / 8.5 x 11 in).
 
 ## Spacing Scale
 
+> **PDF-context exception:** This phase targets `@react-pdf/renderer` PDF output measured in typographic points (1pt = 1/72 inch), not web pixels. The standard web spacing set {4, 8, 16, 24, 32, 48, 64}px does not apply. Values below are derived from the existing HymnPagePdf.tsx measurements and print typography conventions where point-based spacing follows different constraints than screen-based spacing. All values remain multiples of 4pt.
+
 Declared values for PDF layout spacing (in points):
 
 | Token | Value | Usage |
@@ -63,31 +65,32 @@ Exceptions: Footer height is fixed at 100pt for decorated style (matches existin
 
 ## Typography
 
-### Decorated Style (Adamina)
+### Decorated Style (Adamina) -- 4-Size Scale
 
-| Role | Size | Weight | Line Height | Usage |
-|------|------|--------|-------------|-------|
-| Hymn Number | 15pt | normal (400) | 1.2 | "Himno # 123" in header |
-| Hymn Title | 24pt | normal (400) | 1.2 | Hymn name, uppercase, centered in header |
-| Hymnal Name | 11pt | normal (400) | 1.2 | Hymnal source below title in header |
-| Bible Text | 10pt | normal (400) | 1.4 | Biblical verse text in header |
-| Bible Reference | 10pt | normal (400) | 1.2 | Biblical reference below verse |
-| Verse Marker | 9pt | normal (400) | 1.2 | I, II, III, CORO labels -- gold color (#9e7f19) |
-| Lyric Line | 9pt | normal (400) | 1.4 | Hymn lyrics body text |
-| Footer Text | 7pt | normal (400) | 1.2 | Author credits, time signature, publisher |
-| Footer Church | 10pt | normal (400) | 1.2 | "DIOS ES FIEL" / church name |
+The decorated style uses exactly 4 font sizes. Roles that share the same size are grouped together.
 
-**Source:** Existing HymnPagePdf.tsx styles (lines 69-198), adapted for server-side rendering.
+| Size | Weight | Line Height | Roles |
+|------|--------|-------------|-------|
+| 24pt | normal (400) | 1.2 | Hymn Title (uppercase, centered in header) |
+| 15pt | normal (400) | 1.2 | Hymn Number ("Himno # 123" in header) |
+| 10pt | normal (400) | 1.2-1.4 | Hymnal Name, Bible Text (LH 1.4), Bible Reference, Footer Church ("DIOS ES FIEL"), Footer Text (author credits, time signature, publisher) |
+| 9pt | normal (400) | 1.2-1.4 | Verse Marker (gold #9e7f19, LH 1.2), Lyric Line (LH 1.4) |
+
+**Consolidation notes:**
+- Former 11pt Hymnal Name merged down to 10pt (groups with Bible Text, Bible Reference, Footer Church).
+- Former 7pt Footer Text merged up to 10pt (groups with other metadata roles for visual consistency).
+- Line height varies by role within a size tier: body text roles use 1.4 for readability, label roles use 1.2 for compactness.
+
+**Source:** Existing HymnPagePdf.tsx styles (lines 69-198), consolidated from 6 sizes to 4.
 
 ### Decorated Style -- 2-Per-Page Adjustments
 
-| Role | Size (1-up) | Size (2-up) | Rationale |
-|------|-------------|-------------|-----------|
-| Hymn Title | 24pt | 16pt | Narrower column needs smaller title |
-| Hymnal Name | 11pt | 9pt | Proportional reduction |
-| Verse Marker | 9pt | 8pt | Maintain legibility in ~277pt column |
-| Lyric Line | 9pt | 8pt | Minimum legible size for print |
-| Footer Text | 7pt | 7pt | Already at minimum |
+| Size (1-up) | Size (2-up) | Roles | Rationale |
+|-------------|-------------|-------|-----------|
+| 24pt | 16pt | Hymn Title | Narrower column needs smaller title |
+| 15pt | 12pt | Hymn Number | Proportional reduction |
+| 10pt | 9pt | Hymnal Name, Bible Text, Bible Ref, Footer Church, Footer Text | Maintain legibility in ~277pt column |
+| 9pt | 8pt | Verse Marker, Lyric Line | Minimum legible size for print |
 
 ### Plain Style (Helvetica)
 
@@ -156,7 +159,7 @@ Exceptions: Footer height is fixed at 100pt for decorated style (matches existin
 |                                          |
 |  "Himno # 123" (gold #eaba1c, 15pt)     |
 |  HYMN TITLE (white, 24pt, uppercase)     |
-|  Hymnal Name (white, 11pt)               |
+|  Hymnal Name (white, 10pt)               |
 |  Bible text (light #c2c2c4, 10pt)        |
 |  Bible ref (white, 10pt)                 |
 +------------------------------------------+
@@ -173,7 +176,7 @@ Exceptions: Footer height is fixed at 100pt for decorated style (matches existin
 +------------------------------------------+
 |          FOOTER (#2E4067)                |
 |  Gold border top (9pt, #9e7f19)          |
-|  [Hymn info]         [Church info + logo]|
+|  [Hymn info 10pt]   [Church info + logo] |
 +------------------------------------------+
 ```
 
@@ -319,6 +322,12 @@ const FOOTER_HEIGHT = 100;  // pt
 const FOOTER_BORDER_TOP = 9; // pt -- gold border
 const HEADER_BORDER_BOTTOM = 7; // pt -- gold border (1-up)
 const HEADER_BORDER_BOTTOM_2UP = 5; // pt -- reduced for 2-up
+
+// Decorated font scale (4 sizes)
+const FONT_DISPLAY = 24;    // pt -- Hymn Title
+const FONT_HEADING = 15;    // pt -- Hymn Number
+const FONT_LABEL = 10;      // pt -- Hymnal Name, Bible Text/Ref, Footer Text/Church
+const FONT_BODY = 9;        // pt -- Verse Marker, Lyric Line
 
 // Colors
 const COLORS = {
