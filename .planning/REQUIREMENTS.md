@@ -39,7 +39,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Experiencia de Usuario
 
-- [ ] **UX-01**: Wizard de 3 pasos: Seleccionar himnos → Configurar impresion y audio → Generar y descargar
+- [ ] **UX-01**: Wizard de 3 pasos: Seleccionar himnos -> Configurar impresion y audio -> Generar y descargar
 - [ ] **UX-02**: Navegacion entre pasos (adelante/atras)
 - [ ] **UX-03**: UI en espanol
 
@@ -90,33 +90,33 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUSQ-01 | - | Pending |
-| BUSQ-02 | - | Pending |
-| BUSQ-03 | - | Pending |
-| BUSQ-04 | - | Pending |
-| BUSQ-05 | - | Pending |
-| BUSQ-06 | - | Pending |
-| BUSQ-07 | - | Pending |
-| IMPR-01 | - | Pending |
-| IMPR-02 | - | Pending |
-| IMPR-03 | - | Pending |
-| IMPR-04 | - | Pending |
-| AUDIO-01 | - | Pending |
-| AUDIO-02 | - | Pending |
-| AUDIO-03 | - | Pending |
-| GEN-01 | - | Pending |
-| GEN-02 | - | Pending |
-| GEN-03 | - | Pending |
-| GEN-04 | - | Pending |
-| UX-01 | - | Pending |
-| UX-02 | - | Pending |
-| UX-03 | - | Pending |
+| BUSQ-01 | Phase 4 | Pending |
+| BUSQ-02 | Phase 4 | Pending |
+| BUSQ-03 | Phase 4 | Pending |
+| BUSQ-04 | Phase 4 | Pending |
+| BUSQ-05 | Phase 4 | Pending |
+| BUSQ-06 | Phase 4 | Pending |
+| BUSQ-07 | Phase 4 | Pending |
+| IMPR-01 | Phase 2 | Pending |
+| IMPR-02 | Phase 2 | Pending |
+| IMPR-03 | Phase 2 | Pending |
+| IMPR-04 | Phase 2 | Pending |
+| AUDIO-01 | Phase 4 | Pending |
+| AUDIO-02 | Phase 4 | Pending |
+| AUDIO-03 | Phase 4 | Pending |
+| GEN-01 | Phase 3 | Pending |
+| GEN-02 | Phase 3 | Pending |
+| GEN-03 | Phase 3 | Pending |
+| GEN-04 | Phase 3 | Pending |
+| UX-01 | Phase 4 | Pending |
+| UX-02 | Phase 4 | Pending |
+| UX-03 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 21 total
-- Mapped to phases: 0
-- Unmapped: 21
+- Mapped to phases: 21
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after initial definition*
+*Last updated: 2026-03-28 after roadmap creation*
