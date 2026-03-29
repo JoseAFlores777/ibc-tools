@@ -37,7 +37,7 @@ ENV NPM_CONFIG_AUDIT=false \
 
 # Usamos ruta absoluta a npm para evitar problemas de PATH en Jenkins
 RUN --mount=type=cache,target=/root/.npm \
-    /usr/local/bin/npm install --include=dev
+    /usr/local/bin/npm install --include=dev --legacy-peer-deps
 
 
 ##########################

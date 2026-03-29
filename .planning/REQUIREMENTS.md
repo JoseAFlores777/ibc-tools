@@ -9,13 +9,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Busqueda y Seleccion
 
-- [ ] **BUSQ-01**: Usuario puede buscar himnos por numero de himno
-- [ ] **BUSQ-02**: Usuario puede buscar himnos por nombre
-- [ ] **BUSQ-03**: Usuario puede filtrar himnos por himnario de origen
-- [ ] **BUSQ-04**: Usuario puede filtrar himnos por categoria (alabanza, adoracion, etc.)
-- [ ] **BUSQ-05**: Usuario puede seleccionar multiples himnos de los resultados
-- [ ] **BUSQ-06**: Usuario puede ver un resumen de los himnos seleccionados
-- [ ] **BUSQ-07**: Usuario puede quitar himnos de su seleccion
+- [x] **BUSQ-01**: Usuario puede buscar himnos por numero de himno
+- [x] **BUSQ-02**: Usuario puede buscar himnos por nombre
+- [x] **BUSQ-03**: Usuario puede filtrar himnos por himnario de origen
+- [x] **BUSQ-04**: Usuario puede filtrar himnos por categoria (alabanza, adoracion, etc.)
+- [x] **BUSQ-05**: Usuario puede seleccionar multiples himnos de los resultados
+- [x] **BUSQ-06**: Usuario puede ver un resumen de los himnos seleccionados
+- [x] **BUSQ-07**: Usuario puede quitar himnos de su seleccion
 
 ### Configuracion de Impresion
 
@@ -26,9 +26,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Seleccion de Audio
 
-- [ ] **AUDIO-01**: Usuario ve las pistas disponibles por himno (track_only, midi, soprano, alto, tenor, bass)
-- [ ] **AUDIO-02**: Usuario puede seleccionar cuales pistas incluir por cada himno
-- [ ] **AUDIO-03**: Solo se muestran las pistas que existen para cada himno
+- [x] **AUDIO-01**: Usuario ve las pistas disponibles por himno (track_only, midi, soprano, alto, tenor, bass)
+- [x] **AUDIO-02**: Usuario puede seleccionar cuales pistas incluir por cada himno
+- [x] **AUDIO-03**: Solo se muestran las pistas que existen para cada himno
 
 ### Generacion y Descarga
 
@@ -39,9 +39,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Experiencia de Usuario
 
-- [ ] **UX-01**: Wizard de 3 pasos: Seleccionar himnos -> Configurar impresion y audio -> Generar y descargar
-- [ ] **UX-02**: Navegacion entre pasos (adelante/atras)
-- [ ] **UX-03**: UI en espanol
+- [x] **UX-01**: Wizard de 3 pasos: Seleccionar himnos -> Configurar impresion y audio -> Generar y descargar
+- [x] **UX-02**: Navegacion entre pasos (adelante/atras)
+- [x] **UX-03**: UI en espanol
 
 ## v2 Requirements
 
@@ -90,27 +90,27 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUSQ-01 | Phase 4 | Pending |
-| BUSQ-02 | Phase 4 | Pending |
-| BUSQ-03 | Phase 4 | Pending |
-| BUSQ-04 | Phase 4 | Pending |
-| BUSQ-05 | Phase 4 | Pending |
-| BUSQ-06 | Phase 4 | Pending |
-| BUSQ-07 | Phase 4 | Pending |
+| BUSQ-01 | Phase 4 | Complete |
+| BUSQ-02 | Phase 4 | Complete |
+| BUSQ-03 | Phase 4 | Complete |
+| BUSQ-04 | Phase 4 | Complete |
+| BUSQ-05 | Phase 4 | Complete |
+| BUSQ-06 | Phase 4 | Complete |
+| BUSQ-07 | Phase 4 | Complete |
 | IMPR-01 | Phase 2 | Complete |
 | IMPR-02 | Phase 2 | Complete |
 | IMPR-03 | Phase 2 | Complete |
 | IMPR-04 | Phase 2 | Complete |
-| AUDIO-01 | Phase 4 | Pending |
-| AUDIO-02 | Phase 4 | Pending |
-| AUDIO-03 | Phase 4 | Pending |
+| AUDIO-01 | Phase 4 | Complete |
+| AUDIO-02 | Phase 4 | Complete |
+| AUDIO-03 | Phase 4 | Complete |
 | GEN-01 | Phase 3 | Complete |
 | GEN-02 | Phase 3 | Complete |
 | GEN-03 | Phase 3 | Complete |
 | GEN-04 | Phase 3 | Complete |
-| UX-01 | Phase 4 | Pending |
-| UX-02 | Phase 4 | Pending |
-| UX-03 | Phase 4 | Pending |
+| UX-01 | Phase 4 | Complete |
+| UX-02 | Phase 4 | Complete |
+| UX-03 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 21 total
