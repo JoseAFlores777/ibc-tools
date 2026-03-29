@@ -19,10 +19,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Configuracion de Impresion
 
-- [ ] **IMPR-01**: Usuario puede elegir layout de 1 himno por pagina (carta completa)
-- [ ] **IMPR-02**: Usuario puede elegir layout de 2 himnos por pagina (media carta)
-- [ ] **IMPR-03**: Usuario puede elegir estilo decorado (con colores, bordes, diseno visual)
-- [ ] **IMPR-04**: Usuario puede elegir estilo plano (texto minimalista, blanco y negro)
+- [x] **IMPR-01**: Usuario puede elegir layout de 1 himno por pagina (carta completa)
+- [x] **IMPR-02**: Usuario puede elegir layout de 2 himnos por pagina (media carta)
+- [x] **IMPR-03**: Usuario puede elegir estilo decorado (con colores, bordes, diseno visual)
+- [x] **IMPR-04**: Usuario puede elegir estilo plano (texto minimalista, blanco y negro)
 
 ### Seleccion de Audio
 
@@ -97,10 +97,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BUSQ-05 | Phase 4 | Pending |
 | BUSQ-06 | Phase 4 | Pending |
 | BUSQ-07 | Phase 4 | Pending |
-| IMPR-01 | Phase 2 | Pending |
-| IMPR-02 | Phase 2 | Pending |
-| IMPR-03 | Phase 2 | Pending |
-| IMPR-04 | Phase 2 | Pending |
+| IMPR-01 | Phase 2 | Complete |
+| IMPR-02 | Phase 2 | Complete |
+| IMPR-03 | Phase 2 | Complete |
+| IMPR-04 | Phase 2 | Complete |
 | AUDIO-01 | Phase 4 | Pending |
 | AUDIO-02 | Phase 4 | Pending |
 | AUDIO-03 | Phase 4 | Pending |

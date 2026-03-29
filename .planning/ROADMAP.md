@@ -47,8 +47,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md -- Upgrade react-pdf v4, shared infra (fonts/tokens), 1-per-page decorated + plain components (Wave 1)
-- [ ] 02-02-PLAN.md -- 2-per-page layout component, renderHymnPdf convenience function, integration tests (Wave 2)
+- [x] 02-01-PLAN.md -- Upgrade react-pdf v4, shared infra (fonts/tokens), 1-per-page decorated + plain components (Wave 1)
+- [x] 02-02-PLAN.md -- 2-per-page layout component, renderHymnPdf convenience function, integration tests (Wave 2)
 
 ### Phase 3: API Routes and ZIP Streaming
 **Goal**: A server-side API can generate and stream a ZIP file containing formatted PDFs and selected audio files
