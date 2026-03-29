@@ -32,10 +32,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Generacion y Descarga
 
-- [ ] **GEN-01**: API route server-side genera un ZIP con los PDFs de letras
-- [ ] **GEN-02**: API route incluye los archivos de audio seleccionados en el ZIP
-- [ ] **GEN-03**: Usuario ve indicador de progreso durante la generacion
-- [ ] **GEN-04**: Usuario descarga el ZIP generado desde el navegador
+- [x] **GEN-01**: API route server-side genera un ZIP con los PDFs de letras
+- [x] **GEN-02**: API route incluye los archivos de audio seleccionados en el ZIP
+- [x] **GEN-03**: Usuario ve indicador de progreso durante la generacion
+- [x] **GEN-04**: Usuario descarga el ZIP generado desde el navegador
 
 ### Experiencia de Usuario
 
@@ -104,10 +104,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUDIO-01 | Phase 4 | Pending |
 | AUDIO-02 | Phase 4 | Pending |
 | AUDIO-03 | Phase 4 | Pending |
-| GEN-01 | Phase 3 | Pending |
-| GEN-02 | Phase 3 | Pending |
-| GEN-03 | Phase 3 | Pending |
-| GEN-04 | Phase 3 | Pending |
+| GEN-01 | Phase 3 | Complete |
+| GEN-02 | Phase 3 | Complete |
+| GEN-03 | Phase 3 | Complete |
+| GEN-04 | Phase 3 | Complete |
 | UX-01 | Phase 4 | Pending |
 | UX-02 | Phase 4 | Pending |
 | UX-03 | Phase 4 | Pending |

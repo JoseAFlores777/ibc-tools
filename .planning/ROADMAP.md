@@ -62,7 +62,7 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md -- Zod schema, streaming ZIP assembly utility, and GET /api/hymns/search route (Wave 1)
+- [x] 03-01-PLAN.md -- Zod schema, streaming ZIP assembly utility, and GET /api/hymns/search route (Wave 1)
 - [ ] 03-02-PLAN.md -- POST /api/hymns/package streaming endpoint with integration tests (Wave 2)
 
 ### Phase 4: Wizard UI and Download Experience

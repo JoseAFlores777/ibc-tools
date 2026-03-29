@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to plan
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-03-29T19:43:44.942Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-03-29T20:28:19.720Z"
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 7
+  completed_plans: 6
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Cualquier hermano puede armar un paquete de himnos (letras impresas + pistas de audio) listo para usar en minutos, sin depender de nadie.
-**Current focus:** Phase 02 — pdf-generation-for-server-side-rendering
+**Current focus:** Phase 03 — api-routes-and-zip-streaming
 
 ## Current Position
 
-Phase: 3
-Plan: Not started
+Phase: 03 (api-routes-and-zip-streaming) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -50,6 +50,8 @@ Plan: Not started
 | Phase 01 P02 | 3min | 1 task | 2 files |
 | Phase 02 P01 | 5min | 2 tasks | 9 files |
 | Phase 02 P02 | 6min | 2 tasks | 4 files |
+| Phase 03 P01 | 4min | 2 tasks | 7 files |
+| Phase 03 P02 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -66,6 +68,10 @@ Recent decisions affecting current work:
 - [Phase 02]: Server-safe PDF components use path.join(process.cwd(), 'public', ...) for asset resolution
 - [Phase 02]: renderHymnPdf uses dynamic imports for page components to avoid loading unused variants
 - [Phase 02]: HymnPageTwoUp delegates to DecoratedTwoUp and PlainTwoUp sub-components for style separation
+- [Phase 03]: Used zlib level 5 for balanced speed/compression in ZIP generation
+- [Phase 03]: Per-hymn error handling: ERROR.txt per folder instead of failing entire ZIP
+- [Phase 03]: Used raw Response (not NextResponse) for streaming binary ZIP in route handler
+- [Phase 03]: Assembly runs concurrently (fire-and-forget) so streaming response returns immediately
 
 ### Pending Todos
 
@@ -79,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T19:39:23.975Z
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-03-29T20:28:19.718Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None
