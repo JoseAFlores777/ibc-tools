@@ -91,8 +91,8 @@ export async function searchHymns(filters: HymnSearchFilters): Promise<HymnSearc
   ];
 
   try {
-    // @ts-ignore — Directus SDK typing con generics no resuelve bien las colecciones custom
     const items = await client.request(
+      // @ts-expect-error — Directus SDK typing con generics no resuelve bien las colecciones custom
       readItems('hymn', {
         sort: ['hymn_number', 'name'],
         fields: fields as unknown as string[],
