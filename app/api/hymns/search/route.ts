@@ -12,8 +12,11 @@ export async function GET(request: Request) {
     const limit = Number(searchParams.get('limit')) || 25;
     const offset = Number(searchParams.get('offset')) || 0;
 
+    // Si q es puramente numerico, buscar por hymn_number; si no, buscar por nombre
+    const isNumeric = q !== undefined && /^\d+$/.test(q);
     const results = await searchHymns({
-      query: q,
+      query: isNumeric ? undefined : q,
+      hymnNumber: isNumeric ? Number(q) : undefined,
       hymnalId: hymnal,
       categoryId: category ? Number(category) : undefined,
       limit,
