@@ -28,7 +28,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. A `fetchHymnForPdf()` function retrieves complete hymn data (lyrics, metadata, audio file references) for a given hymn ID
   3. An HTML-to-PDF parser can convert `letter_hymn` HTML content into react-pdf elements without using browser DOM APIs
   4. Audio availability flags correctly reflect which audio fields (track_only, midi, soprano, alto, tenor, bass) actually have files for each hymn
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md -- Test framework setup, Hymn interfaces, and test scaffolds (Wave 1)
+- [ ] 01-02-PLAN.md -- Hymn service layer: searchHymns, fetchHymnForPdf, getAssetUrl (Wave 2)
+- [ ] 01-03-PLAN.md -- Server-safe HTML-to-PDF parser: parseHymnHtml, extractPlainText (Wave 2)
 
 ### Phase 2: PDF Generation for Server-Side Rendering
 **Goal**: Users' selected hymns can be rendered into properly formatted PDF documents on the server
@@ -72,7 +77,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation and Data Layer | 0/0 | Not started | - |
+| 1. Foundation and Data Layer | 0/3 | Planned | - |
 | 2. PDF Generation for Server-Side Rendering | 0/0 | Not started | - |
 | 3. API Routes and ZIP Streaming | 0/0 | Not started | - |
 | 4. Wizard UI and Download Experience | 0/0 | Not started | - |
