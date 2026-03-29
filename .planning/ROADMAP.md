@@ -44,7 +44,11 @@ Plans:
   2. A PDF with 1 hymn per page (full carta size) renders with correct layout and margins
   3. A PDF with 2 hymns per page (media carta) renders both hymns legibly on one page
   4. A decorated style PDF includes visual elements (colors, borders) while a plain style PDF renders minimalist black-and-white text
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 02-01-PLAN.md -- Upgrade react-pdf v4, shared infra (fonts/tokens), 1-per-page decorated + plain components (Wave 1)
+- [ ] 02-02-PLAN.md -- 2-per-page layout component, renderHymnPdf convenience function, integration tests (Wave 2)
 
 ### Phase 3: API Routes and ZIP Streaming
 **Goal**: A server-side API can generate and stream a ZIP file containing formatted PDFs and selected audio files
@@ -78,6 +82,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation and Data Layer | 2/3 | In Progress | - |
-| 2. PDF Generation for Server-Side Rendering | 0/0 | Not started | - |
+| 2. PDF Generation for Server-Side Rendering | 0/2 | Not started | - |
 | 3. API Routes and ZIP Streaming | 0/0 | Not started | - |
 | 4. Wizard UI and Download Experience | 0/0 | Not started | - |
