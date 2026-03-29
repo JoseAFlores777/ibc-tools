@@ -32,7 +32,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [x] 01-01-PLAN.md -- Test framework setup, Hymn interfaces, and test scaffolds (Wave 1)
-- [ ] 01-02-PLAN.md -- Hymn service layer: searchHymns, fetchHymnForPdf, getAssetUrl (Wave 2)
+- [x] 01-02-PLAN.md -- Hymn service layer: searchHymns, fetchHymnForPdf, getAssetUrl (Wave 2)
 - [ ] 01-03-PLAN.md -- Server-safe HTML-to-PDF parser: parseHymnHtml, extractPlainText (Wave 2)
 
 ### Phase 2: PDF Generation for Server-Side Rendering
@@ -77,7 +77,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation and Data Layer | 0/3 | Planned | - |
+| 1. Foundation and Data Layer | 2/3 | In Progress | - |
 | 2. PDF Generation for Server-Side Rendering | 0/0 | Not started | - |
 | 3. API Routes and ZIP Streaming | 0/0 | Not started | - |
 | 4. Wizard UI and Download Experience | 0/0 | Not started | - |
