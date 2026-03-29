@@ -50,7 +50,7 @@ created: 2026-03-29
 
 - [ ] `tests/api/hymn-search.test.ts` — test stubs for search endpoint
 - [ ] `tests/api/hymn-package.test.ts` — test stubs for ZIP generation endpoint
-- [ ] `tests/lib/generate-hymn-zip.test.ts` — test stubs for ZIP generation utility
+- [ ] `tests/lib/zip/generate-hymn-zip.test.ts` — test stubs for ZIP generation utility
 - [ ] Test fixtures for mock hymn data with audio fields
 
 *Planner will finalize exact files and test structure.*
