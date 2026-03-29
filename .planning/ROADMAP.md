@@ -75,8 +75,13 @@ Plans:
   3. User can see which audio tracks are available per hymn and select which tracks to include (only showing tracks that exist)
   4. User navigates a 3-step wizard (select hymns, configure print and audio, generate and download) with forward/back navigation
   5. User sees a progress indicator during ZIP generation and downloads the resulting file, with all UI text in Spanish
-**Plans**: TBD
+**Plans:** 3 plans
 **UI hint**: yes
+
+Plans:
+- [ ] 04-01-PLAN.md -- Infrastructure: wizard reducer, buildPackageRequest, search hook, filter API routes, Toaster mount (Wave 1)
+- [ ] 04-02-PLAN.md -- Wizard shell and Step 1: WizardStepper, StepSeleccion with search/filters/results/selected panel (Wave 2)
+- [ ] 04-03-PLAN.md -- Step 2 + Step 3: StepConfiguracion, StepDescarga, landing page link, human verification (Wave 3)
 
 ## Progress
 
@@ -88,4 +93,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 1. Foundation and Data Layer | 2/3 | In Progress | - |
 | 2. PDF Generation for Server-Side Rendering | 0/2 | Not started | - |
 | 3. API Routes and ZIP Streaming | 0/2 | Not started | - |
-| 4. Wizard UI and Download Experience | 0/0 | Not started | - |
+| 4. Wizard UI and Download Experience | 0/3 | Not started | - |
