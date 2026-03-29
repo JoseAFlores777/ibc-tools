@@ -79,8 +79,8 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 04-01-PLAN.md -- Infrastructure: wizard reducer, buildPackageRequest, search hook, filter API routes, Toaster mount (Wave 1)
-- [ ] 04-02-PLAN.md -- Wizard shell and Step 1: WizardStepper, StepSeleccion with search/filters/results/selected panel (Wave 2)
+- [x] 04-01-PLAN.md -- Infrastructure: wizard reducer, buildPackageRequest, search hook, filter API routes, Toaster mount (Wave 1)
+- [x] 04-02-PLAN.md -- Wizard shell and Step 1: WizardStepper, StepSeleccion with search/filters/results/selected panel (Wave 2)
 - [ ] 04-03-PLAN.md -- Step 2 + Step 3: StepConfiguracion, StepDescarga, landing page link, human verification (Wave 3)
 
 ## Progress

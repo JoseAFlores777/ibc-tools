@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to plan
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-03-29T20:32:54.152Z"
+status: Milestone complete
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-03-29T21:56:15.525Z"
 progress:
   total_phases: 4
-  completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
+  completed_phases: 4
+  total_plans: 10
+  completed_plans: 10
 ---
 
 # Project State
@@ -19,11 +19,11 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Cualquier hermano puede armar un paquete de himnos (letras impresas + pistas de audio) listo para usar en minutos, sin depender de nadie.
-**Current focus:** Phase 03 — api-routes-and-zip-streaming
+**Current focus:** Phase 04 — wizard-ui-and-download-experience
 
 ## Current Position
 
-Phase: 4
+Phase: 04
 Plan: Not started
 
 ## Performance Metrics
@@ -52,6 +52,9 @@ Plan: Not started
 | Phase 02 P02 | 6min | 2 tasks | 4 files |
 | Phase 03 P01 | 4min | 2 tasks | 7 files |
 | Phase 03 P02 | 3min | 2 tasks | 2 files |
+| Phase 04 P01 | 4min | 2 tasks | 9 files |
+| Phase 04 P02 | 3min | 2 tasks | 5 files |
+| Phase 04 P03 | 2min 30s | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -72,6 +75,10 @@ Recent decisions affecting current work:
 - [Phase 03]: Per-hymn error handling: ERROR.txt per folder instead of failing entire ZIP
 - [Phase 03]: Used raw Response (not NextResponse) for streaming binary ZIP in route handler
 - [Phase 03]: Assembly runs concurrently (fire-and-forget) so streaming response returns immediately
+- [Phase 04]: Numeric q param in search route routes to hymnNumber filter exclusively to match user intent
+- [Phase 04]: SELECT_ALL_AUDIO only selects non-null audio fields per hymn to avoid requesting missing files
+- [Phase 04]: Used __all__ sentinel for Radix Select since empty string values not supported
+- [Phase 04]: Skipped navbar link - existing Navbar.tsx is demo component with no real navigation
 
 ### Pending Todos
 
@@ -85,6 +92,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T20:28:19.718Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-03-29T21:50:32.482Z
+Stopped at: Completed 04-03-PLAN.md
 Resume file: None
