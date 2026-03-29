@@ -59,7 +59,11 @@ Plans:
   2. A POST endpoint generates a ZIP containing PDF documents for the requested hymns with the specified layout and style
   3. The ZIP includes selected audio files (track, midi, voice parts) downloaded from Directus and correctly named
   4. The ZIP streams to the client as it is assembled (no full buffering in memory) and the client can download it
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 03-01-PLAN.md -- Zod schema, streaming ZIP assembly utility, and GET /api/hymns/search route (Wave 1)
+- [ ] 03-02-PLAN.md -- POST /api/hymns/package streaming endpoint with integration tests (Wave 2)
 
 ### Phase 4: Wizard UI and Download Experience
 **Goal**: Any church member can search, select, configure, and download a hymn package through a guided step-by-step interface in Spanish
@@ -83,5 +87,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 |-------|----------------|--------|-----------|
 | 1. Foundation and Data Layer | 2/3 | In Progress | - |
 | 2. PDF Generation for Server-Side Rendering | 0/2 | Not started | - |
-| 3. API Routes and ZIP Streaming | 0/0 | Not started | - |
+| 3. API Routes and ZIP Streaming | 0/2 | Not started | - |
 | 4. Wizard UI and Download Experience | 0/0 | Not started | - |
