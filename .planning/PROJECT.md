@@ -26,14 +26,16 @@ Cualquier hermano puede armar un paquete de himnos (letras impresas + pistas de 
 
 ### Active
 
-- [ ] Selector de himnos con filtros avanzados (himnario, categoria, autor, busqueda libre por nombre/numero/texto)
-- [ ] Vista de seleccion multi-himno con preview de cada himno seleccionado
-- [ ] Configurador de impresion: tamano de hoja (carta), layout (1, 2, o 4 himnos por pagina), orientacion (vertical/horizontal)
-- [ ] Configurador de estilo PDF: diseno con colores/bordes vs texto plano minimalista
-- [ ] Selector de pistas por himno: track_only, midi_file, voces individuales (soprano, alto, tenor, bass) — segun disponibilidad
-- [ ] Generacion server-side de ZIP via API route con PDFs de letras + archivos de audio seleccionados
-- [ ] Descarga del ZIP desde el navegador
-- [ ] UI paso a paso: Step 1 (seleccionar himnos) → Step 2 (configurar impresion y pistas) → Step 3 (generar y descargar)
+None — all v1 requirements implemented. Pending human UAT for Phase 4 (4 items).
+
+### Recently Validated (Phase 4)
+
+- Wizard UI de 3 pasos en /empaquetador con busqueda, seleccion, configuracion y descarga — Validated in Phase 4
+- Selector de himnos con filtros (himnario, categoria, busqueda por nombre/numero) — Validated in Phase 4
+- Vista de seleccion multi-himno con sidebar/drawer y contador — Validated in Phase 4
+- Configurador de impresion (layout 1/2 por pagina, estilo decorado/plano) — Validated in Phase 4
+- Selector de pistas de audio por himno con accordion y checkboxes — Validated in Phase 4
+- Descarga de ZIP desde el navegador con indicador de progreso y toasts — Validated in Phase 4
 
 ### Out of Scope
 
@@ -64,9 +66,9 @@ Cualquier hermano puede armar un paquete de himnos (letras impresas + pistas de 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | ZIP server-side via API route | Archivos de audio viven en Directus server, mas eficiente generar ZIP ahi | Phase 3: POST /api/hymns/package with archiver streaming |
-| Wizard multi-step (3 pasos) | Simplifica la UX para usuarios no tecnicos, flujo guiado | -- Pending |
+| Wizard multi-step (3 pasos) | Simplifica la UX para usuarios no tecnicos, flujo guiado | Phase 4: /empaquetador with WizardStepper, Framer Motion transitions |
 | Reutilizar componentes PDF existentes | Ya hay HymnPagePdf/HymnDocPdf, adaptarlos para los nuevos layouts | Phase 2: Created new server-safe components (HymnPageDecorated, HymnPagePlain, HymnPageTwoUp) alongside existing client-side ones |
-| Filtros avanzados con multiples criterios | Hay muchos himnos, necesitan encontrar rapidamente lo que buscan | -- Pending |
+| Filtros avanzados con multiples criterios | Hay muchos himnos, necesitan encontrar rapidamente lo que buscan | Phase 4: Select dropdowns for hymnal/category, debounced search |
 
 ## Evolution
 
@@ -86,4 +88,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-29 after Phase 3 completion*
+*Last updated: 2026-03-29 after Phase 4 completion (all v1 phases complete)*
