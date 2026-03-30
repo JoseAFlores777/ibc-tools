@@ -20,5 +20,9 @@ export function buildPackageRequest(state: WizardState): PackageRequest {
     hymns,
     layout: state.layout,
     style: state.style,
+    printMode: state.printMode,
+    orientation: state.orientation,
+    fontPreset: state.fontPreset,
+    includeBibleRef: state.includeBibleRef,
   };
 }

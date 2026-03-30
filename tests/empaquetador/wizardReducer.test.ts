@@ -130,4 +130,44 @@ describe('wizardReducer', () => {
     expect(state.selectedHymns).toEqual([]);
     expect(state.audioSelections.size).toBe(0);
   });
+
+  // Phase 05: New field tests
+  it('initialWizardState has correct Phase 05 defaults', () => {
+    expect(initialWizardState.printMode).toBe('simple');
+    expect(initialWizardState.orientation).toBe('portrait');
+    expect(initialWizardState.fontPreset).toBe('clasica');
+    expect(initialWizardState.includeBibleRef).toBe(true);
+  });
+
+  it('SET_PRINT_MODE sets printMode to booklet', () => {
+    const state = wizardReducer(initialWizardState, { type: 'SET_PRINT_MODE', printMode: 'booklet' });
+    expect(state.printMode).toBe('booklet');
+  });
+
+  it('SET_ORIENTATION sets orientation to landscape', () => {
+    const state = wizardReducer(initialWizardState, { type: 'SET_ORIENTATION', orientation: 'landscape' });
+    expect(state.orientation).toBe('landscape');
+  });
+
+  it('SET_FONT_PRESET sets fontPreset to legible', () => {
+    const state = wizardReducer(initialWizardState, { type: 'SET_FONT_PRESET', fontPreset: 'legible' });
+    expect(state.fontPreset).toBe('legible');
+  });
+
+  it('SET_INCLUDE_BIBLE_REF sets includeBibleRef to false', () => {
+    const state = wizardReducer(initialWizardState, { type: 'SET_INCLUDE_BIBLE_REF', includeBibleRef: false });
+    expect(state.includeBibleRef).toBe(false);
+  });
+
+  it('RESET resets Phase 05 fields to defaults', () => {
+    let state = wizardReducer(initialWizardState, { type: 'SET_PRINT_MODE', printMode: 'booklet' });
+    state = wizardReducer(state, { type: 'SET_ORIENTATION', orientation: 'landscape' });
+    state = wizardReducer(state, { type: 'SET_FONT_PRESET', fontPreset: 'legible' });
+    state = wizardReducer(state, { type: 'SET_INCLUDE_BIBLE_REF', includeBibleRef: false });
+    state = wizardReducer(state, { type: 'RESET' });
+    expect(state.printMode).toBe('simple');
+    expect(state.orientation).toBe('portrait');
+    expect(state.fontPreset).toBe('clasica');
+    expect(state.includeBibleRef).toBe(true);
+  });
 });

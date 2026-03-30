@@ -84,4 +84,52 @@ describe('buildPackageRequest', () => {
     expect(result.layout).toBe('two-per-page');
     expect(result.style).toBe('plain');
   });
+
+  // Phase 05: New field tests
+  it('includes printMode, orientation, fontPreset, includeBibleRef from state', () => {
+    const state: WizardState = {
+      ...initialWizardState,
+      selectedHymns: [mockHymn(UUID_A)],
+      printMode: 'booklet',
+      orientation: 'landscape',
+      fontPreset: 'legible',
+      includeBibleRef: false,
+    };
+    const result = buildPackageRequest(state);
+    expect(result.printMode).toBe('booklet');
+    expect(result.orientation).toBe('landscape');
+    expect(result.fontPreset).toBe('legible');
+    expect(result.includeBibleRef).toBe(false);
+  });
+
+  it('Phase 05 fields validate against PackageRequest schema', () => {
+    const state: WizardState = {
+      ...initialWizardState,
+      selectedHymns: [mockHymn(UUID_A)],
+      printMode: 'booklet',
+      orientation: 'landscape',
+      fontPreset: 'moderna',
+      includeBibleRef: false,
+    };
+    const result = buildPackageRequest(state);
+    const parsed = packageRequestSchema.parse(result);
+    expect(parsed.printMode).toBe('booklet');
+    expect(parsed.orientation).toBe('landscape');
+    expect(parsed.fontPreset).toBe('moderna');
+    expect(parsed.includeBibleRef).toBe(false);
+  });
+
+  it('schema defaults Phase 05 fields when omitted', () => {
+    // Simulate an old-style request without the new fields
+    const oldRequest = {
+      hymns: [{ id: UUID_A, audioFiles: [] }],
+      layout: 'one-per-page' as const,
+      style: 'decorated' as const,
+    };
+    const parsed = packageRequestSchema.parse(oldRequest);
+    expect(parsed.printMode).toBe('simple');
+    expect(parsed.orientation).toBe('portrait');
+    expect(parsed.fontPreset).toBe('clasica');
+    expect(parsed.includeBibleRef).toBe(true);
+  });
 });
