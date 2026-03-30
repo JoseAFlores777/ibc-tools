@@ -68,3 +68,42 @@ export const COLORS = {
   divider: '#cccccc',
   plainSubtitle: '#666666',
 };
+
+/** Booklet dimensions (landscape Letter, halved) */
+export const BOOKLET_SHEET_WIDTH = 792;
+export const BOOKLET_SHEET_HEIGHT = 612;
+export const BOOKLET_PAGE_WIDTH = 396;
+export const BOOKLET_MARGIN = 20;
+
+/** Font preset types */
+export type FontPreset = 'clasica' | 'moderna' | 'legible';
+
+export interface FontScale {
+  display: number;
+  heading: number;
+  label: number;
+  body: number;
+}
+
+export interface FontPresetConfig {
+  family: string;
+  scale: FontScale;
+}
+
+/** Font presets for full-page (1-per-page and 2-per-page) */
+export const FONT_PRESETS: Record<FontPreset, FontPresetConfig> = {
+  clasica: { family: 'Adamina', scale: { display: 24, heading: 15, label: 10, body: 9 } },
+  moderna: { family: 'Helvetica', scale: { display: 22, heading: 14, label: 10, body: 9 } },
+  legible: { family: 'Helvetica', scale: { display: 28, heading: 18, label: 12, body: 12 } },
+};
+
+/** Font presets for booklet (half-letter, smaller sizes) */
+export const FONT_PRESETS_BOOKLET: Record<FontPreset, FontPresetConfig> = {
+  clasica: { family: 'Adamina', scale: { display: 18, heading: 12, label: 9, body: 8 } },
+  moderna: { family: 'Helvetica', scale: { display: 16, heading: 11, label: 9, body: 8 } },
+  legible: { family: 'Helvetica', scale: { display: 22, heading: 14, label: 10, body: 10 } },
+};
+
+/** Print mode and orientation types */
+export type PrintMode = 'simple' | 'booklet';
+export type Orientation = 'portrait' | 'landscape';
