@@ -15,8 +15,8 @@ export const DIVIDER_TOTAL = 17;
 export const COLUMN_WIDTH_2UP = Math.floor((LETTER_WIDTH - 2 * MARGIN_2UP - DIVIDER_TOTAL) / 2);
 
 /** Footer (decorated only) */
-export const FOOTER_HEIGHT = 100;
-export const FOOTER_BORDER_TOP = 9;
+export const FOOTER_HEIGHT = 70;
+export const FOOTER_BORDER_TOP = 6;
 export const HEADER_BORDER_BOTTOM = 7;
 export const HEADER_BORDER_BOTTOM_2UP = 5;
 
@@ -60,12 +60,15 @@ export const COLORS = {
   headerOverlay: 'rgba(53, 73, 115, 0.85)',
   goldAccent: '#9e7f19',
   goldHighlight: '#eaba1c',
+  goldBadgeBg: 'rgba(158, 127, 25, 0.18)',
   pageBg: '#f7f7f7',
   bodyText: '#444444',
   lightText: '#c2c2c4',
   headerText: '#ffffff',
+  bibleTextLight: '#b8b8b8',
   footerBg: '#2E4067',
   divider: '#cccccc',
+  ornament: '#c8a84e',
   plainSubtitle: '#666666',
 };
 

@@ -26,6 +26,9 @@ export interface HymnPageDecoratedProps {
   ecoMode?: boolean;
 }
 
+/** Unicode ornament for section dividers */
+const ORNAMENT_CHAR = '\u2740'; // ❀
+
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
@@ -49,23 +52,34 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.headerOverlay,
   },
   headerTexts: {
-    paddingTop: 20,
-    paddingBottom: 15,
+    paddingTop: 18,
+    paddingBottom: 14,
     paddingHorizontal: 20,
     textAlign: 'center',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 2,
   },
+  /* Hymn number badge: pill shape with gold tint */
+  hymnNumberBadge: {
+    backgroundColor: COLORS.goldBadgeBg,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 3,
+    marginBottom: 4,
+  },
   hymnNumber: {
     fontSize: FONT_DECORATED.heading,
     color: COLORS.goldHighlight,
+    fontWeight: 'bold',
+    letterSpacing: 1.5,
   },
   hymnTitle: {
     fontSize: FONT_DECORATED.display,
     textTransform: 'uppercase',
     color: COLORS.headerText,
-    marginTop: 4,
+    marginTop: 2,
+    letterSpacing: 0.8,
   },
   hymnalName: {
     fontSize: FONT_DECORATED.label,
@@ -73,10 +87,10 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   bibleSection: {
-    marginTop: 12,
+    marginTop: 10,
     paddingHorizontal: 40,
     paddingVertical: 8,
-    marginBottom: 10,
+    marginBottom: 8,
     alignItems: 'center',
     borderLeftWidth: 3,
     borderLeftColor: COLORS.goldAccent,
@@ -84,7 +98,8 @@ const styles = StyleSheet.create({
   bibleText: {
     fontSize: FONT_DECORATED.label,
     textAlign: 'left',
-    color: '#e0e0e0',
+    color: COLORS.bibleTextLight,
+    fontStyle: 'italic',
     lineHeight: 1.5,
   },
   bibleReference: {
@@ -94,26 +109,50 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.goldHighlight,
   },
+  /* Body with left accent border */
   body: {
-    paddingTop: 20,
-    paddingHorizontal: MARGIN_1UP,
+    paddingTop: 16,
+    paddingHorizontal: MARGIN_1UP - 6,
+    paddingLeft: MARGIN_1UP + 6,
     flex: 1,
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.ornament,
+    marginLeft: 18,
   },
   verseBlock: {
-    marginBottom: 12,
+    marginBottom: 14,
   },
+  /* Ornamental divider between sections */
+  sectionDivider: {
+    textAlign: 'center',
+    fontSize: 8,
+    color: COLORS.ornament,
+    marginBottom: 8,
+    letterSpacing: 4,
+  },
+  /* Verse marker: larger, with flanking dashes */
   verseMarker: {
-    fontSize: FONT_DECORATED.body,
+    fontSize: FONT_DECORATED.body + 1,
     color: COLORS.goldAccent,
     textAlign: 'center',
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 5,
+    letterSpacing: 2,
+  },
+  /* CORO label: bigger, bolder, with ornamental flanks */
+  chorusMarker: {
+    fontSize: FONT_DECORATED.body + 2,
+    color: COLORS.goldAccent,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    marginBottom: 5,
+    letterSpacing: 3,
   },
   lyricLine: {
     fontSize: FONT_DECORATED.body,
     color: COLORS.bodyText,
     textAlign: 'center',
-    lineHeight: 1.4,
+    lineHeight: 1.5,
   },
   footer: {
     position: 'absolute',
@@ -125,7 +164,7 @@ const styles = StyleSheet.create({
     borderTopWidth: FOOTER_BORDER_TOP,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
   },
   footerHymnInfo: {
     flexDirection: 'column',
@@ -133,7 +172,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   footerInfoText: {
-    fontSize: FONT_DECORATED.label,
+    fontSize: 8,
     color: COLORS.lightText,
   },
   footerChurchInfo: {
@@ -145,22 +184,22 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'flex-end',
-    marginRight: 10,
+    marginRight: 8,
   },
   footerChurchTitle: {
-    fontSize: FONT_DECORATED.label,
+    fontSize: 8,
     color: COLORS.lightText,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   footerChurchSubtitle: {
-    fontSize: FONT_DECORATED.label,
+    fontSize: 7,
     color: COLORS.lightText,
   },
   footerLogo: {
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
     backgroundColor: '#ffffff',
-    padding: 4,
+    padding: 3,
     borderRadius: 100,
   },
 });
@@ -196,6 +235,21 @@ function formatAuthors(
   }));
 }
 
+/** Detect if a title line is a chorus marker */
+function isChorusMarker(text: string): boolean {
+  const normalized = text.trim().toUpperCase();
+  return normalized === 'CORO' || normalized === 'CHORUS';
+}
+
+/** Format verse/chorus markers with ornamental flanks */
+function formatMarkerText(text: string): string {
+  if (isChorusMarker(text)) {
+    return `\u2014  ${text.trim().toUpperCase()}  \u2014`;
+  }
+  // Roman numerals get subtle dashes
+  return `\u2013 ${text.trim()} \u2013`;
+}
+
 export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({
   hymn,
   verses,
@@ -211,13 +265,17 @@ export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({
   const ecoOverrides = ecoMode ? {
     page: { backgroundColor: '#ffffff' },
     header: { backgroundColor: '#ffffff', borderBottomColor: COLORS.goldAccent },
+    hymnNumberBadge: { backgroundColor: 'rgba(158, 127, 25, 0.08)' },
     hymnNumber: { color: COLORS.goldAccent },
     hymnTitle: { color: '#111111' },
     hymnalName: { color: COLORS.plainSubtitle },
-    bibleText: { color: '#333333' },
+    bibleText: { color: '#555555', fontStyle: 'italic' as const },
     bibleReference: { color: '#111111' },
+    body: { borderLeftColor: '#cccccc' },
     verseMarker: { color: COLORS.goldAccent },
+    chorusMarker: { color: COLORS.goldAccent },
     lyricLine: { color: '#000000' },
+    sectionDivider: { color: '#cccccc' },
     footer: { backgroundColor: '#ffffff', borderTopColor: COLORS.goldAccent },
     footerInfoText: { color: COLORS.plainSubtitle },
     footerChurchTitle: { color: '#333333' },
@@ -225,13 +283,17 @@ export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({
   } : {};
 
   const dynamicStyles = {
+    hymnNumberBadge: { ...styles.hymnNumberBadge, ...ecoOverrides.hymnNumberBadge },
     hymnNumber: { ...styles.hymnNumber, fontSize: preset.scale.heading, ...ecoOverrides.hymnNumber },
     hymnTitle: { ...styles.hymnTitle, fontSize: preset.scale.display, ...ecoOverrides.hymnTitle },
     hymnalName: { ...styles.hymnalName, fontSize: preset.scale.label, ...ecoOverrides.hymnalName },
     bibleText: { ...styles.bibleText, fontSize: preset.scale.label, ...ecoOverrides.bibleText },
     bibleReference: { ...styles.bibleReference, fontSize: preset.scale.label, ...ecoOverrides.bibleReference },
-    verseMarker: { ...styles.verseMarker, fontSize: preset.scale.body, ...ecoOverrides.verseMarker },
+    body: { ...styles.body, ...ecoOverrides.body },
+    verseMarker: { ...styles.verseMarker, fontSize: preset.scale.body + 1, ...ecoOverrides.verseMarker },
+    chorusMarker: { ...styles.chorusMarker, fontSize: preset.scale.body + 2, ...ecoOverrides.chorusMarker },
     lyricLine: { ...styles.lyricLine, fontSize: preset.scale.body, fontFamily: preset.family, ...ecoOverrides.lyricLine },
+    sectionDivider: { ...styles.sectionDivider, ...ecoOverrides.sectionDivider },
     footerInfoText: { ...styles.footerInfoText, ...ecoOverrides.footerInfoText },
   };
 
@@ -241,14 +303,16 @@ export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({
       <View style={{ ...styles.header, ...ecoOverrides.header }}>
         {!ecoMode && <View style={styles.gradientOverlay} />}
         <View style={styles.headerTexts}>
-          <Text style={dynamicStyles.hymnNumber}>
-            {hymn.hymn_number != null ? `Himno # ${hymn.hymn_number}` : 'Himno'}
-          </Text>
+          <View style={dynamicStyles.hymnNumberBadge}>
+            <Text style={dynamicStyles.hymnNumber}>
+              {hymn.hymn_number != null ? `# ${hymn.hymn_number}` : 'Himno'}
+            </Text>
+          </View>
           <Text style={dynamicStyles.hymnTitle}>{hymn.name}</Text>
           {hymn.hymnal && <Text style={dynamicStyles.hymnalName}>{hymn.hymnal.name}</Text>}
           {includeBibleRef && (hymn.bible_text || hymn.bible_reference) && (
             <View style={styles.bibleSection}>
-              {hymn.bible_text && <Text style={dynamicStyles.bibleText}>{hymn.bible_text}</Text>}
+              {hymn.bible_text && <Text style={dynamicStyles.bibleText}>{`"${hymn.bible_text}"`}</Text>}
               {hymn.bible_reference && (
                 <Text style={dynamicStyles.bibleReference}>{hymn.bible_reference}</Text>
               )}
@@ -257,35 +321,51 @@ export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({
         </View>
       </View>
 
-      {/* Body: versos */}
-      <View style={styles.body}>
+      {/* Body: versos con borde lateral dorado */}
+      <View style={dynamicStyles.body}>
         {verses.map((verse, idx) => (
-          <View key={idx} style={styles.verseBlock}>
-            {verse.type === 'title' ? (
-              verse.lines.map((line, li) => (
-                <Text key={li} style={dynamicStyles.verseMarker}>
-                  {line.text}
-                </Text>
-              ))
-            ) : (
-              verse.lines.map((line, li) => (
-                <Text
-                  key={li}
-                  style={{
-                    ...dynamicStyles.lyricLine,
-                    ...(line.bold ? { fontWeight: 'bold' } : {}),
-                    ...(line.italic ? { fontStyle: 'italic' } : {}),
-                  }}
-                >
-                  {line.text}
-                </Text>
-              ))
+          <React.Fragment key={idx}>
+            {/* Ornamental divider between sections (skip before first) */}
+            {idx > 0 && (
+              <Text style={dynamicStyles.sectionDivider}>
+                {`${ORNAMENT_CHAR}  ${ORNAMENT_CHAR}  ${ORNAMENT_CHAR}`}
+              </Text>
             )}
-          </View>
+            <View style={styles.verseBlock}>
+              {verse.type === 'title' ? (
+                verse.lines.map((line, li) => {
+                  const isCoro = isChorusMarker(line.text);
+                  return (
+                    <Text
+                      key={li}
+                      style={isCoro ? dynamicStyles.chorusMarker : dynamicStyles.verseMarker}
+                    >
+                      {formatMarkerText(line.text)}
+                    </Text>
+                  );
+                })
+              ) : (
+                verse.lines.map((line, li) => (
+                  <Text
+                    key={li}
+                    style={{
+                      ...dynamicStyles.lyricLine,
+                      ...(line.bold ? { fontWeight: 'bold' } : {}),
+                      ...(line.italic && preset.family !== 'Adamina'
+                        ? { fontStyle: 'italic' }
+                        : {}),
+                    }}
+                  >
+                    {line.text}
+                  </Text>
+                ))
+              )}
+            </View>
+          </React.Fragment>
         ))}
       </View>
 
-      {/* Footer */}
+      {/* Footer (compacto) */}
       <View style={{ ...styles.footer, ...ecoOverrides.footer }} fixed>
         <View style={styles.footerHymnInfo}>
           {hymn.hymn_time_signature && (
