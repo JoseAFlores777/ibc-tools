@@ -80,7 +80,8 @@ function createStyles(preset: FontPresetConfig, styleVariant: 'decorated' | 'pla
     bibleText: {
       fontSize: preset.scale.label,
       textAlign: 'center',
-      fontStyle: 'italic',
+      // Adamina no tiene variante italic registrada; solo aplicar italic con fuentes que lo soporten
+      ...(preset.family !== 'Adamina' ? { fontStyle: 'italic' as const } : {}),
       color: isDecorated ? COLORS.lightText : COLORS.plainSubtitle,
       lineHeight: 1.3,
     },
@@ -131,6 +132,8 @@ export function HymnPageBooklet({
 }: HymnPageBookletProps) {
   const preset = FONT_PRESETS_BOOKLET[fontPreset];
   const s = createStyles(preset, style);
+  // Adamina no tiene variante italic registrada
+  const supportsItalic = preset.family !== 'Adamina';
 
   return (
     <View style={s.container}>
@@ -178,7 +181,7 @@ export function HymnPageBooklet({
                   style={{
                     ...s.lyricLine,
                     ...(line.bold ? { fontWeight: 'bold' as const } : {}),
-                    ...(line.italic ? { fontStyle: 'italic' as const } : {}),
+                    ...(line.italic && supportsItalic ? { fontStyle: 'italic' as const } : {}),
                   }}
                 >
                   {line.text}
