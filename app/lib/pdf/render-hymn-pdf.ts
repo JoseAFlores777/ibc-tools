@@ -23,6 +23,10 @@ export interface RenderHymnPdfOptions {
   orientation?: Orientation;
   fontPreset?: FontPreset;
   includeBibleRef?: boolean;
+  bookletTitle?: string;
+  bookletSubtitle?: string;
+  bookletDate?: string;
+  bookletBibleRef?: string;
 }
 
 interface ParsedHymn {
@@ -72,42 +76,46 @@ export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buff
       '@/app/components/pdf-components/pdf-pages/BookletSheet'
     );
 
-    // Construir array de paginas: portada + himnos + contraportada
-    const bookletPages: BookletPageEntry[] = [];
+    // Calcular total de contenido: portada + himnos + contraportada
+    const contentCount = 1 + parsedHymns.length + 1;
+    // Redondear al multiplo de 4 (mismo calculo que computeImposition)
+    const totalPages = Math.ceil(contentCount / 4) * 4;
 
-    // Portada (pagina 1)
+    // Construir array de TODAS las paginas (incluyendo blancos)
+    // Indices 0-based, pagina 1-based = indice + 1
+    const bookletPages: (BookletPageEntry | null)[] = new Array(totalPages).fill(null);
+
+    // Portada = pagina 1 (indice 0)
     const firstHymn = hymns[0];
-    const hymnalName = firstHymn.hymnal?.name;
-    const coverTitle = hymnalName || 'Himnos';
     const today = new Date();
-    const dateStr = today.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
-    bookletPages.push({
+    const defaultDate = today.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+    bookletPages[0] = {
       type: 'cover',
-      title: coverTitle,
-      subtitle: hymns.length > 1 ? `${hymns.length} himnos` : firstHymn.name,
-      date: dateStr,
-      bibleText: firstHymn.bible_text || undefined,
-      bibleReference: firstHymn.bible_reference || undefined,
-    });
+      title: options.bookletTitle || firstHymn.hymnal?.name || 'Himnos',
+      subtitle: options.bookletSubtitle || (hymns.length > 1 ? `${hymns.length} himnos` : firstHymn.name),
+      date: options.bookletDate || defaultDate,
+      bibleText: options.bookletBibleRef ? undefined : (firstHymn.bible_text || undefined),
+      bibleReference: options.bookletBibleRef || firstHymn.bible_reference || undefined,
+    };
 
-    // Himnos
-    for (const ph of parsedHymns) {
-      bookletPages.push({ type: 'hymn', hymn: ph.hymn, verses: ph.verses });
+    // Himnos = paginas 2..N+1
+    for (let i = 0; i < parsedHymns.length; i++) {
+      bookletPages[i + 1] = { type: 'hymn', hymn: parsedHymns[i].hymn, verses: parsedHymns[i].verses };
     }
 
-    // Contraportada (ultima pagina)
-    bookletPages.push({ type: 'backCover' });
+    // Contraportada = ULTIMA pagina del total paginado (no solo del contenido)
+    bookletPages[totalPages - 1] = { type: 'backCover' };
 
-    const imposition = computeImposition(bookletPages.length);
+    // Imposicion con totalPages (no contentCount) para que ningun slot sea marcado como blank por el algoritmo
+    const imposition = computeImposition(totalPages);
 
     const getPage = (pageNum: number): BookletPageEntry | null => {
-      if (pageNum <= 0 || pageNum > bookletPages.length) return null;
-      return bookletPages[pageNum - 1];
+      if (pageNum <= 0 || pageNum > totalPages) return null;
+      return bookletPages[pageNum - 1]; // null = pagina en blanco
     };
 
     pages = [];
     for (const sheet of imposition) {
-      // Frente de la hoja
       pages.push(
         React.createElement(BookletSheet, {
           key: `f-${pages.length}`,
@@ -118,7 +126,6 @@ export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buff
           style,
         }),
       );
-      // Reverso de la hoja
       pages.push(
         React.createElement(BookletSheet, {
           key: `b-${pages.length}`,

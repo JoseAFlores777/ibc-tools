@@ -32,6 +32,10 @@ export const packageRequestSchema = z.object({
   orientation: z.enum(['portrait', 'landscape']).optional().default('portrait'),
   fontPreset: z.enum(['clasica', 'moderna', 'legible']).optional().default('clasica'),
   includeBibleRef: z.boolean().optional().default(true),
+  bookletTitle: z.string().optional().default(''),
+  bookletSubtitle: z.string().optional().default(''),
+  bookletDate: z.string().optional().default(''),
+  bookletBibleRef: z.string().optional().default(''),
 });
 
 export type PackageRequest = z.infer<typeof packageRequestSchema>;

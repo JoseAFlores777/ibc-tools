@@ -8,6 +8,10 @@ const PRINT_DEFAULTS = {
   orientation: 'portrait' as const,
   fontPreset: 'clasica' as const,
   includeBibleRef: true,
+  bookletTitle: '',
+  bookletSubtitle: '',
+  bookletDate: '',
+  bookletBibleRef: '',
 };
 
 // Mock de renderHymnPdf

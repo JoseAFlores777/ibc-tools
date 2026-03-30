@@ -24,5 +24,9 @@ export function buildPackageRequest(state: WizardState): PackageRequest {
     orientation: state.orientation,
     fontPreset: state.fontPreset,
     includeBibleRef: state.includeBibleRef,
+    bookletTitle: state.bookletTitle,
+    bookletSubtitle: state.bookletSubtitle,
+    bookletDate: state.bookletDate,
+    bookletBibleRef: state.bookletBibleRef,
   };
 }

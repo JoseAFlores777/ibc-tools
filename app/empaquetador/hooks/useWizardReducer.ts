@@ -25,6 +25,10 @@ export interface WizardState {
   orientation: 'portrait' | 'landscape';
   fontPreset: 'clasica' | 'moderna' | 'legible';
   includeBibleRef: boolean;
+  bookletTitle: string;
+  bookletSubtitle: string;
+  bookletDate: string;
+  bookletBibleRef: string;
   audioSelections: Map<string, Set<string>>;
   isGenerating: boolean;
   error: string | null;
@@ -45,8 +49,12 @@ export type WizardAction =
   | { type: 'SET_ORIENTATION'; orientation: 'portrait' | 'landscape' }
   | { type: 'SET_FONT_PRESET'; fontPreset: 'clasica' | 'moderna' | 'legible' }
   | { type: 'SET_INCLUDE_BIBLE_REF'; includeBibleRef: boolean }
+  | { type: 'SET_BOOKLET_TITLE'; bookletTitle: string }
+  | { type: 'SET_BOOKLET_SUBTITLE'; bookletSubtitle: string }
+  | { type: 'SET_BOOKLET_DATE'; bookletDate: string }
+  | { type: 'SET_BOOKLET_BIBLE_REF'; bookletBibleRef: string }
   | { type: 'RESET' }
-  | { type: 'LOAD_PACKAGE'; hymns: HymnSearchResult[]; layout: WizardState['layout']; style: WizardState['style']; audioSelections: Map<string, Set<string>>; printMode?: WizardState['printMode']; orientation?: WizardState['orientation']; fontPreset?: WizardState['fontPreset']; includeBibleRef?: boolean };
+  | { type: 'LOAD_PACKAGE'; hymns: HymnSearchResult[]; layout: WizardState['layout']; style: WizardState['style']; audioSelections: Map<string, Set<string>>; printMode?: WizardState['printMode']; orientation?: WizardState['orientation']; fontPreset?: WizardState['fontPreset']; includeBibleRef?: boolean; bookletTitle?: string; bookletSubtitle?: string; bookletDate?: string; bookletBibleRef?: string };
 
 /** Estado inicial del wizard */
 export const initialWizardState: WizardState = {
@@ -58,6 +66,10 @@ export const initialWizardState: WizardState = {
   orientation: 'portrait',
   fontPreset: 'clasica',
   includeBibleRef: true,
+  bookletTitle: '',
+  bookletSubtitle: '',
+  bookletDate: '',
+  bookletBibleRef: '',
   audioSelections: new Map(),
   isGenerating: false,
   error: null,
@@ -145,6 +157,18 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
     case 'SET_INCLUDE_BIBLE_REF':
       return { ...state, includeBibleRef: action.includeBibleRef };
 
+    case 'SET_BOOKLET_TITLE':
+      return { ...state, bookletTitle: action.bookletTitle };
+
+    case 'SET_BOOKLET_SUBTITLE':
+      return { ...state, bookletSubtitle: action.bookletSubtitle };
+
+    case 'SET_BOOKLET_DATE':
+      return { ...state, bookletDate: action.bookletDate };
+
+    case 'SET_BOOKLET_BIBLE_REF':
+      return { ...state, bookletBibleRef: action.bookletBibleRef };
+
     case 'RESET':
       return {
         ...initialWizardState,
@@ -161,6 +185,10 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
         orientation: action.orientation ?? 'portrait',
         fontPreset: action.fontPreset ?? 'clasica',
         includeBibleRef: action.includeBibleRef ?? true,
+        bookletTitle: action.bookletTitle ?? '',
+        bookletSubtitle: action.bookletSubtitle ?? '',
+        bookletDate: action.bookletDate ?? '',
+        bookletBibleRef: action.bookletBibleRef ?? '',
         audioSelections: action.audioSelections,
         isGenerating: false,
         error: null,

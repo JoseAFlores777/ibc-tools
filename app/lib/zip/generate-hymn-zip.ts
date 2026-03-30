@@ -115,6 +115,10 @@ export async function assembleHymnPackage(
         orientation: request.orientation,
         fontPreset: request.fontPreset,
         includeBibleRef: request.includeBibleRef,
+        bookletTitle: request.bookletTitle,
+        bookletSubtitle: request.bookletSubtitle,
+        bookletDate: request.bookletDate,
+        bookletBibleRef: request.bookletBibleRef,
       });
       archive.append(pdfBuffer, { name: `${folderName}/${folderName}.pdf` });
       allSuccessfulHymns.push(hymnData);
@@ -182,6 +186,10 @@ export async function assembleHymnPackage(
         orientation: request.orientation,
         fontPreset: request.fontPreset,
         includeBibleRef: request.includeBibleRef,
+        bookletTitle: request.bookletTitle,
+        bookletSubtitle: request.bookletSubtitle,
+        bookletDate: request.bookletDate,
+        bookletBibleRef: request.bookletBibleRef,
       });
       archive.append(combinedPdf, { name: 'himnos.pdf' });
     } catch (err) {

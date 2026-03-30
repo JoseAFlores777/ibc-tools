@@ -9,6 +9,8 @@ import {
   Badge,
   Switch,
 } from '@/lib/shadcn/ui';
+import { Input } from '@/app/lib/shadcn/ui/input';
+import { Textarea } from '@/app/lib/shadcn/ui/textarea';
 import type { WizardState, WizardAction } from '@/app/empaquetador/hooks/useWizardReducer';
 import { AUDIO_FIELD_NAMES } from '@/app/empaquetador/hooks/useWizardReducer';
 import type { HymnAudioFiles } from '@/app/interfaces/Hymn.interface';
@@ -114,6 +116,72 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                 </p>
               )}
             </div>
+
+            {/* Campos de portada - solo visible en modo booklet */}
+            {state.printMode === 'booklet' && (
+              <>
+                <Separator />
+                <div>
+                  <Label className="text-xs font-semibold tracking-wide uppercase text-slate-400 mb-3 block">
+                    Portada del Booklet
+                  </Label>
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="booklet-title" className="text-xs text-slate-600 mb-1 block">
+                        Titulo
+                      </Label>
+                      <Input
+                        id="booklet-title"
+                        placeholder="Ej: Himnos de Alabanza"
+                        value={state.bookletTitle}
+                        onChange={(e) => dispatch({ type: 'SET_BOOKLET_TITLE', bookletTitle: e.target.value })}
+                        className="h-9 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="booklet-subtitle" className="text-xs text-slate-600 mb-1 block">
+                        Subtitulo
+                      </Label>
+                      <Input
+                        id="booklet-subtitle"
+                        placeholder="Ej: Servicio dominical"
+                        value={state.bookletSubtitle}
+                        onChange={(e) => dispatch({ type: 'SET_BOOKLET_SUBTITLE', bookletSubtitle: e.target.value })}
+                        className="h-9 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="booklet-date" className="text-xs text-slate-600 mb-1 block">
+                        Fecha
+                      </Label>
+                      <Input
+                        id="booklet-date"
+                        placeholder="Ej: 30 de marzo de 2026"
+                        value={state.bookletDate}
+                        onChange={(e) => dispatch({ type: 'SET_BOOKLET_DATE', bookletDate: e.target.value })}
+                        className="h-9 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="booklet-bible-ref" className="text-xs text-slate-600 mb-1 block">
+                        Referencia biblica
+                      </Label>
+                      <Textarea
+                        id="booklet-bible-ref"
+                        placeholder="Ej: Cantad a Jehova cantico nuevo — Salmo 96:1"
+                        value={state.bookletBibleRef}
+                        onChange={(e) => dispatch({ type: 'SET_BOOKLET_BIBLE_REF', bookletBibleRef: e.target.value })}
+                        className="text-sm min-h-[60px]"
+                        rows={2}
+                      />
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      Deje en blanco para usar valores automaticos.
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
 
             <Separator />
 
