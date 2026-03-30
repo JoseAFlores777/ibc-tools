@@ -48,9 +48,9 @@ created: 2026-03-30
 
 ## Wave 0 Requirements
 
-- [ ] `app/lib/pdf/__tests__/imposition.test.ts` — unit tests for saddle-stitch imposition algorithm
-- [ ] `app/lib/pdf/__tests__/font-presets.test.ts` — font preset token validation
-- [ ] `app/lib/pdf/__tests__/render-hymn-pdf-extended.test.ts` — extended render options tests
+- [ ] `tests/pdf/imposition.test.ts` — unit tests for saddle-stitch imposition algorithm
+- [ ] `tests/pdf/font-presets.test.ts` — font preset token validation
+- [ ] `tests/pdf/render-hymn-pdf.test.ts` — extended render options tests
 
 *Existing vitest infrastructure covers test execution.*
 
