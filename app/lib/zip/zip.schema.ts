@@ -28,6 +28,10 @@ export const packageRequestSchema = z.object({
     .max(50, 'Maximo 50 himnos por paquete'),
   layout: z.enum(['one-per-page', 'two-per-page']),
   style: z.enum(['decorated', 'plain']),
+  printMode: z.enum(['simple', 'booklet']).optional().default('simple'),
+  orientation: z.enum(['portrait', 'landscape']).optional().default('portrait'),
+  fontPreset: z.enum(['clasica', 'moderna', 'legible']).optional().default('clasica'),
+  includeBibleRef: z.boolean().optional().default(true),
 });
 
 export type PackageRequest = z.infer<typeof packageRequestSchema>;

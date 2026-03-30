@@ -21,6 +21,10 @@ export interface WizardState {
   selectedHymns: HymnSearchResult[];
   layout: 'one-per-page' | 'two-per-page';
   style: 'decorated' | 'plain';
+  printMode: 'simple' | 'booklet';
+  orientation: 'portrait' | 'landscape';
+  fontPreset: 'clasica' | 'moderna' | 'legible';
+  includeBibleRef: boolean;
   audioSelections: Map<string, Set<string>>;
   isGenerating: boolean;
   error: string | null;
@@ -37,7 +41,12 @@ export type WizardAction =
   | { type: 'SELECT_ALL_AUDIO'; selectAll: boolean }
   | { type: 'SET_GENERATING'; isGenerating: boolean }
   | { type: 'SET_ERROR'; error: string | null }
-  | { type: 'RESET' };
+  | { type: 'SET_PRINT_MODE'; printMode: 'simple' | 'booklet' }
+  | { type: 'SET_ORIENTATION'; orientation: 'portrait' | 'landscape' }
+  | { type: 'SET_FONT_PRESET'; fontPreset: 'clasica' | 'moderna' | 'legible' }
+  | { type: 'SET_INCLUDE_BIBLE_REF'; includeBibleRef: boolean }
+  | { type: 'RESET' }
+  | { type: 'LOAD_PACKAGE'; hymns: HymnSearchResult[]; layout: WizardState['layout']; style: WizardState['style']; audioSelections: Map<string, Set<string>>; printMode?: WizardState['printMode']; orientation?: WizardState['orientation']; fontPreset?: WizardState['fontPreset']; includeBibleRef?: boolean };
 
 /** Estado inicial del wizard */
 export const initialWizardState: WizardState = {
@@ -45,6 +54,10 @@ export const initialWizardState: WizardState = {
   selectedHymns: [],
   layout: 'one-per-page',
   style: 'decorated',
+  printMode: 'simple',
+  orientation: 'portrait',
+  fontPreset: 'clasica',
+  includeBibleRef: true,
   audioSelections: new Map(),
   isGenerating: false,
   error: null,
@@ -120,10 +133,37 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
     case 'SET_ERROR':
       return { ...state, error: action.error };
 
+    case 'SET_PRINT_MODE':
+      return { ...state, printMode: action.printMode };
+
+    case 'SET_ORIENTATION':
+      return { ...state, orientation: action.orientation };
+
+    case 'SET_FONT_PRESET':
+      return { ...state, fontPreset: action.fontPreset };
+
+    case 'SET_INCLUDE_BIBLE_REF':
+      return { ...state, includeBibleRef: action.includeBibleRef };
+
     case 'RESET':
       return {
         ...initialWizardState,
         audioSelections: new Map(),
+      };
+
+    case 'LOAD_PACKAGE':
+      return {
+        step: 2,
+        selectedHymns: action.hymns,
+        layout: action.layout,
+        style: action.style,
+        printMode: action.printMode ?? 'simple',
+        orientation: action.orientation ?? 'portrait',
+        fontPreset: action.fontPreset ?? 'clasica',
+        includeBibleRef: action.includeBibleRef ?? true,
+        audioSelections: action.audioSelections,
+        isGenerating: false,
+        error: null,
       };
 
     default:
