@@ -12,6 +12,8 @@ created: "2026-03-30"
 
 This phase modifies **Step 2 (StepConfiguracion)** of the existing empaquetador wizard to add four new control groups: print mode selector, page orientation selector, font preset selector, and bible reference toggle. It also adds a contextual warning for large booklets. No new pages or routes are created. The PDF output changes are server-side only and do not affect the web UI design contract beyond Step 2.
 
+Primary visual anchor: "Modo de Impresion" selector -- positioned first in the left column; its selection state drives conditional visibility of all other controls.
+
 ## Design System
 
 | Property | Value | Source |
@@ -37,15 +39,18 @@ This phase modifies **Step 2 (StepConfiguracion)** of the existing empaquetador 
 | Token | Value | Usage |
 |-------|-------|-------|
 | `gap-2` | 8px | Inline icon + label pairs |
-| `gap-3` | 12px | Grid gap between selector cards |
-| `mb-3` | 12px | Section label to control spacing |
+| `gap-4` | 16px | Grid gap between selector cards |
+| `mb-4` | 16px | Section label to control spacing |
 | `space-y-6` | 24px | Between control groups within a Card |
 | `gap-6` | 24px | Between left and right columns (existing) |
 | `py-8` | 32px | Page top/bottom padding (existing) |
 | `mb-8` | 32px | Header to content (existing) |
-| `min-h-[44px]` | 44px | Touch target minimum for all interactive controls |
 
-No exceptions. Existing Step 2 spacing patterns are preserved.
+### Named Exceptions
+
+| Token | Value | Justification |
+|-------|-------|---------------|
+| `min-h-[48px]` | 48px | Touch target minimum for all interactive controls — WCAG 2.5.5 accessible target size, using standard-set 48px instead of 44px |
 
 ## Typography (Web UI)
 
@@ -53,14 +58,13 @@ All typography uses the project's `--font-sans` variable (system sans-serif stac
 
 | Role | Size | Weight | Line-height | Tailwind class |
 |------|------|--------|-------------|----------------|
-| Section heading | 24px | 700 (bold) | 1.33 | `text-2xl font-bold` |
-| Card title | 16px | 500 (medium) | 1.5 | `text-base` (via CardTitle) |
-| Section label | 10px | 600 (semibold) | 1.5 | `text-xs font-semibold tracking-wide uppercase` |
-| Control label | 14px | 500 (medium) | 1.43 | `text-sm font-medium` |
-| Description text | 12px | 400 (regular) | 1.5 | `text-xs text-slate-500` |
-| Warning text | 12px | 500 (medium) | 1.5 | `text-xs font-medium text-amber-600` |
+| Section heading | 24px | 600 (semibold) | 1.33 | `text-2xl font-semibold` |
+| Card title | 16px | 600 (semibold) | 1.5 | `text-base font-semibold` (override CardTitle default) |
+| Section label | 12px | 600 (semibold) | 1.5 | `text-xs font-semibold tracking-wide uppercase` |
+| Control label | 14px | 400 (regular) | 1.43 | `text-sm` |
+| Description/warning text | 12px | 400 (regular) | 1.5 | `text-xs text-slate-500` |
 
-Font weights used: 400 (regular), 500 (medium), 600 (semibold), 700 (bold). This matches the existing Step 2 pattern.
+Font weights used: 400 (regular) and 600 (semibold). These are the only two weights permitted in the web UI for this phase. Where shadcn CardTitle defaults to `font-medium` (500) or `font-bold` (700), override explicitly with `font-semibold` (600) or remove the weight class to fall back to 400.
 
 ## Typography (PDF Output)
 
@@ -166,7 +170,7 @@ Unselected:  border-slate-200 hover:border-slate-300 text-slate-600
 Selected:    border-primary bg-primary/5 text-primary
 ```
 
-Selector buttons use `<button type="button">` with `cn()` for conditional classes. Minimum height: `min-h-[44px]`. All selectors use the icon-above-label layout for card-style selectors (print mode, orientation) or icon-left-label layout for list-style selectors (font preset).
+Selector buttons use `<button type="button">` with `cn()` for conditional classes. Minimum height: `min-h-[48px]`. All selectors use the icon-above-label layout for card-style selectors (print mode, orientation) or icon-left-label layout for list-style selectors (font preset).
 
 ## Layout Contract: Step 2 (StepConfiguracion)
 
@@ -253,7 +257,7 @@ Font preset uses the list-style selector pattern (icon left, label + description
 | Label | `Incluir referencia biblica` |
 | Description | `Muestra el texto y cita biblica en el PDF` |
 
-Uses shadcn `Switch` component with `Label`. Layout: switch on left, label + description on right. Wrapped in a flex row with `items-center gap-3`.
+Uses shadcn `Switch` component with `Label`. Layout: switch on left, label + description on right. Wrapped in a flex row with `items-center gap-2`.
 
 ### Booklet Warning
 
@@ -261,7 +265,7 @@ Uses shadcn `Switch` component with `Label`. Layout: switch on left, label + des
 |---------|------|
 | Warning text | `Los booklets con mas de 40 paginas son dificiles de engrapar. Considere dividir en varios paquetes.` |
 
-Rendered as a `<div>` with `rounded-lg border border-amber-200 bg-amber-50 p-3` containing a `<p>` with `text-xs font-medium text-amber-600`. Prefixed with `AlertTriangle` icon (lucide, `h-4 w-4 text-amber-500`).
+Rendered as a `<div>` with `rounded-lg border border-amber-200 bg-amber-50 p-4` containing a `<p>` with `text-xs text-amber-600`. Prefixed with `AlertTriangle` icon (lucide, `h-4 w-4 text-amber-500`).
 
 ### Print Instructions (in-app, shown when booklet selected)
 
