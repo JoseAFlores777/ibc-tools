@@ -7,13 +7,26 @@ import {
   CardContent,
   Separator,
   Badge,
+  Switch,
 } from '@/lib/shadcn/ui';
 import type { WizardState, WizardAction } from '@/app/empaquetador/hooks/useWizardReducer';
 import { AUDIO_FIELD_NAMES } from '@/app/empaquetador/hooks/useWizardReducer';
 import type { HymnAudioFiles } from '@/app/interfaces/Hymn.interface';
 import AudioTrackRow from './AudioTrackRow';
 import { cn } from '@/app/lib/shadcn/utils';
-import { FileText, Grid2X2, Sparkles, LayoutList, Music } from 'lucide-react';
+import {
+  FileText,
+  Grid2X2,
+  Sparkles,
+  LayoutList,
+  Music,
+  BookOpen,
+  Smartphone,
+  Type,
+  ALargeSmall,
+  ZoomIn,
+  AlertTriangle,
+} from 'lucide-react';
 
 /** Mapa de campo de audio a etiqueta en espanol */
 const AUDIO_LABELS: Record<string, string> = {
@@ -62,42 +75,129 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Diseno de pagina */}
+            {/* Modo de Impresion */}
             <div>
               <Label className="text-xs font-semibold tracking-wide uppercase text-slate-400 mb-3 block">
-                Diseno de Pagina
+                Modo de Impresion
               </Label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() => dispatch({ type: 'SET_LAYOUT', layout: 'one-per-page' })}
+                  onClick={() => dispatch({ type: 'SET_PRINT_MODE', printMode: 'simple' })}
                   className={cn(
-                    'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all min-h-[44px]',
-                    state.layout === 'one-per-page'
+                    'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all min-h-[48px]',
+                    state.printMode === 'simple'
                       ? 'border-primary bg-primary/5 text-primary'
                       : 'border-slate-200 hover:border-slate-300 text-slate-600',
                   )}
                 >
-                  <LayoutList className="h-8 w-8" />
-                  <span className="text-sm font-medium">1 Himno</span>
+                  <FileText className="h-8 w-8" />
+                  <span className="text-sm font-medium">Hoja Simple</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => dispatch({ type: 'SET_LAYOUT', layout: 'two-per-page' })}
+                  onClick={() => dispatch({ type: 'SET_PRINT_MODE', printMode: 'booklet' })}
                   className={cn(
-                    'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all min-h-[44px]',
-                    state.layout === 'two-per-page'
+                    'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all min-h-[48px]',
+                    state.printMode === 'booklet'
                       ? 'border-primary bg-primary/5 text-primary'
                       : 'border-slate-200 hover:border-slate-300 text-slate-600',
                   )}
                 >
-                  <Grid2X2 className="h-8 w-8" />
-                  <span className="text-sm font-medium">2 Himnos</span>
+                  <BookOpen className="h-8 w-8" />
+                  <span className="text-sm font-medium">Booklet</span>
                 </button>
               </div>
+              {state.printMode === 'booklet' && (
+                <p className="text-xs text-slate-500 mt-2">
+                  Para imprimir: seleccione &quot;Ambos lados&quot; y &quot;Voltear en borde corto&quot;. Engrapadora al centro.
+                </p>
+              )}
             </div>
 
             <Separator />
+
+            {/* Diseno de pagina - solo visible en modo simple */}
+            {state.printMode === 'simple' && (
+              <>
+                <div>
+                  <Label className="text-xs font-semibold tracking-wide uppercase text-slate-400 mb-3 block">
+                    Diseno de Pagina
+                  </Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => dispatch({ type: 'SET_LAYOUT', layout: 'one-per-page' })}
+                      className={cn(
+                        'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all min-h-[48px]',
+                        state.layout === 'one-per-page'
+                          ? 'border-primary bg-primary/5 text-primary'
+                          : 'border-slate-200 hover:border-slate-300 text-slate-600',
+                      )}
+                    >
+                      <LayoutList className="h-8 w-8" />
+                      <span className="text-sm font-medium">1 Himno</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => dispatch({ type: 'SET_LAYOUT', layout: 'two-per-page' })}
+                      className={cn(
+                        'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all min-h-[48px]',
+                        state.layout === 'two-per-page'
+                          ? 'border-primary bg-primary/5 text-primary'
+                          : 'border-slate-200 hover:border-slate-300 text-slate-600',
+                      )}
+                    >
+                      <Grid2X2 className="h-8 w-8" />
+                      <span className="text-sm font-medium">2 Himnos</span>
+                    </button>
+                  </div>
+                </div>
+
+                <Separator />
+              </>
+            )}
+
+            {/* Orientacion - solo visible en modo simple */}
+            {state.printMode === 'simple' && (
+              <>
+                <div>
+                  <Label className="text-xs font-semibold tracking-wide uppercase text-slate-400 mb-3 block">
+                    Orientacion
+                  </Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => dispatch({ type: 'SET_ORIENTATION', orientation: 'portrait' })}
+                      className={cn(
+                        'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all min-h-[48px]',
+                        state.orientation === 'portrait'
+                          ? 'border-primary bg-primary/5 text-primary'
+                          : 'border-slate-200 hover:border-slate-300 text-slate-600',
+                      )}
+                    >
+                      <Smartphone className="h-8 w-8" />
+                      <span className="text-sm font-medium">Vertical</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => dispatch({ type: 'SET_ORIENTATION', orientation: 'landscape' })}
+                      className={cn(
+                        'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all min-h-[48px]',
+                        state.orientation === 'landscape'
+                          ? 'border-primary bg-primary/5 text-primary'
+                          : 'border-slate-200 hover:border-slate-300 text-slate-600',
+                      )}
+                    >
+                      <Smartphone className="h-8 w-8 rotate-90" />
+                      <span className="text-sm font-medium">Horizontal</span>
+                    </button>
+                  </div>
+                </div>
+
+                <Separator />
+              </>
+            )}
 
             {/* Estilo visual */}
             <div>
@@ -109,7 +209,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                   type="button"
                   onClick={() => dispatch({ type: 'SET_STYLE', style: 'decorated' })}
                   className={cn(
-                    'w-full text-left p-4 rounded-lg border-2 transition-all min-h-[44px]',
+                    'w-full text-left p-4 rounded-lg border-2 transition-all min-h-[48px]',
                     state.style === 'decorated'
                       ? 'border-primary bg-primary/5'
                       : 'border-slate-200 hover:border-slate-300',
@@ -139,7 +239,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                   type="button"
                   onClick={() => dispatch({ type: 'SET_STYLE', style: 'plain' })}
                   className={cn(
-                    'w-full text-left p-4 rounded-lg border-2 transition-all min-h-[44px]',
+                    'w-full text-left p-4 rounded-lg border-2 transition-all min-h-[48px]',
                     state.style === 'plain'
                       ? 'border-primary bg-primary/5'
                       : 'border-slate-200 hover:border-slate-300',
@@ -167,6 +267,71 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                 </button>
               </div>
             </div>
+
+            <Separator />
+
+            {/* Fuente */}
+            <div>
+              <Label className="text-xs font-semibold tracking-wide uppercase text-slate-400 mb-3 block">
+                Fuente
+              </Label>
+              <div className="space-y-3">
+                {([
+                  { value: 'clasica' as const, label: 'Clasica', desc: 'Tipografia serif elegante (Adamina)', icon: Type },
+                  { value: 'moderna' as const, label: 'Moderna', desc: 'Tipografia sans-serif limpia (Helvetica)', icon: ALargeSmall },
+                  { value: 'legible' as const, label: 'Legible', desc: 'Tamano grande para lectura facil', icon: ZoomIn },
+                ]).map(({ value, label, desc, icon: Icon }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => dispatch({ type: 'SET_FONT_PRESET', fontPreset: value })}
+                    className={cn(
+                      'w-full text-left p-4 rounded-lg border-2 transition-all min-h-[48px]',
+                      state.fontPreset === value
+                        ? 'border-primary bg-primary/5'
+                        : 'border-slate-200 hover:border-slate-300',
+                    )}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Icon className={cn('h-4 w-4', state.fontPreset === value ? 'text-primary' : 'text-slate-500')} />
+                      <span className={cn('text-sm font-semibold', state.fontPreset === value ? 'text-primary' : 'text-slate-700')}>
+                        {label}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 pl-6">{desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Referencia biblica */}
+            <div className="flex items-center gap-3">
+              <Switch
+                id="include-bible-ref"
+                checked={state.includeBibleRef}
+                onCheckedChange={(checked) =>
+                  dispatch({ type: 'SET_INCLUDE_BIBLE_REF', includeBibleRef: Boolean(checked) })
+                }
+              />
+              <div>
+                <Label htmlFor="include-bible-ref" className="text-sm cursor-pointer">
+                  Incluir referencia biblica
+                </Label>
+                <p className="text-xs text-slate-500">Muestra el texto y cita biblica en el PDF</p>
+              </div>
+            </div>
+
+            {/* Booklet warning */}
+            {state.printMode === 'booklet' && state.selectedHymns.length > 40 && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-600">
+                  Los booklets con mas de 40 paginas son dificiles de engrapar. Considere dividir en varios paquetes.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -185,7 +350,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
           </CardHeader>
           <CardContent>
             {/* Seleccionar todas las pistas */}
-            <div className="flex items-center gap-2 mb-4 min-h-[44px]">
+            <div className="flex items-center gap-2 mb-4 min-h-[48px]">
               <Checkbox
                 id="select-all-audio"
                 checked={allSelected}
