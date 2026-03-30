@@ -68,28 +68,35 @@ function createStyles(preset: FontPresetConfig, styleVariant: 'decorated' | 'pla
     headerPlainTitle: {
       fontSize: preset.scale.display,
       fontWeight: 'bold',
+      textTransform: 'uppercase',
       color: '#000000',
       marginTop: 2,
     },
     // Bible reference
     bibleSection: {
-      marginBottom: 6,
-      paddingHorizontal: 12,
+      marginBottom: 8,
+      marginTop: 4,
+      paddingHorizontal: 16,
+      paddingVertical: 6,
       alignItems: 'center',
+      borderLeftWidth: 2,
+      borderLeftColor: isDecorated ? COLORS.goldAccent : '#999999',
+      marginLeft: 20,
+      marginRight: 20,
     },
     bibleText: {
       fontSize: preset.scale.label,
-      textAlign: 'center',
-      // Adamina no tiene variante italic registrada; solo aplicar italic con fuentes que lo soporten
+      textAlign: 'left',
       ...(preset.family !== 'Adamina' ? { fontStyle: 'italic' as const } : {}),
-      color: isDecorated ? COLORS.lightText : COLORS.plainSubtitle,
-      lineHeight: 1.3,
+      color: isDecorated ? '#e0e0e0' : '#333333',
+      lineHeight: 1.4,
     },
     bibleReference: {
-      fontSize: preset.scale.label - 1,
-      marginTop: 3,
-      textAlign: 'center',
-      color: isDecorated ? COLORS.headerText : '#000000',
+      fontSize: preset.scale.label,
+      marginTop: 4,
+      textAlign: 'left',
+      fontWeight: 'bold',
+      color: isDecorated ? COLORS.goldHighlight : '#111111',
     },
     // Verses
     versesArea: {
@@ -107,7 +114,7 @@ function createStyles(preset: FontPresetConfig, styleVariant: 'decorated' | 'pla
     },
     lyricLine: {
       fontSize: preset.scale.body,
-      textAlign: isDecorated ? 'center' : 'left',
+      textAlign: 'center',
       lineHeight: 1.3,
       color: isDecorated ? COLORS.bodyText : '#000000',
     },

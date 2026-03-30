@@ -20,6 +20,13 @@ const TITLE_KEYWORDS = [
 ];
 
 /**
+ * Patron que detecta lineas de encabezado de himno redundantes en el HTML de Directus.
+ * Ejemplo: "HIMNO #1 - CON CÁNTICOS, SEÑOR (4/4)"
+ * Estas lineas ya se muestran en el header del PDF y deben omitirse del cuerpo.
+ */
+const HYMN_HEADER_PATTERN = /^HIMNO\s*#?\s*\d+\s*[-–—]\s*.+$/i;
+
+/**
  * Convierte HTML del campo letter_hymn de Directus en un arreglo estructurado
  * de versos con informacion de formato (negrita/cursiva).
  *
@@ -36,6 +43,11 @@ export function parseHymnHtml(html: string): ParsedVerse[] {
 
   for (const paragraph of paragraphs) {
     const textContent = paragraph.textContent.trim();
+
+    // Omitir lineas de encabezado de himno redundantes (ej: "HIMNO #1 - CON CÁNTICOS, SEÑOR (4/4)")
+    if (HYMN_HEADER_PATTERN.test(textContent)) {
+      continue;
+    }
 
     // Si el contenido del parrafo es exactamente un titulo de seccion
     if (TITLE_KEYWORDS.includes(textContent)) {

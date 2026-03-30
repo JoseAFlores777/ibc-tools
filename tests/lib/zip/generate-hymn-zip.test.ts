@@ -2,6 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { HymnForPdf } from '@/app/interfaces/Hymn.interface';
 import type { PackageRequest } from '@/app/lib/zip/zip.schema';
 
+/** Defaults para los campos nuevos de impresion */
+const PRINT_DEFAULTS = {
+  printMode: 'simple' as const,
+  orientation: 'portrait' as const,
+  fontPreset: 'clasica' as const,
+  includeBibleRef: true,
+};
+
 // Mock de renderHymnPdf
 vi.mock('@/app/lib/pdf/render-hymn-pdf', () => ({
   renderHymnPdf: vi.fn().mockResolvedValue(Buffer.from('fake-pdf-content')),
@@ -118,6 +126,7 @@ describe('assembleHymnPackage', () => {
     pass.on('data', (chunk: Buffer) => chunks.push(chunk));
 
     const request: PackageRequest = {
+      ...PRINT_DEFAULTS,
       hymns: [{ id: 'abc-123', audioFiles: [] }],
       layout: 'one-per-page',
       style: 'decorated',
@@ -144,6 +153,7 @@ describe('assembleHymnPackage', () => {
     pass.on('data', () => {});
 
     const request: PackageRequest = {
+      ...PRINT_DEFAULTS,
       hymns: [{ id: 'abc-123', audioFiles: [] }],
       layout: 'one-per-page',
       style: 'plain',
@@ -183,6 +193,7 @@ describe('assembleHymnPackage', () => {
     pass.on('data', () => {});
 
     const request: PackageRequest = {
+      ...PRINT_DEFAULTS,
       hymns: [{ id: 'abc-123', audioFiles: ['track_only'] }],
       layout: 'one-per-page',
       style: 'decorated',
@@ -218,6 +229,7 @@ describe('assembleHymnPackage', () => {
     pass.on('data', () => {});
 
     const request: PackageRequest = {
+      ...PRINT_DEFAULTS,
       hymns: [
         { id: 'hymn-1', audioFiles: [] },
         { id: 'hymn-2', audioFiles: [] },

@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
   hymnTitle: {
     fontSize: FONT_PLAIN.title,
     fontWeight: 'bold',
+    textTransform: 'uppercase',
     color: '#000000',
     marginTop: 4,
   },
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
   },
   lyricLine: {
     fontSize: FONT_PLAIN.lyricLine,
-    textAlign: 'left',
+    textAlign: 'center',
     lineHeight: 1.4,
     color: '#000000',
   },

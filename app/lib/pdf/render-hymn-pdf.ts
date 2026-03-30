@@ -30,6 +30,12 @@ interface ParsedHymn {
   verses: ParsedVerse[];
 }
 
+/** Tipos de pagina para booklet: himno, portada, o contraportada */
+type BookletPageEntry =
+  | { type: 'hymn'; hymn: HymnForPdf; verses: ParsedVerse[] }
+  | { type: 'cover'; title: string; subtitle?: string; date?: string; bibleText?: string; bibleReference?: string }
+  | { type: 'backCover' };
+
 /**
  * Genera un PDF Buffer con los himnos proporcionados, usando el layout y estilo indicados.
  *
@@ -60,13 +66,44 @@ export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buff
   let pages: React.ReactElement[];
 
   if (printMode === 'booklet') {
-    // Modo booklet: imposicion saddle-stitch
+    // Modo booklet: imposicion saddle-stitch con portada y contraportada
     const { computeImposition } = await import('@/app/lib/pdf/imposition');
     const { BookletSheet } = await import(
       '@/app/components/pdf-components/pdf-pages/BookletSheet'
     );
 
-    const imposition = computeImposition(parsedHymns.length);
+    // Construir array de paginas: portada + himnos + contraportada
+    const bookletPages: BookletPageEntry[] = [];
+
+    // Portada (pagina 1)
+    const firstHymn = hymns[0];
+    const hymnalName = firstHymn.hymnal?.name;
+    const coverTitle = hymnalName || 'Himnos';
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+    bookletPages.push({
+      type: 'cover',
+      title: coverTitle,
+      subtitle: hymns.length > 1 ? `${hymns.length} himnos` : firstHymn.name,
+      date: dateStr,
+      bibleText: firstHymn.bible_text || undefined,
+      bibleReference: firstHymn.bible_reference || undefined,
+    });
+
+    // Himnos
+    for (const ph of parsedHymns) {
+      bookletPages.push({ type: 'hymn', hymn: ph.hymn, verses: ph.verses });
+    }
+
+    // Contraportada (ultima pagina)
+    bookletPages.push({ type: 'backCover' });
+
+    const imposition = computeImposition(bookletPages.length);
+
+    const getPage = (pageNum: number): BookletPageEntry | null => {
+      if (pageNum <= 0 || pageNum > bookletPages.length) return null;
+      return bookletPages[pageNum - 1];
+    };
 
     pages = [];
     for (const sheet of imposition) {
@@ -74,8 +111,8 @@ export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buff
       pages.push(
         React.createElement(BookletSheet, {
           key: `f-${pages.length}`,
-          left: sheet.front.left > 0 ? parsedHymns[sheet.front.left - 1] : null,
-          right: sheet.front.right > 0 ? parsedHymns[sheet.front.right - 1] : null,
+          left: getPage(sheet.front.left),
+          right: getPage(sheet.front.right),
           fontPreset,
           includeBibleRef,
           style,
@@ -85,8 +122,8 @@ export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buff
       pages.push(
         React.createElement(BookletSheet, {
           key: `b-${pages.length}`,
-          left: sheet.back.left > 0 ? parsedHymns[sheet.back.left - 1] : null,
-          right: sheet.back.right > 0 ? parsedHymns[sheet.back.right - 1] : null,
+          left: getPage(sheet.back.left),
+          right: getPage(sheet.back.right),
           fontPreset,
           includeBibleRef,
           style,
