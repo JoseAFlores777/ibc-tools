@@ -1,17 +1,24 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useWizardReducer } from '@/app/empaquetador/hooks/useWizardReducer';
 import WizardStepper from '@/app/empaquetador/components/WizardStepper';
+import SelectionSidebar from '@/app/empaquetador/components/SelectionSidebar';
 import StepSeleccion from '@/app/empaquetador/components/StepSeleccion';
 import StepConfiguracion from '@/app/empaquetador/components/StepConfiguracion';
 import StepDescarga from '@/app/empaquetador/components/StepDescarga';
+import PackageHistory from '@/app/empaquetador/components/PackageHistory';
 import { Button } from '@/lib/shadcn/ui';
 import { ChevronLeft, ChevronRight, Package } from 'lucide-react';
+import { deserializeAudioSelections } from '@/app/empaquetador/lib/package-db';
+import type { SavedPackage } from '@/app/empaquetador/lib/package-db';
+import type { HymnSearchResult } from '@/app/interfaces/Hymn.interface';
 
 export default function EmpaquetadorPage() {
   const [state, dispatch] = useWizardReducer();
+  const [showHistory, setShowHistory] = useState(false);
+  const [loadingPackage, setLoadingPackage] = useState(false);
   const dirRef = useRef<'forward' | 'backward'>('forward');
   const shouldReduceMotion = useReducedMotion();
 
@@ -38,6 +45,39 @@ export default function EmpaquetadorPage() {
 
   const isNextDisabled = state.step === 1 && state.selectedHymns.length === 0;
 
+  const handleLoadPackage = useCallback(async (pkg: SavedPackage) => {
+    setLoadingPackage(true);
+    try {
+      const hymnPromises = pkg.hymns.map((h) =>
+        fetch(`/api/hymns/search?q=${encodeURIComponent(h.name)}&limit=1`)
+          .then((r) => r.json())
+          .then((json) => {
+            const results = json.data as HymnSearchResult[] ?? [];
+            return results.find((r: HymnSearchResult) => r.id === h.id) ?? results[0] ?? null;
+          })
+          .catch(() => null),
+      );
+      const hymns = (await Promise.all(hymnPromises)).filter(Boolean) as HymnSearchResult[];
+
+      if (hymns.length === 0) {
+        throw new Error('No se pudieron cargar los himnos');
+      }
+
+      dispatch({
+        type: 'LOAD_PACKAGE',
+        hymns,
+        layout: pkg.layout,
+        style: pkg.style,
+        audioSelections: deserializeAudioSelections(pkg.audioSelections),
+      });
+      setShowHistory(false);
+    } catch (err) {
+      console.error('Error al cargar paquete:', err);
+    } finally {
+      setLoadingPackage(false);
+    }
+  }, [dispatch]);
+
   const variants = {
     forward: {
       initial: { x: 20, opacity: 0 },
@@ -62,36 +102,54 @@ export default function EmpaquetadorPage() {
     }
   };
 
+  if (showHistory) {
+    return (
+      <PackageHistory
+        onBack={() => setShowHistory(false)}
+        onLoad={handleLoadPackage}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Contenido principal con padding para barra inferior */}
-      <div className="flex-1 pb-24">
-        {shouldReduceMotion ? (
-          renderStep()
-        ) : (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={state.step}
-              initial={variants[dirRef.current].initial}
-              animate={variants[dirRef.current].animate}
-              exit={variants[dirRef.current].exit}
-              transition={{ duration: 0.2 }}
-            >
-              {renderStep()}
-            </motion.div>
-          </AnimatePresence>
-        )}
+    <div className="h-screen flex flex-col overflow-hidden">
+      {/* Contenido: sidebar + step */}
+      <div className="flex-1 overflow-hidden pb-[68px] flex">
+        {/* Sidebar compartido — visible en todos los steps */}
+        <SelectionSidebar
+          state={state}
+          dispatch={dispatch}
+          onShowHistory={() => setShowHistory(true)}
+        />
+
+        {/* Área principal del step */}
+        <div className="flex-1 overflow-hidden flex flex-col">
+          {shouldReduceMotion ? (
+            <div className="flex-1 overflow-hidden">{renderStep()}</div>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={state.step}
+                className="flex-1 overflow-hidden"
+                initial={variants[dirRef.current].initial}
+                animate={variants[dirRef.current].animate}
+                exit={variants[dirRef.current].exit}
+                transition={{ duration: 0.2 }}
+              >
+                {renderStep()}
+              </motion.div>
+            </AnimatePresence>
+          )}
+        </div>
       </div>
 
       {/* Barra de accion inferior fija */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Izquierda: Stepper compacto */}
           <div className="hidden sm:block">
             <WizardStepper currentStep={state.step} onStepClick={handleStepClick} />
           </div>
 
-          {/* Centro: info de seleccion (step 1) */}
           {state.step === 1 && (
             <div className="sm:hidden flex-1 text-center">
               <span className="text-sm text-slate-600">
@@ -101,7 +159,6 @@ export default function EmpaquetadorPage() {
             </div>
           )}
 
-          {/* Derecha: botones de accion */}
           <div className="flex items-center gap-3">
             {state.step > 1 && (
               <Button variant="outline" onClick={handleBack} className="min-h-[44px]">

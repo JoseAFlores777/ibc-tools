@@ -1,75 +1,92 @@
+import { memo } from 'react';
 import type { HymnSearchResult } from '@/app/interfaces/Hymn.interface';
-import { Badge, Card } from '@/lib/shadcn/ui';
+import { Badge, Checkbox, TableRow, TableCell, Button } from '@/lib/shadcn/ui';
 import { cn } from '@/app/lib/shadcn/utils';
-import { Check } from 'lucide-react';
+import { Music, Eye } from 'lucide-react';
 
 interface HymnResultRowProps {
   hymn: HymnSearchResult;
   isSelected: boolean;
   onToggle: (hymn: HymnSearchResult) => void;
+  onViewDetails: (hymn: HymnSearchResult) => void;
 }
 
-/** Tarjeta de himno en la grilla de resultados de busqueda */
-export default function HymnResultRow({ hymn, isSelected, onToggle }: HymnResultRowProps) {
+/** Fila de himno en la tabla de resultados de busqueda */
+const HymnResultRow = memo(function HymnResultRow({ hymn, isSelected, onToggle, onViewDetails }: HymnResultRowProps) {
   return (
-    <Card
-      role="button"
-      tabIndex={0}
-      aria-pressed={isSelected}
-      onClick={() => onToggle(hymn)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onToggle(hymn);
-        }
-      }}
+    <TableRow
       className={cn(
-        'relative p-4 cursor-pointer transition-all hover:shadow-md min-h-[44px]',
-        isSelected
-          ? 'border-primary border-2 bg-primary/5'
-          : 'border hover:border-slate-300',
+        'transition-colors',
+        isSelected && 'bg-primary/5',
       )}
+      data-state={isSelected ? 'selected' : undefined}
     >
-      {/* Circulo de seleccion (top-right) */}
-      <div className="absolute top-3 right-3">
-        <div
-          className={cn(
-            'w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors',
-            isSelected
-              ? 'bg-primary border-primary text-primary-foreground'
-              : 'border-slate-300 bg-white',
-          )}
-        >
-          {isSelected && <Check className="h-3.5 w-3.5" />}
-        </div>
-      </div>
+      {/* Checkbox */}
+      <TableCell className="w-10 pr-0">
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={() => onToggle(hymn)}
+          aria-label={`Seleccionar ${hymn.name}`}
+        />
+      </TableCell>
 
-      {/* Numero del himno */}
-      {hymn.hymn_number !== null && (
-        <p className="text-lg font-light text-slate-400 mb-1">
-          #{String(hymn.hymn_number).padStart(3, '0')}
-        </p>
-      )}
+      {/* Numero */}
+      <TableCell className="w-16 font-mono text-slate-400 text-sm">
+        {hymn.hymn_number !== null ? String(hymn.hymn_number).padStart(3, '0') : '—'}
+      </TableCell>
 
       {/* Nombre */}
-      <p className="font-semibold text-slate-800 pr-8 leading-snug">{hymn.name}</p>
+      <TableCell className="font-medium text-slate-800">{hymn.name}</TableCell>
 
-      {/* Categorias como badges */}
-      {hymn.categories.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-2">
-          {hymn.categories.map((cat) =>
+      {/* Himnario */}
+      <TableCell className="hidden sm:table-cell text-sm text-slate-500">
+        {hymn.hymnal?.name ?? '—'}
+      </TableCell>
+
+      {/* Categorias */}
+      <TableCell className="hidden md:table-cell">
+        <div className="flex flex-wrap gap-1">
+          {hymn.categories.slice(0, 2).map((cat) =>
             cat.hymn_categories_id ? (
               <Badge
                 key={cat.hymn_categories_id.id}
                 variant="secondary"
-                className="text-xs font-normal"
+                className="text-[10px] font-normal"
               >
                 {cat.hymn_categories_id.name}
               </Badge>
             ) : null,
           )}
+          {hymn.categories.length > 2 && (
+            <Badge variant="outline" className="text-[10px]">
+              +{hymn.categories.length - 2}
+            </Badge>
+          )}
         </div>
-      )}
-    </Card>
+      </TableCell>
+
+      {/* Acciones */}
+      <TableCell className="w-20 text-right">
+        <div className="flex items-center justify-end gap-1">
+          {hymn.hasAnyAudio && (
+            <Music className="h-4 w-4 text-primary flex-shrink-0" />
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails(hymn);
+            }}
+            aria-label={`Ver detalles de ${hymn.name}`}
+          >
+            <Eye className="h-4 w-4 text-slate-400" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
   );
-}
+});
+
+export default HymnResultRow;

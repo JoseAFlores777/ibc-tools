@@ -7,8 +7,9 @@ import BodyProviders from '@/app/providers/BodyProviders';
 import { readItem } from '@directus/sdk';
 
 
-export default async function Page({ params }: { params: { id: string } }) {
-  const hymn = await getHymn(params.id);
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const hymn = await getHymn(id);
 
   return (
     <BodyProviders>

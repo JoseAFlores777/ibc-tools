@@ -45,7 +45,8 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
     });
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="h-full overflow-auto">
+    <div className="max-w-5xl mx-auto px-4 py-8 pb-12">
       <h2 className="text-2xl font-bold text-slate-800 mb-1">Configurar Impresion y Audio</h2>
       <p className="text-slate-500 text-sm mb-8">
         Personalice el formato de su PDF y seleccione las pistas de audio.
@@ -246,6 +247,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
           </CardContent>
         </Card>
       </div>
+    </div>
     </div>
   );
 }

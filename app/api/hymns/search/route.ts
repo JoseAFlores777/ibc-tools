@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { searchHymns } from '@/app/lib/directus/services/hymns';
+import type { HymnSearchField } from '@/app/interfaces/Hymn.interface';
 
 export const dynamic = 'force-dynamic';
+
+const VALID_FIELDS = new Set<HymnSearchField>(['name', 'number', 'letter']);
 
 export async function GET(request: Request) {
   try {
@@ -12,14 +15,23 @@ export async function GET(request: Request) {
     const limit = Number(searchParams.get('limit')) || 25;
     const offset = Number(searchParams.get('offset')) || 0;
 
-    // Si q es puramente numerico, buscar por hymn_number; si no, buscar por nombre
-    const isNumeric = q !== undefined && /^\d+$/.test(q);
+    // Parsear campos de búsqueda: ?fields=name,letter
+    const fieldsParam = searchParams.get('fields');
+    let searchIn: HymnSearchField[] | undefined;
+    if (fieldsParam) {
+      searchIn = fieldsParam
+        .split(',')
+        .map((f) => f.trim() as HymnSearchField)
+        .filter((f) => VALID_FIELDS.has(f));
+      if (searchIn.length === 0) searchIn = undefined;
+    }
+
     const results = await searchHymns({
-      query: isNumeric ? undefined : q,
-      hymnNumber: isNumeric ? Number(q) : undefined,
+      query: q,
       hymnalId: hymnal,
       categoryId: category ? Number(category) : undefined,
-      limit,
+      searchIn,
+      limit: Math.min(limit, 500),
       offset,
     });
 

@@ -37,7 +37,8 @@ export type WizardAction =
   | { type: 'SELECT_ALL_AUDIO'; selectAll: boolean }
   | { type: 'SET_GENERATING'; isGenerating: boolean }
   | { type: 'SET_ERROR'; error: string | null }
-  | { type: 'RESET' };
+  | { type: 'RESET' }
+  | { type: 'LOAD_PACKAGE'; hymns: HymnSearchResult[]; layout: WizardState['layout']; style: WizardState['style']; audioSelections: Map<string, Set<string>> };
 
 /** Estado inicial del wizard */
 export const initialWizardState: WizardState = {
@@ -124,6 +125,17 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       return {
         ...initialWizardState,
         audioSelections: new Map(),
+      };
+
+    case 'LOAD_PACKAGE':
+      return {
+        step: 2,
+        selectedHymns: action.hymns,
+        layout: action.layout,
+        style: action.style,
+        audioSelections: action.audioSelections,
+        isGenerating: false,
+        error: null,
       };
 
     default:

@@ -2,22 +2,16 @@
 
 import { ConditionalFormattingFiltered } from '@/app/interfaces/FileObject.interface';
 import { ProgramActivity, ProgramData } from '@/app/interfaces/Program.interface';
-import { Font, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
+import { Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale/es';
 import React from 'react';
-
-
+import '@/app/components/pdf-components/shared/pdf-fonts';
 
 export interface ProgramPagePdfProps {
   programData: ProgramData;
   activitiesOptions: ConditionalFormattingFiltered[];
 }
-
-Font.register({
-  family: 'Adamina',
-  src: '/fonts/adamina/Adamina.ttf',
-});
 
 const styles = StyleSheet.create({
   page: {

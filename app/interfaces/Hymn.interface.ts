@@ -21,12 +21,16 @@ export interface HymnAudioFiles {
   bass_voice: AudioFileInfo | null;
 }
 
+/** Campos en los que se puede buscar texto */
+export type HymnSearchField = 'name' | 'number' | 'letter';
+
 /** Filters accepted by searchHymns() */
 export interface HymnSearchFilters {
-  query?: string; // Search by name (_icontains)
+  query?: string; // Search text
   hymnNumber?: number; // Exact match on hymn_number
   hymnalId?: string; // Filter by hymnal UUID
   categoryId?: number; // Filter by category through M2M junction
+  searchIn?: HymnSearchField[]; // Campos donde buscar (default: todos)
   limit?: number; // Result limit (default 25)
   offset?: number; // For pagination
 }

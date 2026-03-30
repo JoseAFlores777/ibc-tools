@@ -2,6 +2,8 @@ import React from 'react';
 import { renderToBuffer, Document } from '@react-pdf/renderer';
 import { parseHymnHtml } from '@/app/lib/pdf/html-to-pdf';
 import type { HymnForPdf, ParsedVerse } from '@/app/interfaces/Hymn.interface';
+// Registrar fuentes antes de cualquier render
+import '@/app/components/pdf-components/shared/pdf-fonts';
 
 export type PdfLayout = 'one-per-page' | 'two-per-page';
 export type PdfStyle = 'decorated' | 'plain';

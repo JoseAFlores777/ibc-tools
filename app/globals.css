@@ -97,6 +97,14 @@
   }
 }
 
+/* Marquee para nombres largos en sidebar de himnos seleccionados */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  15%  { transform: translateX(0); }
+  85%  { transform: translateX(var(--marquee-offset, 0px)); }
+  100% { transform: translateX(var(--marquee-offset, 0px)); }
+}
+
 @media (max-width: 640px) {
   .container {
     @apply px-4;

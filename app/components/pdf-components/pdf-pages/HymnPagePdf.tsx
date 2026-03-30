@@ -1,17 +1,13 @@
 'use client';
 
 import { ActivityHymn } from '@/app/interfaces/Program.interface';
-import { Font, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
+import { Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import React from 'react';
+import '@/app/components/pdf-components/shared/pdf-fonts';
 
 export interface HymnPagePdfProps {
   activityHymn: ActivityHymn;
 }
-
-Font.register({
-  family: 'Adamina',
-  src: '/fonts/adamina/Adamina.ttf',
-});
 
 const styles = StyleSheet.create({
   page: {
@@ -213,8 +209,8 @@ export const HymnPagePdf: React.FC<HymnPagePdfProps> = ({ activityHymn }) => {
 
   console.log('roles', roleDescriptionsArray);
 
-  const authorsTemplate = roleDescriptionsArray.map((roleDescription) => {
-    return findAuthorsByRole(roleDescription, activityHymn);
+  const authorsTemplate = roleDescriptionsArray.map((roleDescription, i) => {
+    return <React.Fragment key={i}>{findAuthorsByRole(roleDescription, activityHymn)}</React.Fragment>;
   });
 
   return (

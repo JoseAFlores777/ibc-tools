@@ -1,7 +1,7 @@
 
 import Image from 'next/image';
 import Navbar from './sections/Navbar';
-import { Button } from '@/lib/shadcn/ui';
+import { Button, Separator } from '@/lib/shadcn/ui';
 import Link from 'next/link';
 
 
@@ -28,37 +28,34 @@ export default async function HomePage() {
 				<div className="absolute inset-0 flex  justify-center z-20 px-5 py-60 pb-10">
 					 <div className="flex flex-col gap-5 items-center text-center">
 						<h1 className="text-5xl font-extrabold text-slate-600">¡Bienvenidos!</h1>
-						<p className="text-xl text-slate-700">Iglesia Bautista El Calvario</p>
+						<p className="text-xl text-slate-700">Encuéntranos en nuestra redes sociales</p>
+						<p className="text-lg font-bold text-slate-700">Haz click en uno de estos enlaces:</p>
+ 					<div className="flex flex-col mt-5 gap-5 w-10/12">
+						<Button size={'lg'} variant="outline" asChild>
+							<Link href={'/horarios'}>Horarios</Link>
+						</Button>
 
-						{/* Herramientas */}
-						<div className="flex flex-col gap-3 w-10/12">
-							<h2 className="text-lg font-bold text-slate-700 mt-2">Herramientas</h2>
-							<Button size={'lg'} variant="outline" asChild>
-								<Link href={'/herramientas'}>Herramientas</Link>
-							</Button>
-							<Button size={'lg'} variant="outline" asChild>
-								<Link href={'/horarios'}>Horarios</Link>
-							</Button>
-						</div>
+						<Button size={'lg'} variant="outline" asChild>
+							<Link href={'https://www.facebook.com/ibcunafamiliaconamor'} target='_blank'>Facebook</Link>
+						</Button>
 
-						{/* Redes Sociales */}
-						<div className="flex flex-col gap-3 w-10/12">
-							<h2 className="text-lg font-bold text-slate-700 mt-2">Redes Sociales</h2>
-							<Button size={'lg'} variant="outline" asChild>
-								<Link href={'https://www.facebook.com/ibcunafamiliaconamor'} target='_blank'>Facebook</Link>
-							</Button>
+						<Button size={'lg'} variant="outline" asChild>
+							<Link href={'https://www.youtube.com/@ibchn'} target='_blank'>Youtube</Link>
+						</Button>
 
-							<Button size={'lg'} variant="outline" asChild>
-								<Link href={'https://www.youtube.com/@ibchn'} target='_blank'>Youtube</Link>
-							</Button>
+						<Button size={'lg'} variant="outline" asChild>
+							<Link href={'https://stream-172.zeno.fm/rjmlzssxpi4uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJyam1senNzeHBpNHV2IiwiaG9zdCI6InN0cmVhbS0xNzIuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6InhiQWt2MXJuU25pM1NpWjBWYUxiZnciLCJpYXQiOjE3MjgzNjkzOTMsImV4cCI6MTcyODM2OTQ1M30.HO23TAbWb0E5Ny5omqKts230P-G7v5CRJP0M3Mp53Ao&inappbrowser=true'} target='_blank'>Radio IBC</Link>
+						</Button>
 
-							<Button size={'lg'} variant="outline" asChild>
-								<Link href={'https://stream-172.zeno.fm/rjmlzssxpi4uv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJyam1senNzeHBpNHV2IiwiaG9zdCI6InN0cmVhbS0xNzIuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6InhiQWt2MXJuU25pM1NpWjBWYUxiZnciLCJpYXQiOjE3MjgzNjkzOTMsImV4cCI6MTcyODM2OTQ1M30.HO23TAbWb0E5Ny5omqKts230P-G7v5CRJP0M3Mp53Ao&inappbrowser=true'} target='_blank'>Radio IBC</Link>
-							</Button>
+						<Button size={'lg'} variant="outline" asChild>
+							<Link href={'https://onelink.to/ibchn'} target='_blank'>Descarga nuestra App</Link>
+						</Button>
 
-							<Button size={'lg'} variant="outline" asChild>
-								<Link href={'https://onelink.to/ibchn'} target='_blank'>Descarga nuestra App</Link>
-							</Button>
+						<Separator className="w-full" />
+
+						<Button size={'lg'} variant="outline" asChild>
+							<Link href={'/herramientas'}>Herramientas</Link>
+						</Button>
 						</div>
 					</div>
 					</div>

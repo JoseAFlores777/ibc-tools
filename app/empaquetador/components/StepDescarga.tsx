@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Progress, Button, Card, Separator } from '@/lib/shadcn/ui';
 import { buildPackageRequest } from '../lib/build-package-request';
+import { savePackage } from '../lib/package-db';
 import type { WizardState, WizardAction } from '@/app/empaquetador/hooks/useWizardReducer';
 import { Check, Download, FileText, Music, Package, RotateCcw, Home } from 'lucide-react';
 import Link from 'next/link';
@@ -51,6 +52,10 @@ export default function StepDescarga({ state, dispatch }: StepDescargaProps) {
       a.click();
       document.body.removeChild(a);
 
+      // Guardar en IndexedDB
+      savePackage(state.selectedHymns, state.layout, state.style, state.audioSelections, 'completed')
+        .catch((err) => console.error('Error al guardar en historial:', err));
+
       toast.success('Paquete descargado exitosamente!');
       setDownloadComplete(true);
     } catch (error) {
@@ -89,7 +94,8 @@ export default function StepDescarga({ state, dispatch }: StepDescargaProps) {
   // Estado de exito (post-descarga)
   if (downloadComplete) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+      <div className="h-full overflow-auto">
+      <div className="max-w-2xl mx-auto px-4 py-16 pb-12 text-center">
         {/* Icono de exito */}
         <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6">
           <Check className="h-8 w-8 text-primary" />
@@ -132,12 +138,14 @@ export default function StepDescarga({ state, dispatch }: StepDescargaProps) {
           </Link>
         </div>
       </div>
+      </div>
     );
   }
 
   // Estado de generacion (durante)
   if (state.isGenerating) {
     return (
+      <div className="h-full overflow-auto">
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         {/* Spinner */}
         <div className="mx-auto w-16 h-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin mb-6" />
@@ -147,12 +155,14 @@ export default function StepDescarga({ state, dispatch }: StepDescargaProps) {
         </p>
         <Progress value={100} className="animate-pulse max-w-md mx-auto" />
       </div>
+      </div>
     );
   }
 
   // Estado inicial (resumen antes de generar)
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="h-full overflow-auto">
+    <div className="max-w-2xl mx-auto px-4 py-8 pb-12">
       <h2 className="text-2xl font-bold text-slate-800 mb-1">Generar y Descargar</h2>
       <p className="text-slate-500 text-sm mb-8">
         Revisa el resumen de tu paquete antes de generar.
@@ -206,6 +216,7 @@ export default function StepDescarga({ state, dispatch }: StepDescargaProps) {
         <Package className="h-4 w-4 mr-2" />
         Generar Paquete
       </Button>
+    </div>
     </div>
   );
 }

@@ -21,11 +21,12 @@ const AUDIO_FIELD_NAMES = [
 /** Sub-campos de cada archivo de audio resuelto */
 const AUDIO_SUB_FIELDS = ['id', 'filename_download', 'filesize', 'type'] as const;
 
-/** Genera los campos planos para resolución de audio (e.g. 'track_only.id', 'track_only.filename_download') */
+/** Genera los campos planos para resolución de audio (e.g. 'track_only', 'track_only.id', 'track_only.filename_download') */
 function buildAudioFields(): string[] {
-  return AUDIO_FIELD_NAMES.flatMap((field) =>
-    AUDIO_SUB_FIELDS.map((sub) => `${field}.${sub}`),
-  );
+  return AUDIO_FIELD_NAMES.flatMap((field) => [
+    field, // campo raíz — devuelve el UUID aunque la resolución de sub-campos falle
+    ...AUDIO_SUB_FIELDS.map((sub) => `${field}.${sub}`),
+  ]);
 }
 
 /**
@@ -38,11 +39,21 @@ function mapAudioFiles(raw: any): HymnAudioFiles {
   for (const field of AUDIO_FIELD_NAMES) {
     const value = raw[field];
     if (value && typeof value === 'object' && value.id) {
+      // Relación resuelta con sub-campos
       result[field] = {
         id: value.id,
         filename_download: value.filename_download,
         filesize: value.filesize ?? null,
         type: value.type ?? null,
+      };
+    } else if (typeof value === 'string' && value.length > 0) {
+      // UUID sin resolver — Directus devolvió solo el ID del archivo
+      const ext = field === 'midi_file' ? 'mid' : 'mp3';
+      result[field] = {
+        id: value,
+        filename_download: `${field}.${ext}`,
+        filesize: null,
+        type: field === 'midi_file' ? 'audio/midi' : null,
       };
     } else {
       result[field] = null;
@@ -53,8 +64,17 @@ function mapAudioFiles(raw: any): HymnAudioFiles {
 }
 
 /**
+ * Normaliza texto eliminando acentos/diacríticos para búsqueda flexible.
+ * "Cántico" → "Cantico", "señor" → "senor"
+ */
+function stripAccents(str: string): string {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+/**
  * Busca himnos en Directus con filtros opcionales.
- * Soporta búsqueda por nombre, número, himnario y categoría (M2M deep filter).
+ * Soporta búsqueda por nombre, letra del himno, número, himnario y categoría.
+ * La búsqueda es case-insensitive y accent-insensitive (busca con y sin acentos).
  */
 export async function searchHymns(filters: HymnSearchFilters): Promise<HymnSearchResult[]> {
   const client = getDirectus();
@@ -66,8 +86,29 @@ export async function searchHymns(filters: HymnSearchFilters): Promise<HymnSearc
     status: { _eq: 'published' },
   };
 
+  // Campos donde buscar (por defecto todos)
+  const searchIn = filters.searchIn ?? ['name', 'number', 'letter'];
+
   if (filters.query) {
-    filter.name = { _icontains: filters.query };
+    const q = filters.query;
+    const qNorm = stripAccents(q);
+    const textConditions: any[] = [];
+
+    if (searchIn.includes('name')) {
+      textConditions.push({ name: { _icontains: q } });
+      if (qNorm !== q) textConditions.push({ name: { _icontains: qNorm } });
+    }
+    if (searchIn.includes('letter')) {
+      textConditions.push({ letter_hymn: { _icontains: q } });
+      if (qNorm !== q) textConditions.push({ letter_hymn: { _icontains: qNorm } });
+    }
+    if (searchIn.includes('number') && /^\d+$/.test(q)) {
+      textConditions.push({ hymn_number: { _eq: Number(q) } });
+    }
+
+    if (textConditions.length > 0) {
+      filter._or = textConditions;
+    }
   }
   if (filters.hymnNumber !== undefined) {
     filter.hymn_number = { _eq: filters.hymnNumber };
@@ -175,11 +216,14 @@ export async function fetchHymnForPdf(id: string): Promise<HymnForPdf> {
 
 /**
  * Construye la URL de descarga de un asset de Directus a partir de su ID de archivo.
+ * Si existe DIRECTUS_TOKEN, lo agrega como query param para autenticación.
  */
 export function getAssetUrl(fileId: string): string {
   const baseUrl =
     process.env.DIRECTUS_URL ||
     process.env.NEXT_PUBLIC_DIRECTUS_URL ||
     'http://localhost:8055';
-  return `${baseUrl}/assets/${fileId}`;
+  const token = process.env.DIRECTUS_TOKEN;
+  const url = `${baseUrl}/assets/${fileId}`;
+  return token ? `${url}?access_token=${token}` : url;
 }
