@@ -10,7 +10,7 @@ import StepConfiguracion from '@/app/empaquetador/components/StepConfiguracion';
 import StepDescarga from '@/app/empaquetador/components/StepDescarga';
 import PackageHistory from '@/app/empaquetador/components/PackageHistory';
 import { Button } from '@/lib/shadcn/ui';
-import { ChevronLeft, ChevronRight, Package } from 'lucide-react';
+import { ChevronLeft, ChevronRight, History, Package } from 'lucide-react';
 import { deserializeAudioSelections } from '@/app/empaquetador/lib/package-db';
 import type { SavedPackage } from '@/app/empaquetador/lib/package-db';
 import type { HymnSearchResult } from '@/app/interfaces/Hymn.interface';
@@ -151,8 +151,17 @@ export default function EmpaquetadorPage() {
           </div>
 
           {state.step === 1 && (
-            <div className="sm:hidden flex-1 text-center">
-              <span className="text-sm text-slate-600">
+            <div className="sm:hidden flex items-center gap-2 flex-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowHistory(true)}
+                className="h-9 w-9 text-slate-400 hover:text-slate-700 lg:hidden"
+                aria-label="Historial"
+              >
+                <History className="h-4 w-4" />
+              </Button>
+              <span className="text-sm text-slate-600 flex-1 text-center">
                 {state.selectedHymns.length} himno{state.selectedHymns.length !== 1 ? 's' : ''}{' '}
                 seleccionado{state.selectedHymns.length !== 1 ? 's' : ''}
               </span>

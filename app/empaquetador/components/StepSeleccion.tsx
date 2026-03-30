@@ -247,7 +247,7 @@ export default function StepSeleccion({ state, dispatch }: StepSeleccionProps) {
             />
           </div>
         ) : (
-          <div className="flex-1 flex flex-col overflow-hidden px-4 pt-8">
+          <div className={cn('flex-1 flex flex-col overflow-hidden px-4 pt-8', hasSelectedHymns && 'pb-[132px] lg:pb-0')}>
             <h2 className="text-2xl font-bold text-slate-800 mb-1 flex-shrink-0">Explorar Himnario</h2>
             <p className="text-slate-500 text-sm mb-6 flex-shrink-0">
               Busca por número, nombre o fragmento de letra. Sin importar acentos ni mayúsculas.
@@ -354,7 +354,7 @@ export default function StepSeleccion({ state, dispatch }: StepSeleccionProps) {
                 </p>
               </div>
             ) : (
-              <Card className="mt-2 mb-4 flex-1 flex flex-col overflow-hidden min-h-0">
+              <Card className="mt-2 mb-4 flex-1 flex flex-col overflow-hidden min-h-[40vh]">
                 <div className="flex-1 overflow-auto min-h-0">
                   <Table>
                     <TableHeader>
