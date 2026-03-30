@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Progress, Button, Card, Separator } from '@/lib/shadcn/ui';
+import { Button, Card, Separator } from '@/lib/shadcn/ui';
 import { buildPackageRequest } from '../lib/build-package-request';
 import type { WizardState, WizardAction } from '@/app/empaquetador/hooks/useWizardReducer';
 
@@ -72,6 +72,14 @@ export default function StepDescarga({ state, dispatch }: StepDescargaProps) {
 
         <div className="space-y-2 text-sm">
           <p>{state.selectedHymns.length} himno(s)</p>
+          <ul className="mt-1 space-y-0.5 text-muted-foreground">
+            {state.selectedHymns.map((h) => (
+              <li key={h.id}>
+                {h.hymn_number ? `#${h.hymn_number} - ` : ''}
+                {h.name}
+              </li>
+            ))}
+          </ul>
           <Separator />
           <p>
             Disposicion: {state.layout === 'one-per-page' ? '1 por pagina' : '2 por pagina'}
@@ -98,7 +106,23 @@ export default function StepDescarga({ state, dispatch }: StepDescargaProps) {
           {state.isGenerating ? 'Generando...' : 'Generar Paquete'}
         </Button>
 
-        {state.isGenerating && <Progress value={100} className="animate-pulse" />}
+        {state.isGenerating && (
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full w-1/3 bg-primary rounded-full"
+              style={{
+                animation: 'indeterminate 1.5s ease-in-out infinite',
+              }}
+            />
+            <style>{`
+              @keyframes indeterminate {
+                0% { transform: translateX(-100%); }
+                50% { transform: translateX(200%); }
+                100% { transform: translateX(-100%); }
+              }
+            `}</style>
+          </div>
+        )}
       </div>
 
       {/* Post-descarga: crear otro paquete */}

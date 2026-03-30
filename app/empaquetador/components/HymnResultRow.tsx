@@ -1,14 +1,16 @@
 import type { HymnSearchResult } from '@/app/interfaces/Hymn.interface';
 import { Button, Badge, Card } from '@/lib/shadcn/ui';
 import { cn } from '@/app/lib/shadcn/utils';
+import { X } from 'lucide-react';
 
 interface HymnResultRowProps {
   hymn: HymnSearchResult;
   isSelected: boolean;
   onAdd: (hymn: HymnSearchResult) => void;
+  onRemove: (hymnId: string) => void;
 }
 
-export default function HymnResultRow({ hymn, isSelected, onAdd }: HymnResultRowProps) {
+export default function HymnResultRow({ hymn, isSelected, onAdd, onRemove }: HymnResultRowProps) {
   return (
     <Card
       className={cn(
@@ -30,7 +32,14 @@ export default function HymnResultRow({ hymn, isSelected, onAdd }: HymnResultRow
 
       <div className="ml-2 flex-shrink-0">
         {isSelected ? (
-          <Badge variant="outline">Seleccionado</Badge>
+          <Badge
+            variant="outline"
+            className="cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
+            onClick={() => onRemove(hymn.id)}
+          >
+            Seleccionado
+            <X className="w-3 h-3 ml-1" />
+          </Badge>
         ) : (
           <Button variant="default" size="sm" onClick={() => onAdd(hymn)}>
             Agregar

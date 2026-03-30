@@ -8,6 +8,8 @@ import StepSeleccion from '@/app/empaquetador/components/StepSeleccion';
 import StepConfiguracion from '@/app/empaquetador/components/StepConfiguracion';
 import StepDescarga from '@/app/empaquetador/components/StepDescarga';
 import { Button } from '@/lib/shadcn/ui';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 
 export default function EmpaquetadorPage() {
   const [state, dispatch] = useWizardReducer();
@@ -63,6 +65,13 @@ export default function EmpaquetadorPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      <Link
+        href="/herramientas"
+        className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-4"
+      >
+        <ChevronLeft className="w-4 h-4" />
+        Herramientas
+      </Link>
       <h1 className="text-2xl font-semibold leading-tight mb-6">Empaquetador de Himnos</h1>
 
       <WizardStepper currentStep={state.step} onStepClick={handleStepClick} />
@@ -87,7 +96,8 @@ export default function EmpaquetadorPage() {
       <div className="flex justify-between mt-6">
         {state.step > 1 ? (
           <Button variant="outline" onClick={handleBack}>
-            Atras
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            {`Atr\u00e1s`}
           </Button>
         ) : (
           <div />
@@ -96,6 +106,7 @@ export default function EmpaquetadorPage() {
         {state.step < 3 && (
           <Button variant="default" onClick={handleNext} disabled={isNextDisabled}>
             Siguiente
+            <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
         )}
       </div>

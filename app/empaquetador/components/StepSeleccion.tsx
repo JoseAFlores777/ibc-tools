@@ -8,6 +8,7 @@ import SelectedHymnChip from '@/app/empaquetador/components/SelectedHymnChip';
 import {
   Input,
   Badge,
+  Button,
   ScrollArea,
   Select,
   SelectContent,
@@ -91,8 +92,17 @@ export default function StepSeleccion({ state, dispatch }: StepSeleccionProps) {
     <div className={hasSelectedHymns ? 'pb-16 lg:pb-0' : ''}>
       <h2 className="text-xl font-semibold mb-4">Seleccionar Himnos</h2>
 
+      {/* Campo de busqueda */}
+      <Input
+        placeholder="Buscar por numero o nombre..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        aria-label="Buscar himnos"
+        className="mb-3"
+      />
+
       {/* Filtros */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
         <Select
           value={hymnal}
           onValueChange={(v) => setHymnal(v === '__all__' ? '' : v)}
@@ -130,15 +140,6 @@ export default function StepSeleccion({ state, dispatch }: StepSeleccionProps) {
         </Select>
       </div>
 
-      {/* Campo de busqueda */}
-      <Input
-        placeholder="Buscar por numero o nombre..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        aria-label="Buscar himnos"
-        className="mb-4"
-      />
-
       {/* Layout de dos columnas en desktop */}
       <div className="flex gap-6">
         {/* Columna de resultados */}
@@ -168,6 +169,7 @@ export default function StepSeleccion({ state, dispatch }: StepSeleccionProps) {
                     hymn={hymn}
                     isSelected={state.selectedHymns.some((h) => h.id === hymn.id)}
                     onAdd={(h) => dispatch({ type: 'ADD_HYMN', hymn: h })}
+                    onRemove={(hymnId) => dispatch({ type: 'REMOVE_HYMN', hymnId })}
                   />
                 ))}
               </div>
@@ -184,13 +186,13 @@ export default function StepSeleccion({ state, dispatch }: StepSeleccionProps) {
         {hasSelectedHymns && (
           <Drawer>
             <DrawerTrigger asChild>
-              <button
-                type="button"
-                className="fixed bottom-0 left-0 right-0 h-14 bg-card border-t shadow-lg z-40 flex items-center justify-center gap-2"
+              <Button
+                variant="outline"
+                className="fixed bottom-0 left-0 right-0 h-14 z-40 flex items-center justify-center gap-2 rounded-none border-x-0 border-b-0"
               >
                 <span className="text-sm font-semibold">Seleccionados</span>
                 <Badge variant="default">{state.selectedHymns.length}</Badge>
-              </button>
+              </Button>
             </DrawerTrigger>
             <DrawerContent>
               <div className="p-4">
