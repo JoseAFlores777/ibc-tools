@@ -78,31 +78,31 @@ function createStyles(preset: FontPresetConfig, styleVariant: 'decorated' | 'pla
       color: '#000000',
       marginTop: 2,
     },
-    // Bible reference — improved contrast
+    // Bible reference — inline text + reference
     bibleSection: {
-      marginBottom: 8,
+      marginBottom: 14,
       marginTop: 4,
       paddingHorizontal: 16,
       paddingVertical: 6,
-      alignItems: 'center',
       borderLeftWidth: 2,
       borderLeftColor: isDecorated ? COLORS.goldAccent : '#999999',
       marginLeft: 20,
       marginRight: 20,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
     },
     bibleText: {
       fontSize: preset.scale.label,
-      textAlign: 'left',
       ...(preset.family !== 'Adamina' ? { fontStyle: 'italic' as const } : {}),
       color: isDecorated ? COLORS.bibleTextLight : '#333333',
       lineHeight: 1.4,
     },
     bibleReference: {
       fontSize: preset.scale.label,
-      marginTop: 4,
-      textAlign: 'left',
       fontWeight: 'bold',
-      color: isDecorated ? COLORS.goldHighlight : '#111111',
+      color: isDecorated ? COLORS.goldAccent : '#111111',
+      marginLeft: 4,
+      lineHeight: 1.4,
     },
     // Verses
     versesArea: {

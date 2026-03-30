@@ -105,20 +105,16 @@ export async function assembleHymnPackage(
       hymnData.id,
     );
 
-    // Generar PDF individual
+    // Generar PDF individual — siempre a tamano carta completo (one-per-page, simple)
     try {
       const pdfBuffer = await renderHymnPdf({
         hymns: [hymnData],
-        layout: request.layout,
+        layout: 'one-per-page',
         style: request.style,
-        printMode: request.printMode,
+        printMode: 'simple',
         orientation: request.orientation,
         fontPreset: request.fontPreset,
         includeBibleRef: request.includeBibleRef,
-        bookletTitle: request.bookletTitle,
-        bookletSubtitle: request.bookletSubtitle,
-        bookletDate: request.bookletDate,
-        bookletBibleRef: request.bookletBibleRef,
       });
       archive.append(pdfBuffer, { name: `${folderName}/${folderName}.pdf` });
       allSuccessfulHymns.push(hymnData);

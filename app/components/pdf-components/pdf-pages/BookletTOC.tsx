@@ -86,7 +86,7 @@ export function BookletTOC({ entries, fontPreset, style }: BookletTOCProps) {
     entryPage: {
       fontSize: preset.scale.label,
       color: isDecorated ? COLORS.goldAccent : '#999999',
-      width: 20,
+      width: 36,
       textAlign: 'right',
     },
   });
