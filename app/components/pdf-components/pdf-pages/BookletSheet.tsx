@@ -85,6 +85,7 @@ function renderPage(
           fontPreset={fontPreset}
           includeBibleRef={includeBibleRef}
           style={baseStyle}
+          ecoMode={style === 'decorated-eco'}
         />
       );
   }

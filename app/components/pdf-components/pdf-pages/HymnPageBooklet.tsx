@@ -18,6 +18,7 @@ export interface HymnPageBookletProps {
   fontPreset: FontPreset;
   includeBibleRef: boolean;
   style: 'decorated' | 'plain';
+  ecoMode?: boolean;
 }
 
 /** Detect if a title line is a chorus marker */
@@ -27,7 +28,7 @@ function isChorusMarker(text: string): boolean {
 }
 
 /** Genera estilos dinamicos basados en el font preset */
-function createStyles(preset: FontPresetConfig, styleVariant: 'decorated' | 'plain') {
+function createStyles(preset: FontPresetConfig, styleVariant: 'decorated' | 'plain', ecoMode: boolean) {
   const isDecorated = styleVariant === 'decorated';
 
   return StyleSheet.create({
@@ -37,11 +38,11 @@ function createStyles(preset: FontPresetConfig, styleVariant: 'decorated' | 'pla
       padding: BOOKLET_MARGIN,
       flexDirection: 'column',
       fontFamily: preset.family,
-      backgroundColor: isDecorated ? COLORS.pageBg : '#ffffff',
+      backgroundColor: isDecorated && !ecoMode ? COLORS.pageBg : '#ffffff',
     },
     // Decorated header: compact colored bar
     headerDecorated: {
-      backgroundColor: COLORS.headerBg,
+      backgroundColor: ecoMode ? '#ffffff' : COLORS.headerBg,
       paddingVertical: 8,
       paddingHorizontal: 12,
       flexDirection: 'row',
@@ -49,16 +50,17 @@ function createStyles(preset: FontPresetConfig, styleVariant: 'decorated' | 'pla
       alignItems: 'center',
       gap: 8,
       marginBottom: 8,
+      ...(ecoMode ? { borderBottomWidth: 2, borderBottomColor: COLORS.goldAccent } : {}),
     },
     headerDecoratedNumber: {
       fontSize: preset.scale.heading,
-      color: COLORS.goldHighlight,
+      color: ecoMode ? COLORS.goldAccent : COLORS.goldHighlight,
       fontFamily: 'Adamina',
       fontWeight: 'bold',
     },
     headerDecoratedTitle: {
       fontSize: preset.scale.display,
-      color: COLORS.headerText,
+      color: ecoMode ? '#111111' : COLORS.headerText,
       textTransform: 'uppercase',
       fontFamily: 'Adamina',
     },
@@ -159,9 +161,10 @@ export function HymnPageBooklet({
   fontPreset,
   includeBibleRef,
   style,
+  ecoMode = false,
 }: HymnPageBookletProps) {
   const preset = FONT_PRESETS_BOOKLET[fontPreset];
-  const s = createStyles(preset, style);
+  const s = createStyles(preset, style, ecoMode);
   const isDecorated = style === 'decorated';
   // Adamina no tiene variante italic registrada
   const supportsItalic = preset.family !== 'Adamina';
