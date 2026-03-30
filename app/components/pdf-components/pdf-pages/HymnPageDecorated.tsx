@@ -26,9 +26,6 @@ export interface HymnPageDecoratedProps {
   ecoMode?: boolean;
 }
 
-/** Unicode ornament for section dividers */
-const ORNAMENT_CHAR = '\u2740'; // ❀
-
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
@@ -60,26 +57,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 2,
   },
-  /* Hymn number badge: pill shape with gold tint */
-  hymnNumberBadge: {
-    backgroundColor: COLORS.goldBadgeBg,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 3,
-    marginBottom: 4,
-  },
   hymnNumber: {
     fontSize: FONT_DECORATED.heading,
     color: COLORS.goldHighlight,
     fontWeight: 'bold',
-    letterSpacing: 1.5,
   },
   hymnTitle: {
     fontSize: FONT_DECORATED.display,
     textTransform: 'uppercase',
     color: COLORS.headerText,
-    marginTop: 2,
-    letterSpacing: 0.8,
+    marginTop: 4,
   },
   hymnalName: {
     fontSize: FONT_DECORATED.label,
@@ -99,7 +86,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_DECORATED.label,
     textAlign: 'left',
     color: COLORS.bibleTextLight,
-    fontStyle: 'italic',
     lineHeight: 1.5,
   },
   bibleReference: {
@@ -109,44 +95,37 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.goldHighlight,
   },
-  /* Body with left accent border */
   body: {
-    paddingTop: 16,
-    paddingHorizontal: MARGIN_1UP - 6,
-    paddingLeft: MARGIN_1UP + 6,
+    paddingTop: 20,
+    paddingHorizontal: MARGIN_1UP,
     flex: 1,
-    borderLeftWidth: 3,
-    borderLeftColor: COLORS.ornament,
-    marginLeft: 18,
   },
   verseBlock: {
     marginBottom: 14,
   },
-  /* Ornamental divider between sections */
-  sectionDivider: {
-    textAlign: 'center',
-    fontSize: 8,
-    color: COLORS.ornament,
-    marginBottom: 8,
-    letterSpacing: 4,
+  /* Thin gold rule between sections */
+  sectionRule: {
+    width: 60,
+    height: 1,
+    backgroundColor: COLORS.ornament,
+    alignSelf: 'center',
+    marginBottom: 10,
   },
-  /* Verse marker: larger, with flanking dashes */
   verseMarker: {
-    fontSize: FONT_DECORATED.body + 1,
+    fontSize: FONT_DECORATED.body,
     color: COLORS.goldAccent,
     textAlign: 'center',
     fontWeight: 'bold',
-    marginBottom: 5,
-    letterSpacing: 2,
+    marginBottom: 4,
   },
-  /* CORO label: bigger, bolder, with ornamental flanks */
+  /* CORO label: slightly larger, letter-spaced */
   chorusMarker: {
     fontSize: FONT_DECORATED.body + 2,
     color: COLORS.goldAccent,
     textAlign: 'center',
     fontWeight: 'bold',
-    marginBottom: 5,
-    letterSpacing: 3,
+    marginBottom: 4,
+    letterSpacing: 2,
   },
   lyricLine: {
     fontSize: FONT_DECORATED.body,
@@ -241,15 +220,6 @@ function isChorusMarker(text: string): boolean {
   return normalized === 'CORO' || normalized === 'CHORUS';
 }
 
-/** Format verse/chorus markers with ornamental flanks */
-function formatMarkerText(text: string): string {
-  if (isChorusMarker(text)) {
-    return `\u2014  ${text.trim().toUpperCase()}  \u2014`;
-  }
-  // Roman numerals get subtle dashes
-  return `\u2013 ${text.trim()} \u2013`;
-}
-
 export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({
   hymn,
   verses,
@@ -265,17 +235,15 @@ export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({
   const ecoOverrides = ecoMode ? {
     page: { backgroundColor: '#ffffff' },
     header: { backgroundColor: '#ffffff', borderBottomColor: COLORS.goldAccent },
-    hymnNumberBadge: { backgroundColor: 'rgba(158, 127, 25, 0.08)' },
     hymnNumber: { color: COLORS.goldAccent },
     hymnTitle: { color: '#111111' },
     hymnalName: { color: COLORS.plainSubtitle },
-    bibleText: { color: '#555555', fontStyle: 'italic' as const },
+    bibleText: { color: '#555555' },
     bibleReference: { color: '#111111' },
-    body: { borderLeftColor: '#cccccc' },
+    sectionRule: { backgroundColor: '#cccccc' },
     verseMarker: { color: COLORS.goldAccent },
     chorusMarker: { color: COLORS.goldAccent },
     lyricLine: { color: '#000000' },
-    sectionDivider: { color: '#cccccc' },
     footer: { backgroundColor: '#ffffff', borderTopColor: COLORS.goldAccent },
     footerInfoText: { color: COLORS.plainSubtitle },
     footerChurchTitle: { color: '#333333' },
@@ -283,17 +251,15 @@ export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({
   } : {};
 
   const dynamicStyles = {
-    hymnNumberBadge: { ...styles.hymnNumberBadge, ...ecoOverrides.hymnNumberBadge },
     hymnNumber: { ...styles.hymnNumber, fontSize: preset.scale.heading, ...ecoOverrides.hymnNumber },
     hymnTitle: { ...styles.hymnTitle, fontSize: preset.scale.display, ...ecoOverrides.hymnTitle },
     hymnalName: { ...styles.hymnalName, fontSize: preset.scale.label, ...ecoOverrides.hymnalName },
     bibleText: { ...styles.bibleText, fontSize: preset.scale.label, ...ecoOverrides.bibleText },
     bibleReference: { ...styles.bibleReference, fontSize: preset.scale.label, ...ecoOverrides.bibleReference },
-    body: { ...styles.body, ...ecoOverrides.body },
-    verseMarker: { ...styles.verseMarker, fontSize: preset.scale.body + 1, ...ecoOverrides.verseMarker },
+    sectionRule: { ...styles.sectionRule, ...ecoOverrides.sectionRule },
+    verseMarker: { ...styles.verseMarker, fontSize: preset.scale.body, ...ecoOverrides.verseMarker },
     chorusMarker: { ...styles.chorusMarker, fontSize: preset.scale.body + 2, ...ecoOverrides.chorusMarker },
     lyricLine: { ...styles.lyricLine, fontSize: preset.scale.body, fontFamily: preset.family, ...ecoOverrides.lyricLine },
-    sectionDivider: { ...styles.sectionDivider, ...ecoOverrides.sectionDivider },
     footerInfoText: { ...styles.footerInfoText, ...ecoOverrides.footerInfoText },
   };
 
@@ -303,16 +269,14 @@ export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({
       <View style={{ ...styles.header, ...ecoOverrides.header }}>
         {!ecoMode && <View style={styles.gradientOverlay} />}
         <View style={styles.headerTexts}>
-          <View style={dynamicStyles.hymnNumberBadge}>
-            <Text style={dynamicStyles.hymnNumber}>
-              {hymn.hymn_number != null ? `# ${hymn.hymn_number}` : 'Himno'}
-            </Text>
-          </View>
+          <Text style={dynamicStyles.hymnNumber}>
+            {hymn.hymn_number != null ? `# ${hymn.hymn_number}` : 'Himno'}
+          </Text>
           <Text style={dynamicStyles.hymnTitle}>{hymn.name}</Text>
           {hymn.hymnal && <Text style={dynamicStyles.hymnalName}>{hymn.hymnal.name}</Text>}
           {includeBibleRef && (hymn.bible_text || hymn.bible_reference) && (
             <View style={styles.bibleSection}>
-              {hymn.bible_text && <Text style={dynamicStyles.bibleText}>{`"${hymn.bible_text}"`}</Text>}
+              {hymn.bible_text && <Text style={dynamicStyles.bibleText}>{hymn.bible_text}</Text>}
               {hymn.bible_reference && (
                 <Text style={dynamicStyles.bibleReference}>{hymn.bible_reference}</Text>
               )}
@@ -321,15 +285,13 @@ export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({
         </View>
       </View>
 
-      {/* Body: versos con borde lateral dorado */}
-      <View style={dynamicStyles.body}>
+      {/* Body: versos */}
+      <View style={styles.body}>
         {verses.map((verse, idx) => (
           <React.Fragment key={idx}>
-            {/* Ornamental divider between sections (skip before first) */}
-            {idx > 0 && (
-              <Text style={dynamicStyles.sectionDivider}>
-                {`${ORNAMENT_CHAR}  ${ORNAMENT_CHAR}  ${ORNAMENT_CHAR}`}
-              </Text>
+            {/* Thin gold rule between sections (only before title blocks, skip first) */}
+            {idx > 0 && verse.type === 'title' && (
+              <View style={dynamicStyles.sectionRule} />
             )}
             <View style={styles.verseBlock}>
               {verse.type === 'title' ? (
@@ -340,7 +302,7 @@ export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({
                       key={li}
                       style={isCoro ? dynamicStyles.chorusMarker : dynamicStyles.verseMarker}
                     >
-                      {formatMarkerText(line.text)}
+                      {line.text}
                     </Text>
                   );
                 })

@@ -20,21 +20,10 @@ export interface HymnPageBookletProps {
   style: 'decorated' | 'plain';
 }
 
-/** Unicode ornament for section dividers */
-const ORNAMENT_CHAR = '\u2740'; // ❀
-
 /** Detect if a title line is a chorus marker */
 function isChorusMarker(text: string): boolean {
   const normalized = text.trim().toUpperCase();
   return normalized === 'CORO' || normalized === 'CHORUS';
-}
-
-/** Format verse/chorus markers with ornamental flanks */
-function formatMarkerText(text: string): string {
-  if (isChorusMarker(text)) {
-    return `\u2014  ${text.trim().toUpperCase()}  \u2014`;
-  }
-  return `\u2013 ${text.trim()} \u2013`;
 }
 
 /** Genera estilos dinamicos basados en el font preset */
@@ -61,26 +50,17 @@ function createStyles(preset: FontPresetConfig, styleVariant: 'decorated' | 'pla
       gap: 8,
       marginBottom: 8,
     },
-    // Badge pill for hymn number
-    headerNumberBadge: {
-      backgroundColor: COLORS.goldBadgeBg,
-      borderRadius: 10,
-      paddingHorizontal: 10,
-      paddingVertical: 2,
-    },
     headerDecoratedNumber: {
       fontSize: preset.scale.heading,
       color: COLORS.goldHighlight,
       fontFamily: 'Adamina',
       fontWeight: 'bold',
-      letterSpacing: 1,
     },
     headerDecoratedTitle: {
       fontSize: preset.scale.display,
       color: COLORS.headerText,
       textTransform: 'uppercase',
       fontFamily: 'Adamina',
-      letterSpacing: 0.5,
     },
     // Plain header: simple text
     headerPlain: {
@@ -124,37 +104,29 @@ function createStyles(preset: FontPresetConfig, styleVariant: 'decorated' | 'pla
       fontWeight: 'bold',
       color: isDecorated ? COLORS.goldHighlight : '#111111',
     },
-    // Body with left accent border (decorated only)
+    // Verses
     versesArea: {
       flex: 1,
-      ...(isDecorated ? {
-        borderLeftWidth: 2,
-        borderLeftColor: COLORS.ornament,
-        marginLeft: 8,
-        paddingLeft: 8,
-      } : {}),
-    },
-    // Ornamental divider between sections
-    sectionDivider: {
-      textAlign: 'center',
-      fontSize: 6,
-      color: isDecorated ? COLORS.ornament : '#cccccc',
-      marginBottom: 5,
-      letterSpacing: 3,
     },
     verseBlock: {
       marginBottom: 8,
     },
-    // Verse marker: with flanking dashes
+    // Thin gold rule between sections (decorated only)
+    sectionRule: {
+      width: 40,
+      height: 1,
+      backgroundColor: isDecorated ? COLORS.ornament : '#dddddd',
+      alignSelf: 'center',
+      marginBottom: 6,
+    },
     verseMarker: {
       fontSize: preset.scale.body,
       fontWeight: 'bold',
       textAlign: 'center',
       marginBottom: 3,
       color: isDecorated ? COLORS.goldAccent : '#000000',
-      letterSpacing: 1.5,
     },
-    // CORO marker: larger and more prominent
+    // CORO marker: slightly larger, letter-spaced
     chorusMarker: {
       fontSize: preset.scale.body + 1,
       fontWeight: 'bold',
@@ -166,7 +138,7 @@ function createStyles(preset: FontPresetConfig, styleVariant: 'decorated' | 'pla
     lyricLine: {
       fontSize: preset.scale.body,
       textAlign: 'center',
-      lineHeight: 1.4,
+      lineHeight: 1.35,
       color: isDecorated ? COLORS.bodyText : '#000000',
     },
     // Footer hymnal name
@@ -199,13 +171,9 @@ export function HymnPageBooklet({
       {/* Header */}
       {isDecorated ? (
         <View style={s.headerDecorated}>
-          {hymn.hymn_number != null && (
-            <View style={s.headerNumberBadge}>
-              <Text style={s.headerDecoratedNumber}>
-                # {hymn.hymn_number}
-              </Text>
-            </View>
-          )}
+          <Text style={s.headerDecoratedNumber}>
+            {hymn.hymn_number != null ? `# ${hymn.hymn_number}` : ''}
+          </Text>
           <Text style={s.headerDecoratedTitle}>{hymn.name}</Text>
         </View>
       ) : (
@@ -217,29 +185,23 @@ export function HymnPageBooklet({
         </View>
       )}
 
-      {/* Bible reference (conditional) — wrapped in quotes for decorated */}
+      {/* Bible reference (conditional) */}
       {includeBibleRef && (hymn.bible_text || hymn.bible_reference) && (
         <View style={s.bibleSection}>
-          {hymn.bible_text && (
-            <Text style={s.bibleText}>
-              {isDecorated ? `\u201C${hymn.bible_text}\u201D` : hymn.bible_text}
-            </Text>
-          )}
+          {hymn.bible_text && <Text style={s.bibleText}>{hymn.bible_text}</Text>}
           {hymn.bible_reference && (
             <Text style={s.bibleReference}>{hymn.bible_reference}</Text>
           )}
         </View>
       )}
 
-      {/* Verses with ornamental dividers */}
+      {/* Verses with subtle dividers */}
       <View style={s.versesArea}>
         {verses.map((verse, idx) => (
           <React.Fragment key={idx}>
-            {/* Ornamental divider between sections (skip before first) */}
-            {idx > 0 && isDecorated && (
-              <Text style={s.sectionDivider}>
-                {`${ORNAMENT_CHAR}  ${ORNAMENT_CHAR}  ${ORNAMENT_CHAR}`}
-              </Text>
+            {/* Thin gold rule between sections (skip before first, decorated only) */}
+            {idx > 0 && isDecorated && verse.type === 'title' && (
+              <View style={s.sectionRule} />
             )}
             <View style={s.verseBlock}>
               {verse.type === 'title' ? (
@@ -250,7 +212,7 @@ export function HymnPageBooklet({
                       key={li}
                       style={isCoro ? s.chorusMarker : s.verseMarker}
                     >
-                      {isDecorated ? formatMarkerText(line.text) : line.text}
+                      {line.text}
                     </Text>
                   );
                 })
