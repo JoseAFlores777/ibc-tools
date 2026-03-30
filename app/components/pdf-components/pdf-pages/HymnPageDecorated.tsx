@@ -9,7 +9,10 @@ import {
   FOOTER_BORDER_TOP,
   HEADER_BORDER_BOTTOM,
   FONT_DECORATED,
+  FONT_PRESETS,
   COLORS,
+  type FontPreset,
+  type Orientation,
 } from '@/app/components/pdf-components/shared/pdf-tokens';
 
 const logoPath = path.join(process.cwd(), 'public', 'images', 'IBC_Logo-min.png');
@@ -17,6 +20,9 @@ const logoPath = path.join(process.cwd(), 'public', 'images', 'IBC_Logo-min.png'
 export interface HymnPageDecoratedProps {
   hymn: HymnForPdf;
   verses: ParsedVerse[];
+  orientation?: Orientation;
+  fontPreset?: FontPreset;
+  includeBibleRef?: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -185,25 +191,43 @@ function formatAuthors(
   }));
 }
 
-export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({ hymn, verses }) => {
+export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({
+  hymn,
+  verses,
+  orientation = 'portrait',
+  fontPreset = 'clasica',
+  includeBibleRef = true,
+}) => {
   const authorGroups = formatAuthors(hymn.authors);
+  const preset = FONT_PRESETS[fontPreset];
+  // Dynamic styles based on font preset: body/lyrics use preset's family, branding uses Adamina
+  const dynamicStyles = {
+    hymnNumber: { ...styles.hymnNumber, fontSize: preset.scale.heading },
+    hymnTitle: { ...styles.hymnTitle, fontSize: preset.scale.display },
+    hymnalName: { ...styles.hymnalName, fontSize: preset.scale.label },
+    bibleText: { ...styles.bibleText, fontSize: preset.scale.label },
+    bibleReference: { ...styles.bibleReference, fontSize: preset.scale.label },
+    verseMarker: { ...styles.verseMarker, fontSize: preset.scale.body },
+    lyricLine: { ...styles.lyricLine, fontSize: preset.scale.body, fontFamily: preset.family },
+    footerInfoText: { ...styles.footerInfoText },
+  };
 
   return (
-    <Page size="LETTER" style={styles.page}>
+    <Page size="LETTER" orientation={orientation} style={styles.page}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.gradientOverlay} />
         <View style={styles.headerTexts}>
-          <Text style={styles.hymnNumber}>
+          <Text style={dynamicStyles.hymnNumber}>
             {hymn.hymn_number != null ? `Himno # ${hymn.hymn_number}` : 'Himno'}
           </Text>
-          <Text style={styles.hymnTitle}>{hymn.name}</Text>
-          {hymn.hymnal && <Text style={styles.hymnalName}>{hymn.hymnal.name}</Text>}
-          {(hymn.bible_text || hymn.bible_reference) && (
+          <Text style={dynamicStyles.hymnTitle}>{hymn.name}</Text>
+          {hymn.hymnal && <Text style={dynamicStyles.hymnalName}>{hymn.hymnal.name}</Text>}
+          {includeBibleRef && (hymn.bible_text || hymn.bible_reference) && (
             <View style={styles.bibleSection}>
-              {hymn.bible_text && <Text style={styles.bibleText}>{hymn.bible_text}</Text>}
+              {hymn.bible_text && <Text style={dynamicStyles.bibleText}>{hymn.bible_text}</Text>}
               {hymn.bible_reference && (
-                <Text style={styles.bibleReference}>{hymn.bible_reference}</Text>
+                <Text style={dynamicStyles.bibleReference}>{hymn.bible_reference}</Text>
               )}
             </View>
           )}
@@ -216,7 +240,7 @@ export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({ hymn, vers
           <View key={idx} style={styles.verseBlock}>
             {verse.type === 'title' ? (
               verse.lines.map((line, li) => (
-                <Text key={li} style={styles.verseMarker}>
+                <Text key={li} style={dynamicStyles.verseMarker}>
                   {line.text}
                 </Text>
               ))
@@ -225,7 +249,7 @@ export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({ hymn, vers
                 <Text
                   key={li}
                   style={{
-                    ...styles.lyricLine,
+                    ...dynamicStyles.lyricLine,
                     ...(line.bold ? { fontWeight: 'bold' } : {}),
                     ...(line.italic ? { fontStyle: 'italic' } : {}),
                   }}

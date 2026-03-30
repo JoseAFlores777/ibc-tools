@@ -4,14 +4,25 @@ import { parseHymnHtml } from '@/app/lib/pdf/html-to-pdf';
 import type { HymnForPdf, ParsedVerse } from '@/app/interfaces/Hymn.interface';
 // Registrar fuentes antes de cualquier render
 import '@/app/components/pdf-components/shared/pdf-fonts';
+import type {
+  FontPreset,
+  PrintMode,
+  Orientation,
+} from '@/app/components/pdf-components/shared/pdf-tokens';
 
 export type PdfLayout = 'one-per-page' | 'two-per-page';
 export type PdfStyle = 'decorated' | 'plain';
+
+export type { PrintMode, Orientation, FontPreset };
 
 export interface RenderHymnPdfOptions {
   hymns: HymnForPdf[];
   layout: PdfLayout;
   style: PdfStyle;
+  printMode?: PrintMode;
+  orientation?: Orientation;
+  fontPreset?: FontPreset;
+  includeBibleRef?: boolean;
 }
 
 interface ParsedHymn {
@@ -22,14 +33,19 @@ interface ParsedHymn {
 /**
  * Genera un PDF Buffer con los himnos proporcionados, usando el layout y estilo indicados.
  *
- * - one-per-page: un himno por pagina (decorated o plain)
- * - two-per-page: dos himnos lado a lado por pagina (decorated o plain)
+ * - simple + one-per-page: un himno por pagina (decorated o plain)
+ * - simple + two-per-page: dos himnos lado a lado por pagina (decorated o plain)
+ * - booklet: paginas en orden de imposicion saddle-stitch para cuadernillo
  *
- * Para two-per-page con cantidad impar de himnos, la ultima pagina tiene
- * el himno sobrante en la columna izquierda y la derecha vacia.
+ * Opciones adicionales: orientation (portrait/landscape), fontPreset (clasica/moderna/legible),
+ * includeBibleRef (true/false).
  */
 export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buffer> {
   const { hymns, layout, style } = options;
+  const printMode = options.printMode ?? 'simple';
+  const orientation = options.orientation ?? 'portrait';
+  const fontPreset = options.fontPreset ?? 'clasica';
+  const includeBibleRef = options.includeBibleRef ?? true;
 
   if (hymns.length === 0) {
     throw new Error('renderHymnPdf: at least one hymn is required');
@@ -43,7 +59,41 @@ export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buff
 
   let pages: React.ReactElement[];
 
-  if (layout === 'one-per-page') {
+  if (printMode === 'booklet') {
+    // Modo booklet: imposicion saddle-stitch
+    const { computeImposition } = await import('@/app/lib/pdf/imposition');
+    const { BookletSheet } = await import(
+      '@/app/components/pdf-components/pdf-pages/BookletSheet'
+    );
+
+    const imposition = computeImposition(parsedHymns.length);
+
+    pages = [];
+    for (const sheet of imposition) {
+      // Frente de la hoja
+      pages.push(
+        React.createElement(BookletSheet, {
+          key: `f-${pages.length}`,
+          left: sheet.front.left > 0 ? parsedHymns[sheet.front.left - 1] : null,
+          right: sheet.front.right > 0 ? parsedHymns[sheet.front.right - 1] : null,
+          fontPreset,
+          includeBibleRef,
+          style,
+        }),
+      );
+      // Reverso de la hoja
+      pages.push(
+        React.createElement(BookletSheet, {
+          key: `b-${pages.length}`,
+          left: sheet.back.left > 0 ? parsedHymns[sheet.back.left - 1] : null,
+          right: sheet.back.right > 0 ? parsedHymns[sheet.back.right - 1] : null,
+          fontPreset,
+          includeBibleRef,
+          style,
+        }),
+      );
+    }
+  } else if (layout === 'one-per-page') {
     // Una pagina por himno, usando el componente decorado o plano
     const PageComponent =
       style === 'decorated'
@@ -53,7 +103,14 @@ export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buff
             .HymnPagePlain;
 
     pages = parsedHymns.map((ph, i) =>
-      React.createElement(PageComponent, { key: i, hymn: ph.hymn, verses: ph.verses }),
+      React.createElement(PageComponent, {
+        key: i,
+        hymn: ph.hymn,
+        verses: ph.verses,
+        orientation,
+        fontPreset,
+        includeBibleRef,
+      }),
     );
   } else {
     // Dos himnos por pagina: emparejar en columnas izq/der

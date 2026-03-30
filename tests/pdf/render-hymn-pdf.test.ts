@@ -67,4 +67,80 @@ describe('renderHymnPdf', () => {
       }),
     ).rejects.toThrow();
   });
+
+  // New tests for Phase 05 options
+
+  it('renders with printMode=booklet', async () => {
+    const { renderHymnPdf } = await import('@/app/lib/pdf/render-hymn-pdf');
+    const buffer = await renderHymnPdf({
+      hymns: [sampleHymnForPdf, sampleHymnMinimal],
+      layout: 'one-per-page',
+      style: 'decorated',
+      printMode: 'booklet',
+    });
+    expect(buffer.length).toBeGreaterThan(0);
+    expect(buffer.toString('latin1', 0, 5)).toBe('%PDF-');
+  });
+
+  it('renders with orientation=landscape', async () => {
+    const { renderHymnPdf } = await import('@/app/lib/pdf/render-hymn-pdf');
+    const buffer = await renderHymnPdf({
+      hymns: [sampleHymnForPdf],
+      layout: 'one-per-page',
+      style: 'decorated',
+      orientation: 'landscape',
+    });
+    expect(buffer.length).toBeGreaterThan(0);
+    expect(buffer.toString('latin1', 0, 5)).toBe('%PDF-');
+  });
+
+  it('renders with fontPreset=moderna', async () => {
+    const { renderHymnPdf } = await import('@/app/lib/pdf/render-hymn-pdf');
+    const buffer = await renderHymnPdf({
+      hymns: [sampleHymnForPdf],
+      layout: 'one-per-page',
+      style: 'plain',
+      fontPreset: 'moderna',
+    });
+    expect(buffer.length).toBeGreaterThan(0);
+    expect(buffer.toString('latin1', 0, 5)).toBe('%PDF-');
+  });
+
+  it('renders with includeBibleRef=false', async () => {
+    const { renderHymnPdf } = await import('@/app/lib/pdf/render-hymn-pdf');
+    const buffer = await renderHymnPdf({
+      hymns: [sampleHymnForPdf],
+      layout: 'one-per-page',
+      style: 'decorated',
+      includeBibleRef: false,
+    });
+    expect(buffer.length).toBeGreaterThan(0);
+    expect(buffer.toString('latin1', 0, 5)).toBe('%PDF-');
+  });
+
+  it('renders with all new options at once', async () => {
+    const { renderHymnPdf } = await import('@/app/lib/pdf/render-hymn-pdf');
+    const buffer = await renderHymnPdf({
+      hymns: [sampleHymnForPdf, sampleHymnMinimal],
+      layout: 'one-per-page',
+      style: 'plain',
+      printMode: 'booklet',
+      fontPreset: 'legible',
+      includeBibleRef: false,
+    });
+    expect(buffer.length).toBeGreaterThan(0);
+    expect(buffer.toString('latin1', 0, 5)).toBe('%PDF-');
+  });
+
+  it('renders booklet with single hymn (pads to 4 pages)', async () => {
+    const { renderHymnPdf } = await import('@/app/lib/pdf/render-hymn-pdf');
+    const buffer = await renderHymnPdf({
+      hymns: [sampleHymnForPdf],
+      layout: 'one-per-page',
+      style: 'decorated',
+      printMode: 'booklet',
+    });
+    expect(buffer.length).toBeGreaterThan(0);
+    expect(buffer.toString('latin1', 0, 5)).toBe('%PDF-');
+  });
 });
