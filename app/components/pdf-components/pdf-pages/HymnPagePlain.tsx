@@ -63,6 +63,20 @@ const styles = StyleSheet.create({
     lineHeight: 1.4,
     color: '#000000',
   },
+  footer: {
+    position: 'absolute' as const,
+    bottom: 0,
+    width: '100%',
+    paddingHorizontal: MARGIN_1UP,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    textAlign: 'center',
+  },
+  footerText: {
+    fontSize: 8,
+    color: '#999999',
+  },
 });
 
 export const HymnPagePlain: React.FC<HymnPagePlainProps> = ({
@@ -121,7 +135,10 @@ export const HymnPagePlain: React.FC<HymnPagePlainProps> = ({
         ))}
       </View>
 
-      {/* NO footer per D-01 */}
+      {/* Footer con referencia de iglesia */}
+      <View style={styles.footer} fixed>
+        <Text style={styles.footerText}>Iglesia Bautista El Calvario</Text>
+      </View>
     </Page>
   );
 };

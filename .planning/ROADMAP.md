@@ -94,10 +94,10 @@ Plans:
   4. User can select font preset (Clasica/Moderna/Legible) affecting font family and size in PDF output
   5. User can toggle bible reference inclusion on/off, and the PDF reflects the choice
   6. Selecting Booklet hides irrelevant options (layout, orientation) and shows duplex printing instructions
-**Plans:** 3 plans
+**Plans:** 0/3 plans executed
 
 Plans:
-- [ ] 05-01-PLAN.md -- Imposition algorithm, font presets, booklet tokens, schema/reducer/request extensions (Wave 1)
+- [x] 05-01-PLAN.md -- Imposition algorithm, font presets, booklet tokens, schema/reducer/request extensions (Wave 1)
 - [ ] 05-02-PLAN.md -- Booklet PDF components, render pipeline extension, generate-hymn-zip update (Wave 2)
 - [ ] 05-03-PLAN.md -- StepConfiguracion UI update with all new controls, human verification (Wave 3)
 
@@ -112,4 +112,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. PDF Generation for Server-Side Rendering | 0/2 | Not started | - |
 | 3. API Routes and ZIP Streaming | 0/2 | Not started | - |
 | 4. Wizard UI and Download Experience | 0/3 | Not started | - |
-| 5. Impresion de Himnos | 0/3 | Not started | - |
+| 5. Impresion de Himnos | 0/3 | Planned    |  |

@@ -27,7 +27,7 @@ export const packageRequestSchema = z.object({
     .min(1, 'Al menos un himno es requerido')
     .max(50, 'Maximo 50 himnos por paquete'),
   layout: z.enum(['one-per-page', 'two-per-page']),
-  style: z.enum(['decorated', 'plain']),
+  style: z.enum(['decorated', 'decorated-eco', 'plain']),
   printMode: z.enum(['simple', 'booklet']).optional().default('simple'),
   orientation: z.enum(['portrait', 'landscape']).optional().default('portrait'),
   fontPreset: z.enum(['clasica', 'moderna', 'legible']).optional().default('clasica'),

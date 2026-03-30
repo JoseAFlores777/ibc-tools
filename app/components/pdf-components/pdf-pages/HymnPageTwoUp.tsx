@@ -18,7 +18,7 @@ import {
 
 const logoPath = path.join(process.cwd(), 'public', 'images', 'IBC_Logo-min.png');
 
-export type PdfStyle = 'decorated' | 'plain';
+export type PdfStyle = 'decorated' | 'decorated-eco' | 'plain';
 
 export interface HymnColumnData {
   hymn: HymnForPdf;
@@ -429,7 +429,7 @@ const PlainTwoUp: React.FC<HymnPageTwoUpProps> = ({ hymnA, hymnB }) => {
 /* ── Main export ──────────────────────────────────────────────────── */
 
 export const HymnPageTwoUp: React.FC<HymnPageTwoUpProps> = (props) => {
-  if (props.style === 'decorated') {
+  if (props.style === 'decorated' || props.style === 'decorated-eco') {
     return <DecoratedTwoUp {...props} />;
   }
   return <PlainTwoUp {...props} />;

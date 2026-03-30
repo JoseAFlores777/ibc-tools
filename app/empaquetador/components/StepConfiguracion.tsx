@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import {
   Checkbox,
   Label,
@@ -8,9 +11,14 @@ import {
   Separator,
   Badge,
   Switch,
+  Calendar,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
 } from '@/lib/shadcn/ui';
 import { Input } from '@/app/lib/shadcn/ui/input';
 import { Textarea } from '@/app/lib/shadcn/ui/textarea';
+import { Button } from '@/app/lib/shadcn/ui/button';
 import type { WizardState, WizardAction } from '@/app/empaquetador/hooks/useWizardReducer';
 import { AUDIO_FIELD_NAMES } from '@/app/empaquetador/hooks/useWizardReducer';
 import type { HymnAudioFiles } from '@/app/interfaces/Hymn.interface';
@@ -28,7 +36,16 @@ import {
   ALargeSmall,
   ZoomIn,
   AlertTriangle,
+  CalendarIcon,
 } from 'lucide-react';
+
+/** Formatea una Date como "30 de marzo del 2026" */
+function formatDateEs(date: Date): string {
+  const day = date.getDate();
+  const month = format(date, 'MMMM', { locale: es });
+  const year = date.getFullYear();
+  return `${day} de ${month} del ${year}`;
+}
 
 /** Mapa de campo de audio a etiqueta en espanol */
 const AUDIO_LABELS: Record<string, string> = {
@@ -46,6 +63,7 @@ interface StepConfiguracionProps {
 }
 
 export default function StepConfiguracion({ state, dispatch }: StepConfiguracionProps) {
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   // Calcular si todas las pistas disponibles estan seleccionadas
   const hymnsWithAudio = state.selectedHymns.filter((h) => h.hasAnyAudio);
   const allSelected =
@@ -151,16 +169,36 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                       />
                     </div>
                     <div>
-                      <Label htmlFor="booklet-date" className="text-xs text-slate-600 mb-1 block">
+                      <Label className="text-xs text-slate-600 mb-1 block">
                         Fecha
                       </Label>
-                      <Input
-                        id="booklet-date"
-                        placeholder="Ej: 30 de marzo de 2026"
-                        value={state.bookletDate}
-                        onChange={(e) => dispatch({ type: 'SET_BOOKLET_DATE', bookletDate: e.target.value })}
-                        className="h-9 text-sm"
-                      />
+                      <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              'w-full justify-start text-left font-normal h-9 text-sm',
+                              !state.bookletDate && 'text-muted-foreground',
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {state.bookletDate || 'Seleccionar fecha'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={state.bookletDate ? new Date(state.bookletDate) : undefined}
+                            onSelect={(date) => {
+                              if (date) {
+                                dispatch({ type: 'SET_BOOKLET_DATE', bookletDate: formatDateEs(date) });
+                              }
+                              setDatePickerOpen(false);
+                            }}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     <div>
                       <Label htmlFor="booklet-bible-ref" className="text-xs text-slate-600 mb-1 block">
@@ -301,6 +339,36 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                   </div>
                   <p className="text-xs text-slate-500 pl-6">
                     Encabezados con marca, tipografia editorial y bordes elegantes.
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => dispatch({ type: 'SET_STYLE', style: 'decorated-eco' })}
+                  className={cn(
+                    'w-full text-left p-4 rounded-lg border-2 transition-all min-h-[48px]',
+                    state.style === 'decorated-eco'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-slate-200 hover:border-slate-300',
+                  )}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <Sparkles
+                      className={cn(
+                        'h-4 w-4',
+                        state.style === 'decorated-eco' ? 'text-primary' : 'text-slate-500',
+                      )}
+                    />
+                    <span
+                      className={cn(
+                        'text-sm font-semibold',
+                        state.style === 'decorated-eco' ? 'text-primary' : 'text-slate-700',
+                      )}
+                    >
+                      Decorada Economica
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 pl-6">
+                    Misma estructura decorada sin fondos de color. Ahorra tinta.
                   </p>
                 </button>
                 <button

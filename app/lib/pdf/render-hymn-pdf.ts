@@ -11,7 +11,7 @@ import type {
 } from '@/app/components/pdf-components/shared/pdf-tokens';
 
 export type PdfLayout = 'one-per-page' | 'two-per-page';
-export type PdfStyle = 'decorated' | 'plain';
+export type PdfStyle = 'decorated' | 'decorated-eco' | 'plain';
 
 export type { PrintMode, Orientation, FontPreset };
 
@@ -34,10 +34,11 @@ interface ParsedHymn {
   verses: ParsedVerse[];
 }
 
-/** Tipos de pagina para booklet: himno, portada, o contraportada */
+/** Tipos de pagina para booklet: himno, portada, indice, o contraportada */
 type BookletPageEntry =
   | { type: 'hymn'; hymn: HymnForPdf; verses: ParsedVerse[] }
   | { type: 'cover'; title: string; subtitle?: string; date?: string; bibleText?: string; bibleReference?: string }
+  | { type: 'toc'; entries: Array<{ hymnNumber: number | null; name: string; page: number }> }
   | { type: 'backCover' };
 
 /**
@@ -76,8 +77,8 @@ export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buff
       '@/app/components/pdf-components/pdf-pages/BookletSheet'
     );
 
-    // Calcular total de contenido: portada + himnos + contraportada
-    const contentCount = 1 + parsedHymns.length + 1;
+    // Calcular total de contenido: portada + indice + himnos + contraportada
+    const contentCount = 1 + 1 + parsedHymns.length + 1;
     // Redondear al multiplo de 4 (mismo calculo que computeImposition)
     const totalPages = Math.ceil(contentCount / 4) * 4;
 
@@ -98,9 +99,18 @@ export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buff
       bibleReference: options.bookletBibleRef || firstHymn.bible_reference || undefined,
     };
 
-    // Himnos = paginas 2..N+1
+    // Indice = pagina 2 (indice 1)
+    // Himnos empiezan en pagina 3 (indice 2)
+    const tocEntries = parsedHymns.map((ph, i) => ({
+      hymnNumber: ph.hymn.hymn_number ?? null,
+      name: ph.hymn.name,
+      page: i + 3, // portada=1, indice=2, primer himno=3
+    }));
+    bookletPages[1] = { type: 'toc', entries: tocEntries };
+
+    // Himnos = paginas 3..N+2
     for (let i = 0; i < parsedHymns.length; i++) {
-      bookletPages[i + 1] = { type: 'hymn', hymn: parsedHymns[i].hymn, verses: parsedHymns[i].verses };
+      bookletPages[i + 2] = { type: 'hymn', hymn: parsedHymns[i].hymn, verses: parsedHymns[i].verses };
     }
 
     // Contraportada = ULTIMA pagina del total paginado (no solo del contenido)
@@ -121,6 +131,8 @@ export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buff
           key: `f-${pages.length}`,
           left: getPage(sheet.front.left),
           right: getPage(sheet.front.right),
+          leftPageNum: sheet.front.left,
+          rightPageNum: sheet.front.right,
           fontPreset,
           includeBibleRef,
           style,
@@ -131,6 +143,8 @@ export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buff
           key: `b-${pages.length}`,
           left: getPage(sheet.back.left),
           right: getPage(sheet.back.right),
+          leftPageNum: sheet.back.left,
+          rightPageNum: sheet.back.right,
           fontPreset,
           includeBibleRef,
           style,
@@ -138,13 +152,13 @@ export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buff
       );
     }
   } else if (layout === 'one-per-page') {
-    // Una pagina por himno, usando el componente decorado o plano
-    const PageComponent =
-      style === 'decorated'
-        ? (await import('@/app/components/pdf-components/pdf-pages/HymnPageDecorated'))
-            .HymnPageDecorated
-        : (await import('@/app/components/pdf-components/pdf-pages/HymnPagePlain'))
-            .HymnPagePlain;
+    // Una pagina por himno
+    const isDecorated = style === 'decorated' || style === 'decorated-eco';
+    const PageComponent = isDecorated
+      ? (await import('@/app/components/pdf-components/pdf-pages/HymnPageDecorated'))
+          .HymnPageDecorated
+      : (await import('@/app/components/pdf-components/pdf-pages/HymnPagePlain'))
+          .HymnPagePlain;
 
     pages = parsedHymns.map((ph, i) =>
       React.createElement(PageComponent, {
@@ -154,6 +168,7 @@ export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buff
         orientation,
         fontPreset,
         includeBibleRef,
+        ...(isDecorated ? { ecoMode: style === 'decorated-eco' } : {}),
       }),
     );
   } else {

@@ -17,7 +17,7 @@ export interface SavedPackage {
     hymnalName: string | null;
   }>;
   layout: 'one-per-page' | 'two-per-page';
-  style: 'decorated' | 'plain';
+  style: 'decorated' | 'decorated-eco' | 'plain';
   /** hymn ID -> array of audio field names (serializable version of Map<string, Set<string>>) */
   audioSelections: Record<string, string[]>;
   status: 'completed' | 'draft';

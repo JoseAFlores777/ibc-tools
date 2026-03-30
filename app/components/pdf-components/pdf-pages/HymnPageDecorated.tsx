@@ -23,6 +23,7 @@ export interface HymnPageDecoratedProps {
   orientation?: Orientation;
   fontPreset?: FontPreset;
   includeBibleRef?: boolean;
+  ecoMode?: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -201,26 +202,44 @@ export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({
   orientation = 'portrait',
   fontPreset = 'clasica',
   includeBibleRef = true,
+  ecoMode = false,
 }) => {
   const authorGroups = formatAuthors(hymn.authors);
   const preset = FONT_PRESETS[fontPreset];
-  // Dynamic styles based on font preset: body/lyrics use preset's family, branding uses Adamina
+
+  // Eco mode: misma estructura decorada pero sin fondos de color (ahorro de tinta)
+  const ecoOverrides = ecoMode ? {
+    page: { backgroundColor: '#ffffff' },
+    header: { backgroundColor: '#ffffff', borderBottomColor: COLORS.goldAccent },
+    hymnNumber: { color: COLORS.goldAccent },
+    hymnTitle: { color: '#111111' },
+    hymnalName: { color: COLORS.plainSubtitle },
+    bibleText: { color: '#333333' },
+    bibleReference: { color: '#111111' },
+    verseMarker: { color: COLORS.goldAccent },
+    lyricLine: { color: '#000000' },
+    footer: { backgroundColor: '#ffffff', borderTopColor: COLORS.goldAccent },
+    footerInfoText: { color: COLORS.plainSubtitle },
+    footerChurchTitle: { color: '#333333' },
+    footerChurchSubtitle: { color: COLORS.plainSubtitle },
+  } : {};
+
   const dynamicStyles = {
-    hymnNumber: { ...styles.hymnNumber, fontSize: preset.scale.heading },
-    hymnTitle: { ...styles.hymnTitle, fontSize: preset.scale.display },
-    hymnalName: { ...styles.hymnalName, fontSize: preset.scale.label },
-    bibleText: { ...styles.bibleText, fontSize: preset.scale.label },
-    bibleReference: { ...styles.bibleReference, fontSize: preset.scale.label },
-    verseMarker: { ...styles.verseMarker, fontSize: preset.scale.body },
-    lyricLine: { ...styles.lyricLine, fontSize: preset.scale.body, fontFamily: preset.family },
-    footerInfoText: { ...styles.footerInfoText },
+    hymnNumber: { ...styles.hymnNumber, fontSize: preset.scale.heading, ...ecoOverrides.hymnNumber },
+    hymnTitle: { ...styles.hymnTitle, fontSize: preset.scale.display, ...ecoOverrides.hymnTitle },
+    hymnalName: { ...styles.hymnalName, fontSize: preset.scale.label, ...ecoOverrides.hymnalName },
+    bibleText: { ...styles.bibleText, fontSize: preset.scale.label, ...ecoOverrides.bibleText },
+    bibleReference: { ...styles.bibleReference, fontSize: preset.scale.label, ...ecoOverrides.bibleReference },
+    verseMarker: { ...styles.verseMarker, fontSize: preset.scale.body, ...ecoOverrides.verseMarker },
+    lyricLine: { ...styles.lyricLine, fontSize: preset.scale.body, fontFamily: preset.family, ...ecoOverrides.lyricLine },
+    footerInfoText: { ...styles.footerInfoText, ...ecoOverrides.footerInfoText },
   };
 
   return (
-    <Page size="LETTER" orientation={orientation} style={styles.page}>
+    <Page size="LETTER" orientation={orientation} style={{ ...styles.page, ...ecoOverrides.page }}>
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.gradientOverlay} />
+      <View style={{ ...styles.header, ...ecoOverrides.header }}>
+        {!ecoMode && <View style={styles.gradientOverlay} />}
         <View style={styles.headerTexts}>
           <Text style={dynamicStyles.hymnNumber}>
             {hymn.hymn_number != null ? `Himno # ${hymn.hymn_number}` : 'Himno'}
@@ -267,31 +286,33 @@ export const HymnPageDecorated: React.FC<HymnPageDecoratedProps> = ({
       </View>
 
       {/* Footer */}
-      <View style={styles.footer} fixed>
+      <View style={{ ...styles.footer, ...ecoOverrides.footer }} fixed>
         <View style={styles.footerHymnInfo}>
           {hymn.hymn_time_signature && (
-            <Text style={styles.footerInfoText}>
+            <Text style={dynamicStyles.footerInfoText}>
               {`Compas: ${hymn.hymn_time_signature}`}
             </Text>
           )}
           {authorGroups.map((group, idx) => (
-            <Text key={idx} style={styles.footerInfoText}>
+            <Text key={idx} style={dynamicStyles.footerInfoText}>
               {`${group.abbr}: ${group.names}`}
             </Text>
           ))}
           {hymn.hymnal?.name && hymn.hymnal?.publisher && (
-            <Text style={styles.footerInfoText}>
+            <Text style={dynamicStyles.footerInfoText}>
               {`${hymn.hymnal.name} , ${hymn.hymnal.publisher}`}
             </Text>
           )}
         </View>
         <View style={styles.footerChurchInfo}>
           <View style={styles.footerChurchTexts}>
-            <Text style={styles.footerChurchTitle}>DIOS ES FIEL</Text>
-            <Text style={styles.footerChurchSubtitle}>Iglesia Bautista El Calvario</Text>
+            <Text style={{ ...styles.footerChurchTitle, ...ecoOverrides.footerChurchTitle }}>DIOS ES FIEL</Text>
+            <Text style={{ ...styles.footerChurchSubtitle, ...ecoOverrides.footerChurchSubtitle }}>Iglesia Bautista El Calvario</Text>
           </View>
-          {/* eslint-disable-next-line jsx-a11y/alt-text */}
-          <Image src={logoPath} style={styles.footerLogo} />
+          {!ecoMode && (
+            // eslint-disable-next-line jsx-a11y/alt-text
+            <Image src={logoPath} style={styles.footerLogo} />
+          )}
         </View>
       </View>
     </Page>

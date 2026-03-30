@@ -20,7 +20,7 @@ export interface WizardState {
   step: 1 | 2 | 3;
   selectedHymns: HymnSearchResult[];
   layout: 'one-per-page' | 'two-per-page';
-  style: 'decorated' | 'plain';
+  style: 'decorated' | 'decorated-eco' | 'plain';
   printMode: 'simple' | 'booklet';
   orientation: 'portrait' | 'landscape';
   fontPreset: 'clasica' | 'moderna' | 'legible';
@@ -40,7 +40,7 @@ export type WizardAction =
   | { type: 'ADD_HYMN'; hymn: HymnSearchResult }
   | { type: 'REMOVE_HYMN'; hymnId: string }
   | { type: 'SET_LAYOUT'; layout: 'one-per-page' | 'two-per-page' }
-  | { type: 'SET_STYLE'; style: 'decorated' | 'plain' }
+  | { type: 'SET_STYLE'; style: 'decorated' | 'decorated-eco' | 'plain' }
   | { type: 'TOGGLE_AUDIO'; hymnId: string; field: string }
   | { type: 'SELECT_ALL_AUDIO'; selectAll: boolean }
   | { type: 'SET_GENERATING'; isGenerating: boolean }
