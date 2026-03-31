@@ -58,7 +58,17 @@ const AUDIO_LABELS: Record<string, string> = {
   bass_voice: 'Bajo',
 };
 
-/** Preview HTML del layout de copias — refleja orientación y usa texto de ejemplo */
+/**
+ * Preview HTML del layout de copias — proporcional al PDF real.
+ *
+ * El PDF usa tamaño LETTER (612x792pt). La preview usa un ancho fijo y calcula
+ * un factor de escala (previewWidth / pageWidth) para que todos los font sizes
+ * sean proporcionales al resultado impreso.
+ */
+const PAGE_W_PT = 612;
+const PAGE_H_PT = 792;
+const CELL_PAD_PT = 12;
+
 function CopiesPreview({
   copies,
   fontSize,
@@ -73,45 +83,70 @@ function CopiesPreview({
   orientation: 'portrait' | 'landscape';
 }) {
   const isLandscape = orientation === 'landscape';
-  const scale = fontSize / 9;
-  const titleSize = Math.round(9 * scale);
-  const markerSize = Math.round(7 * scale);
-  const bodySize = Math.round(6 * scale);
+  // Dimensiones de la pagina en pt segun orientacion
+  const pageW = isLandscape ? PAGE_H_PT : PAGE_W_PT;
+  const pageH = isLandscape ? PAGE_W_PT : PAGE_H_PT;
 
-  const title = hymnNumber != null ? `# ${hymnNumber}  ${hymnName}` : hymnName;
+  // Ancho fijo del preview en px
+  const previewW = isLandscape ? 320 : 260;
+  // Factor de escala: 1pt del PDF = scale px en el preview
+  const scale = previewW / pageW;
+  const previewH = pageH * scale;
+
+  // Tamaños del PDF escalados a px (mismos que HymnPageCopies.tsx)
+  const titlePx = (fontSize + 2) * scale;
+  const markerPx = fontSize * scale;
+  const bodyPx = fontSize * scale;
+  const padPx = CELL_PAD_PT * scale;
+  const mbVersePx = 4 * scale;
+  const mbTitlePx = 6 * scale;
+
+  const title = hymnNumber != null ? `${hymnNumber}. ${hymnName}` : hymnName;
 
   const cellContent = (
-    <div className="flex flex-col items-center justify-start p-1.5 overflow-hidden h-full">
+    <div
+      className="flex flex-col items-center justify-start overflow-hidden h-full"
+      style={{ padding: `${padPx}px` }}
+    >
       <p
         className="font-bold text-slate-700 text-center leading-tight w-full uppercase"
-        style={{ fontSize: `${titleSize}px` }}
+        style={{ fontSize: `${titlePx}px`, marginBottom: `${mbTitlePx}px` }}
       >
         {title}
       </p>
-      <p className="text-amber-600 text-center font-semibold mt-1" style={{ fontSize: `${markerSize}px` }}>I</p>
-      <div className="text-slate-500 text-center leading-snug mt-0.5 w-full" style={{ fontSize: `${bodySize}px` }}>
+      <p className="text-amber-700 text-center font-bold" style={{ fontSize: `${markerPx}px`, marginBottom: `${mbVersePx}px` }}>I</p>
+      <div className="text-slate-600 text-center w-full" style={{ fontSize: `${bodyPx}px`, lineHeight: 1.35, marginBottom: `${mbVersePx}px` }}>
         <p>LA CREACION NO PUEDO EXPLICARLA,</p>
         <p>NI LOS PLANETAS EN SU ENORMIDAD;</p>
         <p>CONTAR LA ARENA DE LA MAR NO PUEDO,</p>
         <p>NI LAS ESTRELLAS DE LA ANTIGUEDAD.</p>
       </div>
-      <p className="text-amber-600 text-center font-semibold mt-1" style={{ fontSize: `${markerSize}px` }}>CORO</p>
-      <div className="text-slate-500 text-center leading-snug mt-0.5 w-full" style={{ fontSize: `${bodySize}px` }}>
+      <p className="text-amber-700 text-center font-bold" style={{ fontSize: `${markerPx}px`, marginBottom: `${mbVersePx}px` }}>CORO</p>
+      <div className="text-slate-600 text-center w-full" style={{ fontSize: `${bodyPx}px`, lineHeight: 1.35, marginBottom: `${mbVersePx}px` }}>
         <p>LO IMPOSIBLE OBRA NUESTRO DIOS,</p>
         <p>CONTROLANDO EL MUNDO ESTA;</p>
+        <p>Y AUNQUE YO COMPRENDO POCO,</p>
+        <p>NO DUDO QUE ME CUIDARA.</p>
+      </div>
+      <p className="text-amber-700 text-center font-bold" style={{ fontSize: `${markerPx}px`, marginBottom: `${mbVersePx}px` }}>II</p>
+      <div className="text-slate-600 text-center w-full" style={{ fontSize: `${bodyPx}px`, lineHeight: 1.35 }}>
+        <p>SU GRAN PERDON NO PUEDO EXPLICARLO</p>
+        <p>NI COMO A TAN VIL PECADOR AMO;</p>
+        <p>O COMPRENDER LA OBRA DEL CALVARIO,</p>
+        <p>O COMO POR SU GRACIA ME SALVO.</p>
       </div>
     </div>
   );
 
-  const aspect = isLandscape ? '11 / 8.5' : '8.5 / 11';
-  const maxW = isLandscape ? 240 : 180;
+  const pageStyle: React.CSSProperties = {
+    width: `${previewW}px`,
+    height: `${previewH}px`,
+    backgroundColor: '#f7f7f7',
+  };
 
   if (copies <= 1) {
     return (
-      <div
-        className="bg-white border border-slate-200 rounded mx-auto overflow-hidden shadow-sm"
-        style={{ aspectRatio: aspect, maxWidth: maxW }}
-      >
+      <div className="border border-slate-300 rounded mx-auto overflow-hidden shadow-sm" style={pageStyle}>
         {cellContent}
       </div>
     );
@@ -119,33 +154,23 @@ function CopiesPreview({
 
   if (copies === 2) {
     return (
-      <div
-        className="bg-white border border-slate-200 rounded mx-auto overflow-hidden shadow-sm"
-        style={{ aspectRatio: aspect, maxWidth: maxW }}
-      >
-        <div className="flex h-full">
-          <div className="flex-1 border-r border-dashed border-slate-400">{cellContent}</div>
-          <div className="flex-1">{cellContent}</div>
-        </div>
+      <div className="border border-slate-300 rounded mx-auto overflow-hidden shadow-sm flex" style={pageStyle}>
+        <div className="flex-1 overflow-hidden border-r border-dashed border-slate-400">{cellContent}</div>
+        <div className="flex-1 overflow-hidden">{cellContent}</div>
       </div>
     );
   }
 
   // 4 copies: 2x2 grid
   return (
-    <div
-      className="bg-white border border-slate-200 rounded mx-auto overflow-hidden shadow-sm"
-      style={{ aspectRatio: aspect, maxWidth: maxW }}
-    >
-      <div className="flex flex-col h-full">
-        <div className="flex flex-1 border-b border-dashed border-slate-400">
-          <div className="flex-1 border-r border-dashed border-slate-400">{cellContent}</div>
-          <div className="flex-1">{cellContent}</div>
-        </div>
-        <div className="flex flex-1">
-          <div className="flex-1 border-r border-dashed border-slate-400">{cellContent}</div>
-          <div className="flex-1">{cellContent}</div>
-        </div>
+    <div className="border border-slate-300 rounded mx-auto overflow-hidden shadow-sm flex flex-col" style={pageStyle}>
+      <div className="flex flex-1 overflow-hidden border-b border-dashed border-slate-400">
+        <div className="flex-1 overflow-hidden border-r border-dashed border-slate-400">{cellContent}</div>
+        <div className="flex-1 overflow-hidden">{cellContent}</div>
+      </div>
+      <div className="flex flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden border-r border-dashed border-slate-400">{cellContent}</div>
+        <div className="flex-1 overflow-hidden">{cellContent}</div>
       </div>
     </div>
   );
