@@ -58,46 +58,73 @@ const AUDIO_LABELS: Record<string, string> = {
   bass_voice: 'Bajo',
 };
 
-/** Preview HTML del layout de copias en miniatura */
+/** Preview HTML del layout de copias — refleja orientación y usa texto de ejemplo */
 function CopiesPreview({
   copies,
   fontSize,
   hymnName,
+  hymnNumber,
+  orientation,
 }: {
-  copies: 2 | 4;
+  copies: 1 | 2 | 4;
   fontSize: number;
   hymnName: string;
+  hymnNumber: number | null;
+  orientation: 'portrait' | 'landscape';
 }) {
-  // Escala relativa: fontSize 9 = base, rango 6-14
+  const isLandscape = orientation === 'landscape';
   const scale = fontSize / 9;
-  const titleSize = Math.round(10 * scale);
-  const bodySize = Math.round(7 * scale);
+  const titleSize = Math.round(9 * scale);
+  const markerSize = Math.round(7 * scale);
+  const bodySize = Math.round(6 * scale);
+
+  const title = hymnNumber != null ? `# ${hymnNumber}  ${hymnName}` : hymnName;
 
   const cellContent = (
-    <div className="flex flex-col items-center justify-start p-2 overflow-hidden h-full">
+    <div className="flex flex-col items-center justify-start p-1.5 overflow-hidden h-full">
       <p
-        className="font-semibold text-slate-700 text-center leading-tight truncate w-full"
+        className="font-bold text-slate-700 text-center leading-tight w-full uppercase"
         style={{ fontSize: `${titleSize}px` }}
       >
-        {hymnName}
+        {title}
       </p>
-      <p
-        className="text-slate-400 text-center mt-1 leading-tight"
-        style={{ fontSize: `${bodySize}px` }}
-      >
-        Verso 1...
-      </p>
+      <p className="text-amber-600 text-center font-semibold mt-1" style={{ fontSize: `${markerSize}px` }}>I</p>
+      <div className="text-slate-500 text-center leading-snug mt-0.5 w-full" style={{ fontSize: `${bodySize}px` }}>
+        <p>LA CREACION NO PUEDO EXPLICARLA,</p>
+        <p>NI LOS PLANETAS EN SU ENORMIDAD;</p>
+        <p>CONTAR LA ARENA DE LA MAR NO PUEDO,</p>
+        <p>NI LAS ESTRELLAS DE LA ANTIGUEDAD.</p>
+      </div>
+      <p className="text-amber-600 text-center font-semibold mt-1" style={{ fontSize: `${markerSize}px` }}>CORO</p>
+      <div className="text-slate-500 text-center leading-snug mt-0.5 w-full" style={{ fontSize: `${bodySize}px` }}>
+        <p>LO IMPOSIBLE OBRA NUESTRO DIOS,</p>
+        <p>CONTROLANDO EL MUNDO ESTA;</p>
+      </div>
     </div>
   );
+
+  const aspect = isLandscape ? '11 / 8.5' : '8.5 / 11';
+  const maxW = isLandscape ? 240 : 180;
+
+  if (copies <= 1) {
+    return (
+      <div
+        className="bg-white border border-slate-200 rounded mx-auto overflow-hidden shadow-sm"
+        style={{ aspectRatio: aspect, maxWidth: maxW }}
+      >
+        {cellContent}
+      </div>
+    );
+  }
 
   if (copies === 2) {
     return (
       <div
-        className="bg-white border border-slate-200 rounded mx-auto overflow-hidden"
-        style={{ aspectRatio: '8.5 / 11', maxWidth: 180 }}
+        className="bg-white border border-slate-200 rounded mx-auto overflow-hidden shadow-sm"
+        style={{ aspectRatio: aspect, maxWidth: maxW }}
       >
         <div className="flex h-full">
-          <div className="flex-1 border-r border-dashed border-slate-300">{cellContent}</div>
+          <div className="flex-1 border-r border-dashed border-slate-400">{cellContent}</div>
           <div className="flex-1">{cellContent}</div>
         </div>
       </div>
@@ -107,16 +134,16 @@ function CopiesPreview({
   // 4 copies: 2x2 grid
   return (
     <div
-      className="bg-white border border-slate-200 rounded mx-auto overflow-hidden"
-      style={{ aspectRatio: '8.5 / 11', maxWidth: 180 }}
+      className="bg-white border border-slate-200 rounded mx-auto overflow-hidden shadow-sm"
+      style={{ aspectRatio: aspect, maxWidth: maxW }}
     >
       <div className="flex flex-col h-full">
-        <div className="flex flex-1 border-b border-dashed border-slate-300">
-          <div className="flex-1 border-r border-dashed border-slate-300">{cellContent}</div>
+        <div className="flex flex-1 border-b border-dashed border-slate-400">
+          <div className="flex-1 border-r border-dashed border-slate-400">{cellContent}</div>
           <div className="flex-1">{cellContent}</div>
         </div>
         <div className="flex flex-1">
-          <div className="flex-1 border-r border-dashed border-slate-300">{cellContent}</div>
+          <div className="flex-1 border-r border-dashed border-slate-400">{cellContent}</div>
           <div className="flex-1">{cellContent}</div>
         </div>
       </div>
@@ -339,17 +366,6 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                     </div>
                   )}
 
-                  {/* Preview del layout de copias */}
-                  {state.copiesPerPage > 1 && (
-                    <div className="mt-3">
-                      <Label className="text-xs text-slate-500 mb-2 block">Vista previa</Label>
-                      <CopiesPreview
-                        copies={state.copiesPerPage as 2 | 4}
-                        fontSize={state.copiesFontSize}
-                        hymnName={state.selectedHymns[0]?.name ?? 'Himno'}
-                      />
-                    </div>
-                  )}
                 </div>
 
                 <Separator />
@@ -434,6 +450,30 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                   </div>
                 </div>
 
+                <Separator />
+              </>
+            )}
+
+            {/* Vista previa de copias — debajo de orientación */}
+            {state.selectedHymns.length === 1 && state.printMode === 'simple' && (
+              <>
+                <div>
+                  <Label className="text-xs font-semibold tracking-wide uppercase text-slate-400 mb-3 block">
+                    Vista Previa
+                  </Label>
+                  <CopiesPreview
+                    copies={state.copiesPerPage}
+                    fontSize={state.copiesFontSize}
+                    hymnName={state.selectedHymns[0]?.name ?? 'Himno'}
+                    hymnNumber={state.selectedHymns[0]?.hymn_number ?? null}
+                    orientation={state.orientation}
+                  />
+                  {state.copiesPerPage > 1 && (
+                    <p className="text-xs text-slate-400 text-center mt-2">
+                      Lineas punteadas = guia de corte
+                    </p>
+                  )}
+                </div>
                 <Separator />
               </>
             )}
