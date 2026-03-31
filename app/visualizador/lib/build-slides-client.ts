@@ -37,19 +37,6 @@ const TITLE_KEYWORDS = [
  */
 const HYMN_HEADER_PATTERN = /^HIMNO\s*#?\s*\d+\s*[-\u2013\u2014]\s*.+$/i;
 
-/** Roman numeral labels for stanzas */
-const ROMAN_NUMERALS = [
-  'I',
-  'II',
-  'III',
-  'IV',
-  'V',
-  'VI',
-  'VII',
-  'VIII',
-  'IX',
-  'X',
-];
 
 /**
  * Parses hymn HTML (letter_hymn field from Directus) into structured ParsedVerse array.
@@ -122,22 +109,69 @@ export function parseHymnHtmlClient(
   return verses;
 }
 
+/** Mapa de numeros romanos a ordinal (identico a generate-hymn-propresenter.ts) */
+const ROMAN_TO_NUM: Record<string, number> = {
+  'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5,
+  'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9, 'X': 10,
+};
+
 /**
  * Builds SlideData[] from parsed verses with intercalated chorus pattern.
- * Pattern: Intro -> Estrofa I -> Coro -> Estrofa II -> Coro -> ...
- * If no chorus exists: Intro -> Estrofa I -> Estrofa II -> ...
+ * Identical algorithm to generate-hymn-propresenter.ts buildSlideGroups:
+ *   Intro -> ESTROFA I -> CORO -> ESTROFA II -> CORO -> ...
  *
- * Ported from generate-hymn-propresenter.ts buildSlideGroups logic.
+ * Accumulates all lines under a section title until the next title appears,
+ * matching how ProPresenter groups multi-paragraph stanzas.
  */
 export function buildSlideGroups(
   verses: ParsedVerse[],
   hymn: HymnForPdf
 ): SlideData[] {
+  // --- Separar estrofas y coro (identico a ProPresenter) ---
+  const stanzas: Array<{ marker: string; label: string; lines: string[] }> = [];
+  let chorusLines: string[] | null = null;
+  let currentMarker = '';
+  let currentLines: string[] = [];
+  let isCollectingChorus = false;
+
+  for (const verse of verses) {
+    if (verse.type === 'title') {
+      // Guardar seccion previa
+      if (currentLines.length > 0) {
+        if (isCollectingChorus) {
+          chorusLines = currentLines;
+        } else {
+          const num = ROMAN_TO_NUM[currentMarker.trim().toUpperCase()];
+          const label = num ? `ESTROFA ${currentMarker.trim()}` : currentMarker.trim();
+          stanzas.push({ marker: currentMarker, label, lines: currentLines });
+        }
+      }
+      currentMarker = verse.lines.map((l) => l.text).join(' ');
+      currentLines = [];
+      const upper = currentMarker.trim().toUpperCase();
+      isCollectingChorus = upper === 'CORO' || upper === 'CHORUS';
+    } else {
+      currentLines.push(...verse.lines.map((l) => l.text));
+    }
+  }
+
+  // Guardar ultima seccion
+  if (currentLines.length > 0) {
+    if (isCollectingChorus) {
+      chorusLines = currentLines;
+    } else {
+      const num = ROMAN_TO_NUM[currentMarker.trim().toUpperCase()];
+      const label = num ? `ESTROFA ${currentMarker.trim()}` : currentMarker.trim();
+      stanzas.push({ marker: currentMarker, label, lines: currentLines });
+    }
+  }
+
+  // --- Construir slides (identico a ProPresenter) ---
   const slides: SlideData[] = [];
 
-  // Intro slide siempre presente
-  const introLines: string[] = [hymn.name];
-  if (hymn.bible_text) introLines.push(hymn.bible_text);
+  // 1. Introduccion: HIMNO + nombre en mayusculas + cita biblica
+  const introLines: string[] = ['HIMNO', `"${hymn.name.toUpperCase()}"`];
+  if (hymn.bible_text) introLines.push('', `"${hymn.bible_text}"`);
   if (hymn.bible_reference) introLines.push(hymn.bible_reference);
 
   slides.push({
@@ -146,53 +180,18 @@ export function buildSlideGroups(
     verseLabel: 'Introduccion',
   });
 
-  // Separar versos en estrofas y coro
-  const stanzas: { label: string; text: string }[] = [];
-  let chorusText: string | null = null;
-  let stanzaCount = 0;
-  let currentTitle: string | null = null;
-
-  for (const verse of verses) {
-    if (verse.type === 'title') {
-      currentTitle = verse.lines[0]?.text ?? '';
-      continue;
-    }
-
-    // Es un bloque de contenido (verse type)
-    const lineTexts = verse.lines.map((l) => l.text).join('\n');
-
-    if (currentTitle === 'CORO') {
-      // Guardar texto del coro (solo el primero, se reutiliza)
-      if (chorusText === null) {
-        chorusText = lineTexts;
-      }
-    } else {
-      // Es una estrofa numerada
-      stanzaCount++;
-      const romanLabel =
-        ROMAN_NUMERALS[stanzaCount - 1] ?? String(stanzaCount);
-      stanzas.push({
-        label: `ESTROFA ${romanLabel}`,
-        text: lineTexts,
-      });
-    }
-
-    currentTitle = null;
-  }
-
-  // Construir secuencia con intercalacion de coro
+  // 2. Intercalar estrofas y coro
   for (const stanza of stanzas) {
     slides.push({
       label: stanza.label,
-      text: stanza.text,
+      text: stanza.lines.join('\n'),
       verseLabel: stanza.label,
     });
 
-    // Intercalar coro despues de cada estrofa (si existe)
-    if (chorusText !== null) {
+    if (chorusLines) {
       slides.push({
         label: 'CORO',
-        text: chorusText,
+        text: chorusLines.join('\n'),
         verseLabel: 'CORO',
       });
     }

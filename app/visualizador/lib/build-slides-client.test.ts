@@ -116,15 +116,16 @@ describe('buildSlideGroups', () => {
     expect(slides[2].verseLabel).toBe('ESTROFA II');
   });
 
-  it('intro slide contains hymn name, bible_text, and bible_reference', () => {
+  it('intro slide matches ProPresenter format: HIMNO + name in caps + bible text', () => {
     const html = `<p>I</p><p>Linea</p>`;
     const verses = parseHymnHtmlClient(html);
     const slides = buildSlideGroups(verses, mockHymn);
 
     const intro = slides[0];
     expect(intro.label).toBe('Introduccion');
-    expect(intro.text).toContain('Himno de Prueba');
-    expect(intro.text).toContain('Cantad al Senor cantico nuevo');
+    expect(intro.text).toContain('HIMNO');
+    expect(intro.text).toContain('"HIMNO DE PRUEBA"');
+    expect(intro.text).toContain('"Cantad al Senor cantico nuevo"');
     expect(intro.text).toContain('Salmos 96:1');
   });
 
