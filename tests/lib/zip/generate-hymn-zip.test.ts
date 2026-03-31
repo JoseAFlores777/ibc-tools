@@ -134,6 +134,8 @@ describe('assembleHymnPackage', () => {
       hymns: [{ id: 'abc-123', audioFiles: [] }],
       layout: 'one-per-page',
       style: 'decorated',
+      copiesPerPage: 1,
+      copiesFontSize: 9,
     };
 
     const result = await assembleHymnPackage(archive, request);
@@ -161,6 +163,8 @@ describe('assembleHymnPackage', () => {
       hymns: [{ id: 'abc-123', audioFiles: [] }],
       layout: 'one-per-page',
       style: 'plain',
+      copiesPerPage: 1,
+      copiesFontSize: 9,
     };
 
     const result = await assembleHymnPackage(archive, request);
@@ -201,6 +205,8 @@ describe('assembleHymnPackage', () => {
       hymns: [{ id: 'abc-123', audioFiles: ['track_only'] }],
       layout: 'one-per-page',
       style: 'decorated',
+      copiesPerPage: 1,
+      copiesFontSize: 9,
     };
 
     const result = await assembleHymnPackage(archive, request);
@@ -240,6 +246,8 @@ describe('assembleHymnPackage', () => {
       ],
       layout: 'one-per-page',
       style: 'plain',
+      copiesPerPage: 1,
+      copiesFontSize: 9,
     };
 
     const result = await assembleHymnPackage(archive, request);

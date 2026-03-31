@@ -28,5 +28,7 @@ export function buildPackageRequest(state: WizardState): PackageRequest {
     bookletSubtitle: state.bookletSubtitle,
     bookletDate: state.bookletDate,
     bookletBibleRef: state.bookletBibleRef,
+    copiesPerPage: state.copiesPerPage,
+    copiesFontSize: state.copiesFontSize,
   };
 }

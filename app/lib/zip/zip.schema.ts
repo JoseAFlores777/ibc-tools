@@ -36,6 +36,8 @@ export const packageRequestSchema = z.object({
   bookletSubtitle: z.string().optional().default(''),
   bookletDate: z.string().optional().default(''),
   bookletBibleRef: z.string().optional().default(''),
+  copiesPerPage: z.union([z.literal(1), z.literal(2), z.literal(4)]).optional().default(1),
+  copiesFontSize: z.number().min(6).max(14).optional().default(9),
 });
 
 export type PackageRequest = z.infer<typeof packageRequestSchema>;

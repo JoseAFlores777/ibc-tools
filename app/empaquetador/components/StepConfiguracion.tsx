@@ -37,6 +37,7 @@ import {
   ZoomIn,
   AlertTriangle,
   CalendarIcon,
+  Copy,
 } from 'lucide-react';
 
 /** Formatea una Date como "30 de marzo del 2026" */
@@ -56,6 +57,72 @@ const AUDIO_LABELS: Record<string, string> = {
   tenor_voice: 'Tenor',
   bass_voice: 'Bajo',
 };
+
+/** Preview HTML del layout de copias en miniatura */
+function CopiesPreview({
+  copies,
+  fontSize,
+  hymnName,
+}: {
+  copies: 2 | 4;
+  fontSize: number;
+  hymnName: string;
+}) {
+  // Escala relativa: fontSize 9 = base, rango 6-14
+  const scale = fontSize / 9;
+  const titleSize = Math.round(10 * scale);
+  const bodySize = Math.round(7 * scale);
+
+  const cellContent = (
+    <div className="flex flex-col items-center justify-start p-2 overflow-hidden h-full">
+      <p
+        className="font-semibold text-slate-700 text-center leading-tight truncate w-full"
+        style={{ fontSize: `${titleSize}px` }}
+      >
+        {hymnName}
+      </p>
+      <p
+        className="text-slate-400 text-center mt-1 leading-tight"
+        style={{ fontSize: `${bodySize}px` }}
+      >
+        Verso 1...
+      </p>
+    </div>
+  );
+
+  if (copies === 2) {
+    return (
+      <div
+        className="bg-white border border-slate-200 rounded mx-auto overflow-hidden"
+        style={{ aspectRatio: '8.5 / 11', maxWidth: 180 }}
+      >
+        <div className="flex h-full">
+          <div className="flex-1 border-r border-dashed border-slate-300">{cellContent}</div>
+          <div className="flex-1">{cellContent}</div>
+        </div>
+      </div>
+    );
+  }
+
+  // 4 copies: 2x2 grid
+  return (
+    <div
+      className="bg-white border border-slate-200 rounded mx-auto overflow-hidden"
+      style={{ aspectRatio: '8.5 / 11', maxWidth: 180 }}
+    >
+      <div className="flex flex-col h-full">
+        <div className="flex flex-1 border-b border-dashed border-slate-300">
+          <div className="flex-1 border-r border-dashed border-slate-300">{cellContent}</div>
+          <div className="flex-1">{cellContent}</div>
+        </div>
+        <div className="flex flex-1">
+          <div className="flex-1 border-r border-dashed border-slate-300">{cellContent}</div>
+          <div className="flex-1">{cellContent}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface StepConfiguracionProps {
   state: WizardState;
@@ -223,8 +290,74 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
 
             <Separator />
 
-            {/* Diseno de pagina - solo visible en modo simple */}
-            {state.printMode === 'simple' && (
+            {/* Copias por pagina - solo visible con 1 himno y modo simple */}
+            {state.selectedHymns.length === 1 && state.printMode === 'simple' && (
+              <>
+                <div>
+                  <Label className="text-xs font-semibold tracking-wide uppercase text-slate-400 mb-3 block">
+                    <span className="flex items-center gap-1.5">
+                      <Copy className="h-4 w-4" />
+                      Copias por Pagina
+                    </span>
+                  </Label>
+                  <div className="flex gap-2">
+                    {([1, 2, 4] as const).map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => dispatch({ type: 'SET_COPIES_PER_PAGE', copiesPerPage: n })}
+                        className={cn(
+                          'flex-1 py-2 rounded-lg border-2 text-sm font-medium transition-all',
+                          state.copiesPerPage === n
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-slate-200 hover:border-slate-300 text-slate-600',
+                        )}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Tamano de fuente: solo visible cuando copies > 1 */}
+                  {state.copiesPerPage > 1 && (
+                    <div className="space-y-2 mt-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs text-slate-500">Tamano de fuente</Label>
+                        <span className="text-xs font-mono text-slate-500">{state.copiesFontSize}pt</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={6}
+                        max={14}
+                        step={1}
+                        value={state.copiesFontSize}
+                        onChange={(e) =>
+                          dispatch({ type: 'SET_COPIES_FONT_SIZE', copiesFontSize: Number(e.target.value) })
+                        }
+                        className="w-full accent-primary"
+                      />
+                    </div>
+                  )}
+
+                  {/* Preview del layout de copias */}
+                  {state.copiesPerPage > 1 && (
+                    <div className="mt-3">
+                      <Label className="text-xs text-slate-500 mb-2 block">Vista previa</Label>
+                      <CopiesPreview
+                        copies={state.copiesPerPage as 2 | 4}
+                        fontSize={state.copiesFontSize}
+                        hymnName={state.selectedHymns[0]?.name ?? 'Himno'}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <Separator />
+              </>
+            )}
+
+            {/* Diseno de pagina - solo visible en modo simple y copiesPerPage <= 1 */}
+            {state.printMode === 'simple' && state.copiesPerPage <= 1 && (
               <>
                 <div>
                   <Label className="text-xs font-semibold tracking-wide uppercase text-slate-400 mb-3 block">

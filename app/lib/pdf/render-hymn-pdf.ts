@@ -27,6 +27,8 @@ export interface RenderHymnPdfOptions {
   bookletSubtitle?: string;
   bookletDate?: string;
   bookletBibleRef?: string;
+  copiesPerPage?: 1 | 2 | 4;
+  copiesFontSize?: number;
 }
 
 interface ParsedHymn {
@@ -57,6 +59,8 @@ export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buff
   const orientation = options.orientation ?? 'portrait';
   const fontPreset = options.fontPreset ?? 'clasica';
   const includeBibleRef = options.includeBibleRef ?? true;
+  const copiesPerPage = options.copiesPerPage ?? 1;
+  const copiesFontSize = options.copiesFontSize ?? 9;
 
   if (hymns.length === 0) {
     throw new Error('renderHymnPdf: at least one hymn is required');
@@ -151,6 +155,22 @@ export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buff
         }),
       );
     }
+  } else if (copiesPerPage > 1 && layout === 'one-per-page') {
+    // Modo copias: multiples copias del mismo himno por pagina
+    const { HymnPageCopies } = await import(
+      '@/app/components/pdf-components/pdf-pages/HymnPageCopies'
+    );
+
+    pages = parsedHymns.map((ph, i) =>
+      React.createElement(HymnPageCopies, {
+        key: i,
+        hymn: ph.hymn,
+        verses: ph.verses,
+        copies: copiesPerPage as 2 | 4,
+        fontSize: copiesFontSize,
+        style,
+      }),
+    );
   } else if (layout === 'one-per-page') {
     // Una pagina por himno
     const isDecorated = style === 'decorated' || style === 'decorated-eco';
