@@ -214,16 +214,34 @@ export async function fetchHymnForPdf(id: string): Promise<HymnForPdf> {
   }
 }
 
+/** Regex para validar UUID v4 */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Valida que un string sea un UUID v4 */
+export function isValidUuid(id: string): boolean {
+  return UUID_RE.test(id);
+}
+
 /**
  * Construye la URL de descarga de un asset de Directus a partir de su ID de archivo.
- * Si existe DIRECTUS_TOKEN, lo agrega como query param para autenticación.
+ * No incluye token — usar fetchAsset() para descargas autenticadas.
  */
 export function getAssetUrl(fileId: string): string {
   const baseUrl =
     process.env.DIRECTUS_URL ||
     process.env.NEXT_PUBLIC_DIRECTUS_URL ||
     'http://localhost:8055';
+  return `${baseUrl}/assets/${fileId}`;
+}
+
+/**
+ * Descarga un asset de Directus con autenticación via Authorization header.
+ * Nunca expone el token en la URL.
+ */
+export function fetchAsset(fileId: string, init?: RequestInit): Promise<Response> {
+  const url = getAssetUrl(fileId);
   const token = process.env.DIRECTUS_TOKEN;
-  const url = `${baseUrl}/assets/${fileId}`;
-  return token ? `${url}?access_token=${token}` : url;
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return fetch(url, { ...init, headers: { ...headers, ...(init?.headers as Record<string, string>) } });
 }

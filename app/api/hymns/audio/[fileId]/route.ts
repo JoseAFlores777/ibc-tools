@@ -1,4 +1,4 @@
-import { getAssetUrl } from '@/app/lib/directus/services/hymns';
+import { fetchAsset, isValidUuid } from '@/app/lib/directus/services/hymns';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,8 +9,12 @@ export async function GET(
 ) {
   try {
     const { fileId } = await params;
-    const url = getAssetUrl(fileId);
-    const res = await fetch(url);
+
+    if (!isValidUuid(fileId)) {
+      return new Response('ID inválido', { status: 400 });
+    }
+
+    const res = await fetchAsset(fileId);
 
     if (!res.ok) {
       return new Response('Audio no disponible', { status: res.status });

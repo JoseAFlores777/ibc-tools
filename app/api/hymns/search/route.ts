@@ -43,8 +43,9 @@ export async function GET(request: Request) {
         },
       },
     );
-  } catch (error: any) {
-    console.error('GET /api/hymns/search error:', error?.message || error);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('GET /api/hymns/search error:', msg);
     return NextResponse.json(
       { ok: false, error: 'Error al buscar himnos' },
       { status: 500 },

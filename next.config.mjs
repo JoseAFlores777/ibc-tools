@@ -7,8 +7,18 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
-  // 🔹 Asegura que /pdf-gen no se cachee (debe ser async)
+  // 🔹 Security headers + cache control
   headers: async () => [
+    {
+      source: '/(.*)',
+      headers: [
+        { key: 'X-Content-Type-Options', value: 'nosniff' },
+        { key: 'X-Frame-Options', value: 'DENY' },
+        { key: 'X-XSS-Protection', value: '1; mode=block' },
+        { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self)' },
+      ],
+    },
     {
       source: '/pdf-gen',
       headers: [
@@ -32,18 +42,8 @@ const nextConfig = {
         protocol: 'https',
         hostname: 's3.joseiz.com'
       },
-      // Si usas HTTPS o otro dominio, agrégalo aquí.
     ],
   },
-
-  // (Opcional) Si quieres “hornear” valores en build desde variables de entorno,
-  // puedes mapearlas aquí. OJO: siguen siendo de build-time.
-  // env: {
-  //   NEXT_PUBLIC_DIRECTUS_URL: process.env.NEXT_PUBLIC_DIRECTUS_URL,
-  // },
-
-  // (Opcional) Si usas rutas tipadas / mejoras de DX
-  // experimental: { typedRoutes: true },
 };
 
 export default nextConfig;

@@ -23,8 +23,9 @@ export async function GET() {
         },
       },
     );
-  } catch (error: any) {
-    console.error('GET /api/hymnals error:', error?.message || error);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('GET /api/hymnals error:', msg);
     return NextResponse.json(
       { ok: false, error: 'Error al obtener himnarios' },
       { status: 500 },

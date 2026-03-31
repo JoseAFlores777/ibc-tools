@@ -6,7 +6,18 @@ import { packageRequestSchema } from '@/app/lib/zip/zip.schema';
 
 export const dynamic = 'force-dynamic';
 
+const MAX_BODY_SIZE = 1024 * 1024; // 1MB
+
 export async function POST(request: Request) {
+  // Paso 0: Verificar tamaño del body
+  const contentLength = request.headers.get('Content-Length');
+  if (contentLength && Number(contentLength) > MAX_BODY_SIZE) {
+    return new Response(
+      JSON.stringify({ ok: false, error: 'Solicitud demasiado grande' }),
+      { status: 413, headers: { 'Content-Type': 'application/json' } },
+    );
+  }
+
   // Paso 1: Parsear y validar el body con Zod
   let body: unknown;
   try {
@@ -23,8 +34,7 @@ export async function POST(request: Request) {
     return new Response(
       JSON.stringify({
         ok: false,
-        error: 'Solicitud invalida',
-        details: parsed.error.flatten().fieldErrors,
+        error: 'Solicitud inválida',
       }),
       { status: 400, headers: { 'Content-Type': 'application/json' } },
     );

@@ -1,7 +1,7 @@
 import archiver from 'archiver';
 import { PassThrough, Readable } from 'stream';
 import { renderHymnPdf } from '@/app/lib/pdf/render-hymn-pdf';
-import { fetchHymnForPdf, getAssetUrl } from '@/app/lib/directus/services/hymns';
+import { fetchHymnForPdf, fetchAsset } from '@/app/lib/directus/services/hymns';
 import type { HymnForPdf, HymnAudioFiles } from '@/app/interfaces/Hymn.interface';
 import type { PackageRequest } from './zip.schema';
 
@@ -87,8 +87,8 @@ export async function assembleHymnPackage(
     try {
       hymnData = await fetchHymnForPdf(hymnReq.id);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      hymnErrors.push(`Error al obtener datos del himno ${hymnReq.id}: ${msg}`);
+      console.error(`Error al obtener himno ${hymnReq.id}:`, err);
+      hymnErrors.push(`Error al obtener datos del himno: no disponible`);
     }
 
     if (!hymnData) {
@@ -121,8 +121,8 @@ export async function assembleHymnPackage(
       archive.append(pdfBuffer, { name: `${folderName}/${folderName}.pdf` });
       allSuccessfulHymns.push(hymnData);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      hymnErrors.push(`Error al generar PDF: ${msg}`);
+      console.error(`Error al generar PDF para ${hymnReq.id}:`, err);
+      hymnErrors.push(`Error al generar PDF: fallo en la generación`);
     }
 
     // Descargar archivos de audio seleccionados
@@ -131,18 +131,17 @@ export async function assembleHymnPackage(
       if (!audioInfo) continue;
 
       try {
-        const url = getAssetUrl(audioInfo.id);
-        const response = await fetch(url);
+        const response = await fetchAsset(audioInfo.id);
 
         if (!response.ok) {
           hymnErrors.push(
-            `Error al descargar audio ${audioField}: HTTP ${response.status}`,
+            `Error al descargar audio ${audioField}: no disponible`,
           );
           continue;
         }
 
         if (!response.body) {
-          hymnErrors.push(`Error al descargar audio ${audioField}: sin body en respuesta`);
+          hymnErrors.push(`Error al descargar audio ${audioField}: sin contenido`);
           continue;
         }
 
@@ -151,9 +150,8 @@ export async function assembleHymnPackage(
           `${audioField}.${extensionFromMime(audioInfo.type)}`;
         const nodeStream = Readable.fromWeb(response.body as any);
         archive.append(nodeStream, { name: `${folderName}/${fileName}` });
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        hymnErrors.push(`Error al descargar audio ${audioField}: ${msg}`);
+      } catch {
+        hymnErrors.push(`Error al descargar audio ${audioField}: fallo de conexión`);
       }
     }
 

@@ -10,11 +10,12 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const limitParam = searchParams.get('limit');
-    const limit = limitParam ? Number(limitParam) : 50;
+    const limit = Math.min(Math.max(Number(limitParam) || 50, 1), 100);
     const events = await fetchChurchEvents({ limit });
     return NextResponse.json({ ok: true, data: events }, { headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate=60' } });
-  } catch (error: any) {
-    console.error('GET /api/events error:', error?.message || error);
-    return NextResponse.json({ ok: false, error: 'Failed to fetch events' }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('GET /api/events error:', msg);
+    return NextResponse.json({ ok: false, error: 'Error al obtener eventos' }, { status: 500 });
   }
 }
