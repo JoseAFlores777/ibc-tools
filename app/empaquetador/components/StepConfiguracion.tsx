@@ -283,12 +283,12 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                   )}
                 >
                   <BookOpen className="h-8 w-8" />
-                  <span className="text-sm font-medium">Booklet</span>
+                  <span className="text-sm font-medium">Cuadernillo</span>
                 </button>
               </div>
               {state.printMode === 'booklet' && (
                 <p className="text-xs text-slate-500 mt-2">
-                  Para imprimir: seleccione &quot;Ambos lados&quot; y &quot;Voltear en borde corto&quot;. Engrapadora al centro.
+                  Formato tipo himnario. Para imprimir: seleccione &quot;Ambos lados&quot; y &quot;Voltear en borde corto&quot;. Engrapadora al centro.
                 </p>
               )}
             </div>
@@ -299,7 +299,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                 <Separator />
                 <div>
                   <Label className="text-xs font-semibold tracking-wide uppercase text-slate-400 mb-3 block">
-                    Portada del Cuadernillo
+                    Portada del cuadernillo
                   </Label>
                   <div className="space-y-3">
                     <div>
@@ -702,7 +702,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 flex items-start gap-2">
                 <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-600">
-                  Los booklets con más de 40 páginas son difíciles de engrapar. Considere dividir en varios paquetes.
+                  Los cuadernillos con más de 40 páginas son difíciles de engrapar. Considere dividir en varios paquetes.
                 </p>
               </div>
             )}
