@@ -51,16 +51,20 @@ Exceptions:
 
 ## Typography
 
-### Control Panel (main tab)
+This phase has two independent rendering contexts: the control panel (main browser tab) and the projection window (separate fullscreen window). Each context declares its own type scale.
+
+### Control Panel Type Scale (4 sizes, 2 weights)
 
 | Role | Size | Weight | Line Height | Usage |
 |------|------|--------|-------------|-------|
-| Body | 14px | 400 (regular) | 1.5 | Playlist items, track names, status text |
 | Label | 12px | 400 (regular) | 1.4 | Column headers, verse labels in thumbnails, timestamps |
+| Body | 14px | 400 (regular) | 1.5 | Playlist items, track names, status text |
 | Heading | 18px | 600 (semibold) | 1.2 | Active hymn title, section headings |
-| Display | 20px | 600 (semibold) | 1.2 | Not used in control panel |
+| Panel Accent | 24px | 600 (semibold) | 1.2 | Projection verse label overlay in live preview thumbnail |
 
-### Projection Window (fullscreen output)
+### Projection Window Type Scale (separate rendering context)
+
+The projection window renders in a standalone `window.open` fullscreen context. Its sizes are independent of the control panel scale and are primarily driven by an auto-sizing algorithm rather than fixed values.
 
 | Role | Size | Weight | Line Height | Usage |
 |------|------|--------|-------------|-------|
@@ -115,6 +119,8 @@ Background presets (operator-selectable):
 ## Layout Contract
 
 ### Control Panel (3-column + bottom bar)
+
+**Primary visual anchor:** the right column (LivePreviewColumn) — it shows a real-time mirror of the projected slide and is the operator's constant reference point for what the congregation sees.
 
 ```
 +---------------------------------------------+
@@ -172,10 +178,12 @@ Column separators: 1px `border-border` (dark theme resolved) vertical lines betw
 | Button | Proyectar, Negro, Limpiar, Logo, play/pause, add hymn, remove hymn, font +/- |
 | ScrollArea | Playlist column, slide grid column |
 | Slider | Audio seek bar |
-| Tooltip | Keyboard shortcut hints on control buttons |
+| Tooltip | Keyboard shortcut hints on control buttons; accessibility label for icon-only buttons (see note below) |
 | DropdownMenu | Track selector (Pista completa, MIDI, Soprano, etc.) |
 | Separator | Column dividers, audio bar top border |
 | Input | Playlist search field |
+
+**Icon-only button accessibility:** All icon-only buttons (e.g., play/pause, font +/-, remove hymn, drag handle) must wrap their `<Button>` in a `<Tooltip>` that provides the accessible label. The `<Button>` itself must also carry `aria-label` with the same text as the tooltip content. The Tooltip serves as a visual accessibility fallback for sighted users who cannot infer the icon meaning.
 
 ### Reused Project Components/Hooks
 
