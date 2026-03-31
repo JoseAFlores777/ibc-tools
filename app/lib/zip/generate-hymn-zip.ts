@@ -232,6 +232,27 @@ export async function assembleHymnPackage(
     }
   }
 
+  // Generar archivos ProPresenter 6 (.pro6) si fue solicitado
+  if (request.includeProPresenter && allSuccessfulHymns.length > 0) {
+    try {
+      const { generateHymnProPresenter } = await import(
+        '@/app/lib/presentation/generate-hymn-propresenter'
+      );
+
+      const parsedHymns = allSuccessfulHymns.map((hymn) => ({
+        hymn,
+        verses: parseHymnHtml(hymn.letter_hymn || ''),
+      }));
+
+      const proFiles = generateHymnProPresenter(parsedHymns);
+      for (const file of proFiles) {
+        archive.append(file.content, { name: `propresenter/${file.fileName}` });
+      }
+    } catch (err) {
+      console.error('Error al generar archivos ProPresenter:', err);
+    }
+  }
+
   archive.finalize();
 
   return { successCount, errorCount };

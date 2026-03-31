@@ -719,6 +719,25 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
               </div>
             </div>
 
+            {/* Incluir ProPresenter */}
+            <div className="flex items-center gap-3">
+              <Switch
+                id="include-propresenter"
+                checked={state.includeProPresenter}
+                onCheckedChange={(checked) =>
+                  dispatch({ type: 'SET_INCLUDE_PROPRESENTER', includeProPresenter: Boolean(checked) })
+                }
+              />
+              <div>
+                <Label htmlFor="include-propresenter" className="text-sm cursor-pointer">
+                  Incluir archivos ProPresenter
+                </Label>
+                <p className="text-xs text-slate-500">
+                  Genera archivos .pro6 importables en ProPresenter con estrofas y coros
+                </p>
+              </div>
+            </div>
+
             {/* Booklet warning */}
             {state.printMode === 'booklet' && state.selectedHymns.length > 40 && (
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 flex items-start gap-2">

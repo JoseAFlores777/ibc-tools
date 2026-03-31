@@ -32,6 +32,7 @@ export interface WizardState {
   copiesPerPage: 1 | 2 | 4;
   copiesFontSize: number;
   includePresentation: boolean;
+  includeProPresenter: boolean;
   audioSelections: Map<string, Set<string>>;
   isGenerating: boolean;
   error: string | null;
@@ -59,8 +60,9 @@ export type WizardAction =
   | { type: 'SET_COPIES_PER_PAGE'; copiesPerPage: 1 | 2 | 4 }
   | { type: 'SET_COPIES_FONT_SIZE'; copiesFontSize: number }
   | { type: 'SET_INCLUDE_PRESENTATION'; includePresentation: boolean }
+  | { type: 'SET_INCLUDE_PROPRESENTER'; includeProPresenter: boolean }
   | { type: 'RESET' }
-  | { type: 'LOAD_PACKAGE'; hymns: HymnSearchResult[]; layout: WizardState['layout']; style: WizardState['style']; audioSelections: Map<string, Set<string>>; printMode?: WizardState['printMode']; orientation?: WizardState['orientation']; fontPreset?: WizardState['fontPreset']; includeBibleRef?: boolean; bookletTitle?: string; bookletSubtitle?: string; bookletDate?: string; bookletBibleRef?: string; copiesPerPage?: 1 | 2 | 4; copiesFontSize?: number; includePresentation?: boolean };
+  | { type: 'LOAD_PACKAGE'; hymns: HymnSearchResult[]; layout: WizardState['layout']; style: WizardState['style']; audioSelections: Map<string, Set<string>>; printMode?: WizardState['printMode']; orientation?: WizardState['orientation']; fontPreset?: WizardState['fontPreset']; includeBibleRef?: boolean; bookletTitle?: string; bookletSubtitle?: string; bookletDate?: string; bookletBibleRef?: string; copiesPerPage?: 1 | 2 | 4; copiesFontSize?: number; includePresentation?: boolean; includeProPresenter?: boolean };
 
 /** Estado inicial del wizard */
 export const initialWizardState: WizardState = {
@@ -79,6 +81,7 @@ export const initialWizardState: WizardState = {
   copiesPerPage: 1,
   copiesFontSize: 9,
   includePresentation: false,
+  includeProPresenter: false,
   audioSelections: new Map(),
   isGenerating: false,
   error: null,
@@ -187,6 +190,9 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
     case 'SET_INCLUDE_PRESENTATION':
       return { ...state, includePresentation: action.includePresentation };
 
+    case 'SET_INCLUDE_PROPRESENTER':
+      return { ...state, includeProPresenter: action.includeProPresenter };
+
     case 'RESET':
       return {
         ...initialWizardState,
@@ -210,6 +216,7 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
         copiesPerPage: action.copiesPerPage ?? 1,
         copiesFontSize: action.copiesFontSize ?? 9,
         includePresentation: action.includePresentation ?? false,
+        includeProPresenter: action.includeProPresenter ?? false,
         audioSelections: action.audioSelections,
         isGenerating: false,
         error: null,

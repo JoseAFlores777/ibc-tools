@@ -31,5 +31,6 @@ export function buildPackageRequest(state: WizardState): PackageRequest {
     copiesPerPage: state.copiesPerPage,
     copiesFontSize: state.copiesFontSize,
     includePresentation: state.includePresentation,
+    includeProPresenter: state.includeProPresenter,
   };
 }
