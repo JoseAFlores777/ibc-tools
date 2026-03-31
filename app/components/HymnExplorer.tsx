@@ -44,6 +44,8 @@ export interface HymnExplorerProps {
   selectedHymns?: HymnSearchResult[];
   /** Show HymnDetailView when clicking eye icon. Default true. */
   showDetailView?: boolean;
+  /** Hide the built-in heading (useful when rendered inside a Dialog with its own title). */
+  hideHeading?: boolean;
   className?: string;
 }
 
@@ -52,6 +54,7 @@ export default function HymnExplorer({
   onToggle,
   selectedHymns,
   showDetailView = true,
+  hideHeading = false,
   className,
 }: HymnExplorerProps) {
   const {
@@ -237,10 +240,14 @@ export default function HymnExplorer({
 
   return (
     <div className={cn(className)}>
-      <h2 className="text-2xl font-bold text-slate-800 mb-1 flex-shrink-0">Explorar Himnario</h2>
-      <p className="text-slate-500 text-sm mb-6 flex-shrink-0">
-        Busca por numero, nombre o fragmento de letra. Sin importar acentos ni mayusculas.
-      </p>
+      {!hideHeading && (
+        <>
+          <h2 className="text-2xl font-bold text-slate-800 mb-1 flex-shrink-0">Explorar Himnario</h2>
+          <p className="text-slate-500 text-sm mb-6 flex-shrink-0">
+            Busca por numero, nombre o fragmento de letra. Sin importar acentos ni mayusculas.
+          </p>
+        </>
+      )}
 
       {/* Checkboxes de campos de busqueda */}
       <div className="flex items-center gap-4 mb-2 text-xs text-slate-500 flex-shrink-0">
