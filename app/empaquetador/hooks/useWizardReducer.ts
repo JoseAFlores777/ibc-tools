@@ -21,6 +21,8 @@ export interface WizardState {
   selectedHymns: HymnSearchResult[];
   layout: 'one-per-page' | 'two-per-page';
   style: 'decorated' | 'plain';
+  copiesPerPage: 1 | 2 | 4;
+  copiesFontSize: number;
   audioSelections: Map<string, Set<string>>;
   isGenerating: boolean;
   error: string | null;
@@ -37,6 +39,8 @@ export type WizardAction =
   | { type: 'SELECT_ALL_AUDIO'; selectAll: boolean }
   | { type: 'SET_GENERATING'; isGenerating: boolean }
   | { type: 'SET_ERROR'; error: string | null }
+  | { type: 'SET_COPIES_PER_PAGE'; copiesPerPage: 1 | 2 | 4 }
+  | { type: 'SET_COPIES_FONT_SIZE'; copiesFontSize: number }
   | { type: 'RESET' };
 
 /** Estado inicial del wizard */
@@ -45,6 +49,8 @@ export const initialWizardState: WizardState = {
   selectedHymns: [],
   layout: 'one-per-page',
   style: 'decorated',
+  copiesPerPage: 1,
+  copiesFontSize: 9,
   audioSelections: new Map(),
   isGenerating: false,
   error: null,
@@ -119,6 +125,12 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
 
     case 'SET_ERROR':
       return { ...state, error: action.error };
+
+    case 'SET_COPIES_PER_PAGE':
+      return { ...state, copiesPerPage: action.copiesPerPage };
+
+    case 'SET_COPIES_FONT_SIZE':
+      return { ...state, copiesFontSize: action.copiesFontSize };
 
     case 'RESET':
       return {
