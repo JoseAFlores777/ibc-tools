@@ -1,7 +1,5 @@
-import React from 'react';
 import archiver from 'archiver';
 import { PassThrough, Readable } from 'stream';
-import { renderToBuffer, Document } from '@react-pdf/renderer';
 import { renderHymnPdf } from '@/app/lib/pdf/render-hymn-pdf';
 import { parseHymnHtml } from '@/app/lib/pdf/html-to-pdf';
 import { fetchHymnForPdf, fetchAsset } from '@/app/lib/directus/services/hymns';
@@ -199,11 +197,11 @@ export async function assembleHymnPackage(
     }
   }
 
-  // Generar presentación PDF (diapositivas) si fue solicitada
+  // Generar presentación PowerPoint (.pptx) si fue solicitada
   if (request.includePresentation && allSuccessfulHymns.length > 0) {
     try {
-      const { HymnPresentation } = await import(
-        '@/app/components/pdf-components/pdf-documents/HymnPresentation'
+      const { generateHymnPptx } = await import(
+        '@/app/lib/presentation/generate-hymn-pptx'
       );
 
       const parsedHymns = allSuccessfulHymns.map((hymn) => ({
@@ -212,13 +210,8 @@ export async function assembleHymnPackage(
       }));
 
       const presTitle = request.bookletTitle || 'Himnos';
-      const presDoc = React.createElement(HymnPresentation, {
-        hymns: parsedHymns,
-        title: presTitle,
-      });
-
-      const presBuffer = await renderToBuffer(presDoc);
-      archive.append(presBuffer, { name: 'presentacion.pdf' });
+      const pptxBuffer = await generateHymnPptx(parsedHymns, presTitle);
+      archive.append(pptxBuffer, { name: 'presentacion.pptx' });
     } catch (err) {
       console.error('Error al generar presentación:', err);
     }
