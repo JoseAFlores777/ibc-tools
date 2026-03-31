@@ -107,17 +107,28 @@ function buildSlideGroups(
   return groups;
 }
 
+/** Tamaño de fuente en half-points RTF (26pt * 2 = 52) */
+const RTF_FONT_SIZE = 52;
+
 /**
- * Corrige la codificación de bloques RTF base64 en el XML de ProPresenter.
- * La librería genera RTF con ansicpg1252 pero codifica los bytes como UTF-8.
- * ProPresenter interpreta los bytes como Windows-1252, causando mojibake en
- * caracteres acentuados. Este fix re-codifica los bloques RTF de UTF-8 a Latin-1.
+ * Post-procesa bloques RTF base64 en el XML de ProPresenter:
+ * 1. Corrige encoding: UTF-8 → Latin-1 (Windows-1252) para acentos españoles
+ * 2. Aplica font size correcto (la librería hardcodea fs120)
+ * 3. Agrega bold (\b) a Helvetica
  */
-function fixRtfEncoding(xml: string): string {
+function fixRtfBlocks(xml: string): string {
   return xml.replace(/>([A-Za-z0-9+/=]{20,})</g, (match, b64) => {
     const utf8 = Buffer.from(b64, 'base64').toString('utf8');
     if (!utf8.includes('rtf1')) return match;
-    const latin1B64 = Buffer.from(utf8, 'latin1').toString('base64');
+
+    let fixed = utf8;
+    // Fix font size: replace hardcoded fs120 with desired size
+    fixed = fixed.replace(/\\fs\d+/, `\\fs${RTF_FONT_SIZE}`);
+    // Add bold after font declaration
+    fixed = fixed.replace(/(\\f0\\fs\d+)/, '$1\\b');
+
+    // Re-encode as Latin-1 for Windows-1252 compatibility
+    const latin1B64 = Buffer.from(fixed, 'latin1').toString('base64');
     return '>' + latin1B64 + '<';
   });
 }
@@ -161,6 +172,12 @@ export function generateHymnProPresenter(hymns: ParsedHymn[]): ProPresenterFile[
         CCLIArtistCredits: ph.hymn.hymnal?.name || '',
         category: 'Himnos',
         CCLIDisplay: false,
+        width: 800,
+        height: 600,
+      },
+      slideTextFormatting: {
+        fontName: 'Helvetica',
+        textColor: { r: 255, g: 255, b: 255 },
       },
       slideGroups,
     });
@@ -168,7 +185,7 @@ export function generateHymnProPresenter(hymns: ParsedHymn[]): ProPresenterFile[
     const safeName = title.replace(UNSAFE_CHARS, '_');
     files.push({
       fileName: `${safeName}.pro6`,
-      content: fixRtfEncoding(xml),
+      content: fixRtfBlocks(xml),
     });
   }
 
