@@ -286,6 +286,7 @@ export default function VisualizadorPage() {
             activeSlideIndex={state.activeSlideIndex}
             onSelectSlide={handleSelectSlide}
             hymnName={activeHymn?.hymnData.name ?? ''}
+            theme={state.theme}
           />
         </div>
 

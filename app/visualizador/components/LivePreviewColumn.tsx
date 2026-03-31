@@ -2,13 +2,14 @@
 
 /**
  * Columna derecha del panel de control (320px).
- * Replica fielmente lo que se ve en la ventana de proyeccion:
- * mismo SlideRenderer, auto font sizing proporcional, y crossfade.
+ * Muestra una miniatura pixel-perfect de la proyeccion: renderiza el
+ * SlideRenderer a tamaño virtual (1920x1080) y lo escala con CSS
+ * transform: scale() para que encaje en el contenedor de preview.
  */
 
 import { useRef, useState, useEffect } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import SlideRenderer from './SlideRenderer';
+import SlideRenderer, { VIRTUAL_W, VIRTUAL_H } from './SlideRenderer';
 import ProjectionControls from './ProjectionControls';
 import { useAutoFontSize } from '../hooks/useAutoFontSize';
 import type { SlideData, ThemeConfig, ProjectionMode } from '../lib/types';
@@ -39,33 +40,32 @@ export default function LivePreviewColumn({
   onFontSizeDown,
 }: LivePreviewColumnProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  const [containerWidth, setContainerWidth] = useState(0);
   const shouldReduceMotion = useReducedMotion();
 
-  // Medir dimensiones del contenedor de preview
+  // Medir ancho del contenedor para calcular escala
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
-      if (entry) {
-        setContainerSize({
-          width: entry.contentRect.width,
-          height: entry.contentRect.height,
-        });
-      }
+      if (entry) setContainerWidth(entry.contentRect.width);
     });
 
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
 
-  // Auto font size proporcional al contenedor de preview
+  // Escala para que el render virtual (1920px) encaje en el contenedor
+  const scale = containerWidth > 0 ? containerWidth / VIRTUAL_W : 0;
+  const scaledHeight = VIRTUAL_H * scale;
+
+  // Auto font size a resolucion virtual (misma que la proyeccion fullscreen)
   const autoFontSize = useAutoFontSize({
     text: currentSlide?.text ?? '',
-    containerWidth: containerSize.width,
-    containerHeight: containerSize.height,
+    containerWidth: VIRTUAL_W,
+    containerHeight: VIRTUAL_H,
     fontFamily: 'system-ui, sans-serif',
     sizeOffset: theme.fontSizeOffset,
   });
@@ -78,7 +78,6 @@ export default function LivePreviewColumn({
 
   const transitionDuration = shouldReduceMotion ? 0 : 0.4;
 
-  // Si no hay diapositiva y estamos en modo slide, mostrar estado vacio
   const showEmptyState = !currentSlide && projectionMode === 'slide';
 
   return (
@@ -86,7 +85,11 @@ export default function LivePreviewColumn({
       {/* Area superior: vista previa en vivo */}
       <div className="flex-1 p-3 flex flex-col gap-2">
         <div className="rounded-lg overflow-hidden border border-border">
-          <div ref={containerRef} className="aspect-video relative">
+          <div
+            ref={containerRef}
+            className="relative overflow-hidden"
+            style={{ height: scaledHeight || 'auto', aspectRatio: scaledHeight ? undefined : '16/9' }}
+          >
             {showEmptyState ? (
               <div
                 className="w-full h-full flex items-center justify-center"
@@ -102,7 +105,7 @@ export default function LivePreviewColumn({
                   Iglesia Bautista El Calvario
                 </span>
               </div>
-            ) : (
+            ) : scale > 0 ? (
               <AnimatePresence mode="wait">
                 <motion.div
                   key={slideKey}
@@ -113,18 +116,18 @@ export default function LivePreviewColumn({
                     duration: transitionDuration,
                     ease: 'easeInOut',
                   }}
-                  className="absolute inset-0"
+                  className="absolute top-0 left-0 origin-top-left pointer-events-none select-none"
+                  style={{ transform: `scale(${scale})` }}
                 >
                   <SlideRenderer
                     slide={currentSlide}
                     theme={theme}
                     mode={projectionMode}
                     fontSize={autoFontSize}
-                    isPreview={true}
                   />
                 </motion.div>
               </AnimatePresence>
-            )}
+            ) : null}
           </div>
         </div>
 

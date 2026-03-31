@@ -1,6 +1,6 @@
 'use client';
 
-import type { SlideData } from '../lib/types';
+import type { SlideData, ThemeConfig } from '../lib/types';
 import { SlideThumbnail } from './SlideThumbnail';
 import { ScrollArea } from '@/lib/shadcn/ui';
 
@@ -9,6 +9,7 @@ interface SlideGridColumnProps {
   activeSlideIndex: number;
   onSelectSlide: (index: number) => void;
   hymnName: string;
+  theme: ThemeConfig;
 }
 
 /**
@@ -20,6 +21,7 @@ export function SlideGridColumn({
   activeSlideIndex,
   onSelectSlide,
   hymnName,
+  theme,
 }: SlideGridColumnProps) {
   // Estado vacio: ningun himno seleccionado
   if (slides.length === 0) {
@@ -54,6 +56,7 @@ export function SlideGridColumn({
             <SlideThumbnail
               key={`${slide.verseLabel}-${index}`}
               slide={slide}
+              theme={theme}
               isActive={index === activeSlideIndex}
               onClick={() => onSelectSlide(index)}
               index={index}

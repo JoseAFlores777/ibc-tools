@@ -2,23 +2,26 @@
 
 /**
  * Componente compartido para renderizar diapositivas de himnos.
- * Se usa tanto en la vista previa del panel de control (escalada)
- * como en la ventana de proyeccion (pantalla completa).
+ * Siempre renderiza a tamaño de proyeccion (1920x1080) con las mismas
+ * dimensiones absolutas. Los contenedores de preview lo escalan con
+ * CSS transform: scale() para que sea una miniatura pixel-perfect.
  */
 
 import { useState } from 'react';
 import type { SlideData, ThemeConfig, ProjectionMode } from '../lib/types';
 
+/** Dimensiones virtuales de referencia para la proyeccion */
+const VIRTUAL_W = 1920;
+const VIRTUAL_H = 1080;
+
 interface SlideRendererProps {
   slide: SlideData | null;
   theme: ThemeConfig;
   mode: ProjectionMode;
-  /** Font size calculado externamente */
+  /** Font size calculado externamente (para la resolucion virtual) */
   fontSize?: number;
   /** Clases CSS adicionales del contenedor padre */
   className?: string;
-  /** true = preview escalada en panel de control, false = proyeccion fullscreen */
-  isPreview?: boolean;
 }
 
 export default function SlideRenderer({
@@ -27,36 +30,38 @@ export default function SlideRenderer({
   mode,
   fontSize = 48,
   className = '',
-  isPreview = false,
 }: SlideRendererProps) {
   const [logoError, setLogoError] = useState(false);
 
   // Calcular estilos de fondo segun tipo de tema
   const backgroundStyle = getBackgroundStyle(theme);
 
-  // Clases base del contenedor
-  const containerClasses = [
-    'relative w-full h-full overflow-hidden',
-    isPreview ? 'pointer-events-none select-none' : '',
-    className,
-  ]
-    .filter(Boolean)
-    .join(' ');
+  const containerClasses = `relative overflow-hidden ${className}`.trim();
+  const containerStyle: React.CSSProperties = {
+    width: VIRTUAL_W,
+    height: VIRTUAL_H,
+    ...backgroundStyle,
+  };
 
   // Modo negro: fondo negro sin texto
   if (mode === 'black') {
-    return <div className={containerClasses} style={{ backgroundColor: '#000000' }} />;
+    return (
+      <div
+        className={containerClasses}
+        style={{ width: VIRTUAL_W, height: VIRTUAL_H, backgroundColor: '#000000' }}
+      />
+    );
   }
 
   // Modo limpiar: fondo tematico sin texto
   if (mode === 'clear') {
-    return <div className={containerClasses} style={backgroundStyle} />;
+    return <div className={containerClasses} style={containerStyle} />;
   }
 
   // Modo logo: fondo tematico con logo centrado
   if (mode === 'logo') {
     return (
-      <div className={containerClasses} style={backgroundStyle}>
+      <div className={containerClasses} style={containerStyle}>
         <div className="absolute inset-0 flex items-center justify-center">
           {!logoError ? (
             <img
@@ -69,7 +74,7 @@ export default function SlideRenderer({
             <span
               style={{
                 color: '#ffffff',
-                fontSize: '32px',
+                fontSize: '48px',
                 fontFamily: 'system-ui, sans-serif',
                 textAlign: 'center',
               }}
@@ -84,18 +89,19 @@ export default function SlideRenderer({
 
   // Modo slide: fondo tematico con etiqueta de verso y texto de la letra
   return (
-    <div className={containerClasses} style={backgroundStyle}>
-      {/* Area segura con padding proporcional */}
+    <div className={containerClasses} style={containerStyle}>
+      {/* Area segura con padding de 80px */}
       <div
         className="absolute inset-0 flex flex-col"
-        style={{ padding: isPreview ? '8%' : '80px' }}
+        style={{ padding: '80px' }}
       >
         {/* Etiqueta del verso en la parte superior */}
         {slide?.verseLabel && (
           <div
-            className="text-center text-white/50 flex-shrink-0"
+            className="text-center flex-shrink-0"
             style={{
-              fontSize: isPreview ? '10px' : '24px',
+              fontSize: '24px',
+              color: 'rgba(255,255,255,0.5)',
               fontFamily: 'system-ui, sans-serif',
             }}
           >
@@ -144,3 +150,6 @@ function getBackgroundStyle(
       return { backgroundColor: theme.background };
   }
 }
+
+/** Exportar dimensiones para que los contenedores puedan calcular la escala */
+export { VIRTUAL_W, VIRTUAL_H };

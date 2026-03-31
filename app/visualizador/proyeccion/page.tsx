@@ -8,7 +8,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import SlideRenderer from '../components/SlideRenderer';
+import SlideRenderer, { VIRTUAL_W, VIRTUAL_H } from '../components/SlideRenderer';
 import { CHANNEL_NAME } from '../lib/projection-channel';
 import { DEFAULT_THEME } from '../lib/theme-presets';
 import { useAutoFontSize } from '../hooks/useAutoFontSize';
@@ -36,14 +36,19 @@ export default function ProyeccionPage() {
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
-  // Calcular tamano de fuente automaticamente
+  // Calcular tamano de fuente a resolucion virtual (igual que previews)
   const autoFontSize = useAutoFontSize({
     text: currentSlide?.text ?? '',
-    containerWidth: windowSize.width,
-    containerHeight: windowSize.height,
+    containerWidth: VIRTUAL_W,
+    containerHeight: VIRTUAL_H,
     fontFamily: 'system-ui, sans-serif',
     sizeOffset: fontSizeOffset,
   });
+
+  // Escala para ajustar el render virtual al tamaño real de la ventana
+  const scaleX = windowSize.width > 0 ? windowSize.width / VIRTUAL_W : 1;
+  const scaleY = windowSize.height > 0 ? windowSize.height / VIRTUAL_H : 1;
+  const projScale = Math.min(scaleX, scaleY);
 
   // Manejar mensajes del canal
   const handleMessage = useCallback((msg: ProjectionMessage) => {
@@ -127,8 +132,8 @@ export default function ProyeccionPage() {
       : `${currentSlide?.label ?? 'empty'}-${currentSlide?.text ?? ''}`;
 
   return (
-    <div className="w-screen h-screen overflow-hidden cursor-none relative bg-black">
-      {/* Diapositiva con crossfade */}
+    <div className="w-screen h-screen overflow-hidden cursor-none relative bg-black flex items-center justify-center">
+      {/* Diapositiva con crossfade — escalada de virtual (1920x1080) a pantalla real */}
       <AnimatePresence mode="wait">
         <motion.div
           key={slideKey}
@@ -136,14 +141,14 @@ export default function ProyeccionPage() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: transitionDuration, ease: 'easeInOut' }}
-          className="absolute inset-0"
+          className="origin-center"
+          style={{ transform: `scale(${projScale})` }}
         >
           <SlideRenderer
             slide={currentSlide}
             theme={theme}
             mode={mode}
             fontSize={autoFontSize}
-            isPreview={false}
           />
         </motion.div>
       </AnimatePresence>
