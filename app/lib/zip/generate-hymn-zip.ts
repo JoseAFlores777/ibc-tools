@@ -171,6 +171,25 @@ export async function assembleHymnPackage(
       }
     }
 
+    // Generar archivo ProPresenter individual dentro de la carpeta del himno
+    if (request.includeProPresenter && hymnData) {
+      try {
+        const { generateHymnProPresenter } = await import(
+          '@/app/lib/presentation/generate-hymn-propresenter'
+        );
+        const parsedHymn = [{
+          hymn: hymnData,
+          verses: parseHymnHtml(hymnData.letter_hymn || ''),
+        }];
+        const proFiles = generateHymnProPresenter(parsedHymn);
+        for (const file of proFiles) {
+          archive.append(file.content, { name: `${folderName}/${file.fileName}` });
+        }
+      } catch (err) {
+        console.error(`Error al generar ProPresenter para ${hymnReq.id}:`, err);
+      }
+    }
+
     // Agregar ERROR.txt si hubo errores para este himno
     if (hymnErrors.length > 0) {
       archive.append(hymnErrors.join('\n'), {
@@ -229,27 +248,6 @@ export async function assembleHymnPackage(
       archive.append(pptxBuffer, { name: 'presentacion.pptx' });
     } catch (err) {
       console.error('Error al generar presentación:', err);
-    }
-  }
-
-  // Generar archivos ProPresenter 6 (.pro6) si fue solicitado
-  if (request.includeProPresenter && allSuccessfulHymns.length > 0) {
-    try {
-      const { generateHymnProPresenter } = await import(
-        '@/app/lib/presentation/generate-hymn-propresenter'
-      );
-
-      const parsedHymns = allSuccessfulHymns.map((hymn) => ({
-        hymn,
-        verses: parseHymnHtml(hymn.letter_hymn || ''),
-      }));
-
-      const proFiles = generateHymnProPresenter(parsedHymns);
-      for (const file of proFiles) {
-        archive.append(file.content, { name: `propresenter/${file.fileName}` });
-      }
-    } catch (err) {
-      console.error('Error al generar archivos ProPresenter:', err);
     }
   }
 
