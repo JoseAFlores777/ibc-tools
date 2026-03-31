@@ -93,7 +93,7 @@ export function BookletTOC({ entries, fontPreset, style }: BookletTOCProps) {
 
   return (
     <View style={s.container}>
-      <Text style={s.title}>Indice</Text>
+      <Text style={s.title}>Índice</Text>
       <View style={s.divider} />
       <View style={s.entriesArea}>
         {entries.map((entry, idx) => (

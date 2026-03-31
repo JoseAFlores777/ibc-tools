@@ -10,7 +10,7 @@ interface SelectedHymnChipProps {
   onRemove: (hymnId: string) => void;
 }
 
-/** Fila de himno seleccionado en el sidebar "Mi Seleccion" */
+/** Fila de himno seleccionado en el sidebar "Mi Selección" */
 export default function SelectedHymnChip({ hymn, onRemove }: SelectedHymnChipProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
@@ -37,7 +37,7 @@ export default function SelectedHymnChip({ hymn, onRemove }: SelectedHymnChipPro
   }, [hymn.name]);
 
   return (
-    <div className="flex items-center gap-2 min-h-[44px] px-2 rounded-md hover:bg-slate-50 group max-w-[80%]">
+    <div className="flex items-center gap-2 min-h-[44px] px-2 rounded-md hover:bg-slate-50 group max-w-[100%]">
       {/* Badge con numero — shrink-0, nunca se corta */}
       {hymn.hymn_number !== null && (
         <span className="flex-shrink-0 w-8 h-8 rounded-md bg-slate-100 text-slate-600 text-xs font-semibold flex items-center justify-center">

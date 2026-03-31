@@ -179,9 +179,9 @@ export default function StepDescarga({ state, dispatch }: StepDescargaProps) {
           </div>
           <Separator />
           <div className="flex justify-between items-center">
-            <span className="text-slate-500">Disposicion</span>
+            <span className="text-slate-500">Disposición</span>
             <span className="font-medium text-slate-700">
-              {state.layout === 'one-per-page' ? '1 himno por pagina' : '2 himnos por pagina'}
+              {state.layout === 'one-per-page' ? '1 himno por página' : '2 himnos por página'}
             </span>
           </div>
           <Separator />

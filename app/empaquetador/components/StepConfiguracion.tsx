@@ -238,7 +238,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
   return (
     <div className="h-full overflow-auto">
     <div className="max-w-5xl mx-auto px-4 py-8 pb-12">
-      <h2 className="text-2xl font-bold text-slate-800 mb-1">Configurar Impresion y Audio</h2>
+      <h2 className="text-2xl font-bold text-slate-800 mb-1">Configurar Impresión y Audio</h2>
       <p className="text-slate-500 text-sm mb-8">
         Personalice el formato de su PDF y seleccione las pistas de audio.
       </p>
@@ -249,14 +249,14 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-base">
               <FileText className="h-5 w-5 text-primary" />
-              Ajustes de Impresion
+              Ajustes de Impresión
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Modo de Impresion */}
+            {/* Modo de Impresión */}
             <div>
               <Label className="text-xs font-semibold tracking-wide uppercase text-slate-400 mb-3 block">
-                Modo de Impresion
+                Modo de Impresión
               </Label>
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -299,12 +299,12 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                 <Separator />
                 <div>
                   <Label className="text-xs font-semibold tracking-wide uppercase text-slate-400 mb-3 block">
-                    Portada del Booklet
+                    Portada del Cuadernillo
                   </Label>
                   <div className="space-y-3">
                     <div>
                       <Label htmlFor="booklet-title" className="text-xs text-slate-600 mb-1 block">
-                        Titulo
+                        Título
                       </Label>
                       <Input
                         id="booklet-title"
@@ -316,7 +316,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                     </div>
                     <div>
                       <Label htmlFor="booklet-subtitle" className="text-xs text-slate-600 mb-1 block">
-                        Subtitulo
+                        Subtítulo
                       </Label>
                       <Input
                         id="booklet-subtitle"
@@ -360,11 +360,11 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                     </div>
                     <div>
                       <Label htmlFor="booklet-bible-ref" className="text-xs text-slate-600 mb-1 block">
-                        Referencia biblica
+                        Referencia bíblica
                       </Label>
                       <Textarea
                         id="booklet-bible-ref"
-                        placeholder="Ej: Cantad a Jehova cantico nuevo — Salmo 96:1"
+                        placeholder="Ej: Cantad a Jehová cántico nuevo — Salmo 96:1"
                         value={state.bookletBibleRef}
                         onChange={(e) => dispatch({ type: 'SET_BOOKLET_BIBLE_REF', bookletBibleRef: e.target.value })}
                         className="text-sm min-h-[60px]"
@@ -372,7 +372,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                       />
                     </div>
                     <p className="text-xs text-slate-400">
-                      Deje en blanco para usar valores automaticos.
+                      Deje en blanco para usar valores automáticos.
                     </p>
                   </div>
                 </div>
@@ -388,7 +388,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                   <Label className="text-xs font-semibold tracking-wide uppercase text-slate-400 mb-3 block">
                     <span className="flex items-center gap-1.5">
                       <Copy className="h-4 w-4" />
-                      Copias por Pagina
+                      Copias por Página
                     </span>
                   </Label>
                   <div className="flex gap-2">
@@ -409,11 +409,11 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                     ))}
                   </div>
 
-                  {/* Tamano de fuente: solo visible cuando copies > 1 */}
+                  {/* Tamaño de fuente: solo visible cuando copies > 1 */}
                   {state.copiesPerPage > 1 && (
                     <div className="space-y-2 mt-3">
                       <div className="flex items-center justify-between">
-                        <Label className="text-xs text-slate-500">Tamano de fuente</Label>
+                        <Label className="text-xs text-slate-500">Tamaño de fuente</Label>
                         <span className="text-xs font-mono text-slate-500">{state.copiesFontSize}pt</span>
                       </div>
                       <input
@@ -441,7 +441,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
               <>
                 <div>
                   <Label className="text-xs font-semibold tracking-wide uppercase text-slate-400 mb-3 block">
-                    Diseno de Pagina
+                    Diseño de Página
                   </Label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
@@ -477,12 +477,12 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
               </>
             )}
 
-            {/* Orientacion - solo visible en modo simple */}
+            {/* Orientación - solo visible en modo simple */}
             {state.printMode === 'simple' && (
               <>
                 <div>
                   <Label className="text-xs font-semibold tracking-wide uppercase text-slate-400 mb-3 block">
-                    Orientacion
+                    Orientación
                   </Label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
@@ -535,7 +535,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                   />
                   {state.copiesPerPage > 1 && (
                     <p className="text-xs text-slate-400 text-center mt-2">
-                      Lineas punteadas = guia de corte
+                      Líneas punteadas = guía de corte
                     </p>
                   )}
                 </div>
@@ -572,11 +572,11 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                         state.style === 'decorated' ? 'text-primary' : 'text-slate-700',
                       )}
                     >
-                      Diseno Institucional (IBC)
+                      Diseño Institucional (IBC)
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 pl-6">
-                    Encabezados con marca, tipografia editorial y bordes elegantes.
+                    Encabezados con marca, tipografía editorial y bordes elegantes.
                   </p>
                 </button>
                 <button
@@ -602,7 +602,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                         state.style === 'decorated-eco' ? 'text-primary' : 'text-slate-700',
                       )}
                     >
-                      Decorada Economica
+                      Decorada Económica
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 pl-6">
@@ -636,7 +636,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 pl-6">
-                    Minimalista, sin elementos graficos. Ideal para ahorro de tinta.
+                    Minimalista, sin elementos gráficos. Ideal para ahorro de tinta.
                   </p>
                 </button>
               </div>
@@ -651,9 +651,9 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
               </Label>
               <div className="space-y-3">
                 {([
-                  { value: 'clasica' as const, label: 'Clasica', desc: 'Tipografia serif elegante (Adamina)', icon: Type },
-                  { value: 'moderna' as const, label: 'Moderna', desc: 'Tipografia sans-serif limpia (Helvetica)', icon: ALargeSmall },
-                  { value: 'legible' as const, label: 'Legible', desc: 'Tamano grande para lectura facil', icon: ZoomIn },
+                  { value: 'clasica' as const, label: 'Clásica', desc: 'Tipografía serif elegante (Adamina)', icon: Type },
+                  { value: 'moderna' as const, label: 'Moderna', desc: 'Tipografía sans-serif limpia (Helvetica)', icon: ALargeSmall },
+                  { value: 'legible' as const, label: 'Legible', desc: 'Tamaño grande para lectura fácil', icon: ZoomIn },
                 ]).map(({ value, label, desc, icon: Icon }) => (
                   <button
                     key={value}
@@ -680,7 +680,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
 
             <Separator />
 
-            {/* Referencia biblica */}
+            {/* Referencia bíblica */}
             <div className="flex items-center gap-3">
               <Switch
                 id="include-bible-ref"
@@ -691,9 +691,9 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
               />
               <div>
                 <Label htmlFor="include-bible-ref" className="text-sm cursor-pointer">
-                  Incluir referencia biblica
+                  Incluir referencia bíblica
                 </Label>
-                <p className="text-xs text-slate-500">Muestra el texto y cita biblica en el PDF</p>
+                <p className="text-xs text-slate-500">Muestra el texto y cita bíblica en el PDF</p>
               </div>
             </div>
 
@@ -702,7 +702,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 flex items-start gap-2">
                 <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-600">
-                  Los booklets con mas de 40 paginas son dificiles de engrapar. Considere dividir en varios paquetes.
+                  Los booklets con más de 40 páginas son difíciles de engrapar. Considere dividir en varios paquetes.
                 </p>
               </div>
             )}
@@ -715,7 +715,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
                 <Music className="h-5 w-5 text-primary" />
-                Seleccion de Audios
+                Selección de Audios
               </CardTitle>
               <Badge variant="secondary" className="text-xs">
                 {state.selectedHymns.length} himno{state.selectedHymns.length !== 1 ? 's' : ''}
