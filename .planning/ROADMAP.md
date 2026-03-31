@@ -101,10 +101,31 @@ Plans:
 - [ ] 05-02-PLAN.md -- Booklet PDF components, render pipeline extension, generate-hymn-zip update (Wave 2)
 - [ ] 05-03-PLAN.md -- StepConfiguracion UI update with all new controls, human verification (Wave 3)
 
+### Phase 6: Visualizador de himnos con panel tipo ProPresenter - explorar himnos, seleccionarlos, y proyectar diapositivas en ventana fullscreen con reproduccion de pistas de audio
+
+**Goal:** Operator can browse hymns, build a playlist, and project lyrics fullscreen in a separate browser window with crossfade transitions and audio playback controls -- a live worship presentation tool
+**Depends on:** Phase 5
+**Requirements**: D-01, D-02, D-03, D-04, D-05, D-06, D-07, D-08, D-09, D-10, D-11, D-12, D-13, D-14, D-15, D-16, D-17, D-18, D-19, D-20
+**Success Criteria** (what must be TRUE):
+  1. Operator can search and add hymns to an ordered playlist with drag-and-drop reordering
+  2. Clicking a hymn loads its slides (verse/chorus segmented) as thumbnails in the center column
+  3. Clicking "Proyectar" opens a fullscreen projection window showing the current slide with crossfade transitions
+  4. Negro/Limpiar/Logo controls change the projection mode via BroadcastChannel
+  5. Audio bar at the bottom plays accompaniment tracks with seek, and audio stops on hymn change
+  6. Keyboard shortcuts (arrows, space, B, C, L, P, Ctrl+/-) work for live worship operation
+**Plans:** 4 plans
+**UI hint**: yes
+
+Plans:
+- [ ] 06-01-PLAN.md -- Core infrastructure: types, slide builder, BroadcastChannel protocol, reducer, hooks (Wave 1)
+- [ ] 06-02-PLAN.md -- Control panel page shell, PlaylistColumn with DnD, SlideGridColumn with thumbnails (Wave 2)
+- [ ] 06-03-PLAN.md -- SlideRenderer, LivePreviewColumn, ProjectionControls, projection window with crossfade (Wave 3)
+- [ ] 06-04-PLAN.md -- AudioBar with playback controls, herramientas link, human verification (Wave 4)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -113,3 +134,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 3. API Routes and ZIP Streaming | 0/2 | Not started | - |
 | 4. Wizard UI and Download Experience | 0/3 | Not started | - |
 | 5. Impresion de Himnos | 0/3 | Planned    |  |
+| 6. Visualizador de Himnos | 0/4 | Planned | - |
