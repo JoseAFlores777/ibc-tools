@@ -17,18 +17,18 @@ created: 2026-03-31
 
 | Property | Value |
 |----------|-------|
-| **Framework** | Jest (existing project setup) |
-| **Config file** | `jest.config.js` or inline in `package.json` |
-| **Quick run command** | `npx jest --testPathPattern=visualizador` |
-| **Full suite command** | `npx jest` |
+| **Framework** | Vitest (vitest ^4.1.2 in devDependencies) |
+| **Config file** | `vitest.config.mts` |
+| **Quick run command** | `npx vitest run app/visualizador/ --reporter=verbose` |
+| **Full suite command** | `npx vitest run` |
 | **Estimated runtime** | ~15 seconds |
 
 ---
 
 ## Sampling Rate
 
-- **After every task commit:** Run `npx jest --testPathPattern=visualizador`
-- **After every plan wave:** Run `npx jest`
+- **After every task commit:** Run `npx vitest run app/visualizador/ --reporter=verbose`
+- **After every plan wave:** Run `npx vitest run`
 - **Before `/gsd:verify-work`:** Full suite must be green
 - **Max feedback latency:** 15 seconds
 
@@ -38,9 +38,9 @@ created: 2026-03-31
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 06-01-01 | 01 | 1 | D-13 | unit | `npx jest --testPathPattern=slide-builder` | ❌ W0 | ⬜ pending |
-| 06-01-02 | 01 | 1 | D-09 | unit | `npx jest --testPathPattern=broadcast` | ❌ W0 | ⬜ pending |
-| 06-01-03 | 01 | 1 | D-04 | unit | `npx jest --testPathPattern=playlist-reducer` | ❌ W0 | ⬜ pending |
+| 06-01-01 | 01 | 1 | D-13 | unit | `npx vitest run app/visualizador/lib/build-slides-client.test.ts --reporter=verbose` | ❌ W0 | ⬜ pending |
+| 06-01-01b | 01 | 1 | D-09 | unit | `npx vitest run app/visualizador/lib/projection-channel.test.ts --reporter=verbose` | ❌ W0 | ⬜ pending |
+| 06-01-02 | 01 | 1 | D-04 | unit | `npx vitest run app/visualizador/hooks/useVisualizador.test.ts --reporter=verbose` | ❌ W0 | ⬜ pending |
 | 06-02-01 | 02 | 2 | D-01,D-03 | manual | Browser: 3-column layout renders | N/A | ⬜ pending |
 | 06-02-02 | 02 | 2 | D-06 | manual | Browser: slide navigation works | N/A | ⬜ pending |
 | 06-03-01 | 03 | 3 | D-08 | manual | Browser: projection window opens fullscreen | N/A | ⬜ pending |
@@ -53,11 +53,11 @@ created: 2026-03-31
 
 ## Wave 0 Requirements
 
-- [ ] `app/visualizador/__tests__/slide-builder.test.ts` — unit tests for client-side slide building from ParsedVerse[]
-- [ ] `app/visualizador/__tests__/broadcast.test.ts` — unit tests for BroadcastChannel message protocol
-- [ ] `app/visualizador/__tests__/playlist-reducer.test.ts` — unit tests for playlist state reducer (add, remove, reorder)
+- [ ] `app/visualizador/lib/build-slides-client.test.ts` — unit tests for client-side slide building from ParsedVerse[] (uses `// @vitest-environment jsdom` pragma; requires `jsdom` devDependency)
+- [ ] `app/visualizador/lib/projection-channel.test.ts` — unit tests for BroadcastChannel CHANNEL_NAME constant and ProjectionMessage discriminants
+- [ ] `app/visualizador/hooks/useVisualizador.test.ts` — unit tests for playlist state reducer (add, remove, reorder)
 
-*Existing infrastructure covers test framework — no new framework install needed.*
+*Requires `jsdom` devDependency for DOMParser tests — installed in Plan 01 Task 1.*
 
 ---
 
