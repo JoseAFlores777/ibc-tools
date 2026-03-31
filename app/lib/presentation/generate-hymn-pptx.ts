@@ -2,13 +2,16 @@ import PptxGenJS from 'pptxgenjs';
 import type { HymnForPdf, ParsedVerse } from '@/app/interfaces/Hymn.interface';
 
 /**
- * Genera una presentación PowerPoint (.pptx) con diapositivas de himnos.
+ * Genera una presentacion PowerPoint (.pptx) con diapositivas de himnos.
  *
- * Estructura:
+ * Estilo limpio (fondo blanco, texto negro, Helvetica Bold):
  *   - Portada general
  *   - Por cada himno:
- *     - Portada del himno (número, título, himnario)
- *     - Estrofa I → Coro → Estrofa II → Coro → ... (intercalado)
+ *     - Introduccion: HIMNO + nombre (grande bold), texto biblico (cursiva),
+ *       referencia biblica (derecha bold)
+ *     - Estrofa I -> Coro -> Estrofa II -> Coro -> ... (intercalado)
+ *   - Texto alineado verticalmente arriba en estrofas/coros
+ *   - Sin transiciones
  */
 
 interface ParsedHymn {
@@ -17,25 +20,28 @@ interface ParsedHymn {
 }
 
 interface SlideContent {
+  label: string;
   marker: string;
   lines: string[];
 }
 
-/** Colores del tema institucional */
-const THEME = {
-  bg: '393572',
-  titleColor: 'FFFFFF',
-  accentColor: 'EABA1C',
-  subtitleColor: 'C2C2C4',
+/** Mapa de numeros romanos a numero ordinal */
+const ROMAN_TO_NUM: Record<string, number> = {
+  I: 1, II: 2, III: 3, IV: 4, V: 5,
+  VI: 6, VII: 7, VIII: 8, IX: 9, X: 10,
 };
 
+/** Colores: fondo blanco, texto negro */
+const TEXT_COLOR = '000000';
+const SUBTITLE_COLOR = '666666';
+
 /**
- * Separa los versos parseados en slides, intercalando el coro después de cada estrofa.
+ * Separa los versos parseados en slides, intercalando el coro despues de cada estrofa.
+ * Usa labels tipo "ESTROFA I", "CORO" para consistencia con ProPresenter.
  */
 function buildSlides(verses: ParsedVerse[]): SlideContent[] {
-  const sections: SlideContent[] = [];
+  const stanzas: SlideContent[] = [];
   let chorusLines: string[] | null = null;
-  let chorusMarker = 'CORO';
   let currentMarker = '';
   let currentLines: string[] = [];
   let isCollectingChorus = false;
@@ -45,9 +51,11 @@ function buildSlides(verses: ParsedVerse[]): SlideContent[] {
       if (currentLines.length > 0) {
         if (isCollectingChorus) {
           chorusLines = currentLines;
-          chorusMarker = currentMarker;
         } else {
-          sections.push({ marker: currentMarker, lines: currentLines });
+          const upper = currentMarker.trim().toUpperCase();
+          const num = ROMAN_TO_NUM[upper];
+          const label = num ? `ESTROFA ${currentMarker.trim()}` : currentMarker.trim();
+          stanzas.push({ label, marker: currentMarker, lines: currentLines });
         }
       }
       currentMarker = verse.lines.map((l) => l.text).join(' ');
@@ -62,18 +70,20 @@ function buildSlides(verses: ParsedVerse[]): SlideContent[] {
   if (currentLines.length > 0) {
     if (isCollectingChorus) {
       chorusLines = currentLines;
-      chorusMarker = currentMarker;
     } else {
-      sections.push({ marker: currentMarker, lines: currentLines });
+      const upper = currentMarker.trim().toUpperCase();
+      const num = ROMAN_TO_NUM[upper];
+      const label = num ? `ESTROFA ${currentMarker.trim()}` : currentMarker.trim();
+      stanzas.push({ label, marker: currentMarker, lines: currentLines });
     }
   }
 
-  // Intercalar coro después de cada estrofa
+  // Intercalar coro despues de cada estrofa
   const slides: SlideContent[] = [];
-  for (const section of sections) {
-    slides.push(section);
+  for (const stanza of stanzas) {
+    slides.push(stanza);
     if (chorusLines) {
-      slides.push({ marker: chorusMarker, lines: chorusLines });
+      slides.push({ label: 'CORO', marker: 'CORO', lines: chorusLines });
     }
   }
 
@@ -87,30 +97,29 @@ export async function generateHymnPptx(
   const pptx = new PptxGenJS();
   pptx.layout = 'LAYOUT_WIDE'; // 13.33 x 7.5 pulgadas (16:9)
   pptx.author = 'Iglesia Bautista El Calvario';
-  pptx.title = title || 'Presentación de Himnos';
+  pptx.title = title || 'Presentacion de Himnos';
 
   // Portada general
   const coverSlide = pptx.addSlide();
-  coverSlide.background = { color: THEME.bg };
   coverSlide.addText(title || 'Himnos', {
     x: 0.5,
-    y: 2.0,
+    y: 1.5,
     w: 12.33,
     h: 2.0,
     fontSize: 54,
-    fontFace: 'Georgia',
-    color: THEME.titleColor,
+    fontFace: 'Helvetica',
+    color: TEXT_COLOR,
     align: 'center',
     bold: true,
   });
   coverSlide.addText(`${hymns.length} himno${hymns.length !== 1 ? 's' : ''}`, {
     x: 0.5,
-    y: 4.2,
+    y: 3.8,
     w: 12.33,
     h: 0.8,
     fontSize: 22,
-    fontFace: 'Georgia',
-    color: THEME.accentColor,
+    fontFace: 'Helvetica',
+    color: SUBTITLE_COLOR,
     align: 'center',
   });
   coverSlide.addText('Iglesia Bautista El Calvario', {
@@ -119,92 +128,107 @@ export async function generateHymnPptx(
     w: 12.33,
     h: 0.5,
     fontSize: 14,
-    fontFace: 'Georgia',
-    color: THEME.subtitleColor,
+    fontFace: 'Helvetica',
+    color: SUBTITLE_COLOR,
     align: 'center',
   });
 
   for (const ph of hymns) {
     const slides = buildSlides(ph.verses);
 
-    // Portada del himno
-    const hymnCover = pptx.addSlide();
-    hymnCover.background = { color: THEME.bg };
+    // Diapositiva de introduccion (estilo ProPresenter)
+    const introSlide = pptx.addSlide();
 
-    if (ph.hymn.hymn_number != null) {
-      hymnCover.addText(`Himno # ${ph.hymn.hymn_number}`, {
-        x: 0.5,
-        y: 1.8,
-        w: 12.33,
-        h: 0.8,
-        fontSize: 26,
-        fontFace: 'Georgia',
-        color: THEME.accentColor,
-        align: 'center',
-      });
-    }
-
-    hymnCover.addText(ph.hymn.name.toUpperCase(), {
+    // "HIMNO" + nombre: centrado, bold, grande
+    introSlide.addText('HIMNO', {
       x: 0.5,
-      y: 2.8,
+      y: 1.0,
       w: 12.33,
-      h: 1.5,
-      fontSize: 44,
-      fontFace: 'Georgia',
-      color: THEME.titleColor,
+      h: 0.8,
+      fontSize: 36,
+      fontFace: 'Helvetica',
+      color: TEXT_COLOR,
+      align: 'center',
+      bold: true,
+    });
+    introSlide.addText(`"${ph.hymn.name.toUpperCase()}"`, {
+      x: 0.5,
+      y: 1.8,
+      w: 12.33,
+      h: 1.2,
+      fontSize: 36,
+      fontFace: 'Helvetica',
+      color: TEXT_COLOR,
       align: 'center',
       bold: true,
     });
 
-    if (ph.hymn.hymnal?.name) {
-      hymnCover.addText(ph.hymn.hymnal.name, {
-        x: 0.5,
-        y: 4.5,
-        w: 12.33,
-        h: 0.6,
-        fontSize: 16,
-        fontFace: 'Georgia',
-        color: THEME.subtitleColor,
+    // Texto biblico: centrado, cursiva, mas pequeno
+    if (ph.hymn.bible_text) {
+      introSlide.addText(`"${ph.hymn.bible_text}"`, {
+        x: 0.8,
+        y: 3.8,
+        w: 11.73,
+        h: 2.0,
+        fontSize: 22,
+        fontFace: 'Helvetica',
+        color: SUBTITLE_COLOR,
         align: 'center',
+        italic: true,
+      });
+    }
+
+    // Referencia biblica: derecha, bold
+    if (ph.hymn.bible_reference) {
+      introSlide.addText(ph.hymn.bible_reference, {
+        x: 0.8,
+        y: 6.0,
+        w: 11.73,
+        h: 0.6,
+        fontSize: 22,
+        fontFace: 'Helvetica',
+        color: TEXT_COLOR,
+        align: 'right',
+        bold: true,
       });
     }
 
     // Slides de estrofas/coros
     for (const slide of slides) {
       const s = pptx.addSlide();
-      s.background = { color: THEME.bg };
 
-      // Marcador (I, II, CORO, etc.)
-      s.addText(slide.marker, {
+      // Marcador (ESTROFA I, CORO, etc.) arriba
+      s.addText(slide.label, {
         x: 0.5,
-        y: 0.4,
+        y: 0.3,
         w: 12.33,
         h: 0.6,
         fontSize: 18,
-        fontFace: 'Georgia',
-        color: THEME.accentColor,
+        fontFace: 'Helvetica',
+        color: SUBTITLE_COLOR,
         align: 'center',
         bold: true,
       });
 
-      // Texto de la estrofa/coro
+      // Texto de la estrofa/coro, alineado arriba
       const lyricsText = slide.lines.join('\n');
       s.addText(lyricsText, {
         x: 0.8,
-        y: 1.2,
+        y: 1.1,
         w: 11.73,
-        h: 5.5,
+        h: 5.8,
         fontSize: 32,
-        fontFace: 'Georgia',
-        color: THEME.titleColor,
+        fontFace: 'Helvetica',
+        color: TEXT_COLOR,
         align: 'center',
-        valign: 'middle',
+        valign: 'top',
+        bold: true,
         lineSpacingMultiple: 1.4,
       });
     }
   }
 
   // Generar como Buffer
-  const arrayBuffer = await pptx.write({ outputType: 'arraybuffer' }) as ArrayBuffer;
+  const arrayBuffer = (await pptx.write({ outputType: 'arraybuffer' })) as ArrayBuffer;
   return Buffer.from(arrayBuffer);
 }

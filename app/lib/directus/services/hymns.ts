@@ -71,6 +71,11 @@ function stripAccents(str: string): string {
   return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
+/** Elimina signos de puntuación, manteniendo letras (con acentos), dígitos y espacios */
+function stripPunctuation(str: string): string {
+  return str.replace(/[^\p{L}\p{N}\s]/gu, '').trim();
+}
+
 /**
  * Busca himnos en Directus con filtros opcionales.
  * Soporta búsqueda por nombre, letra del himno, número, himnario y categoría.
@@ -90,20 +95,37 @@ export async function searchHymns(filters: HymnSearchFilters): Promise<HymnSearc
   const searchIn = filters.searchIn ?? ['name', 'number', 'letter'];
 
   if (filters.query) {
-    const q = filters.query;
-    const qNorm = stripAccents(q);
+    // Normalizar: quitar puntuación y signos, solo letras/dígitos/espacios
+    const clean = stripPunctuation(filters.query);
+    const cleanNorm = stripAccents(clean);
+    const words = clean.split(/\s+/).filter(Boolean);
+    const wordsNorm = cleanNorm.split(/\s+/).filter(Boolean);
     const textConditions: any[] = [];
 
-    if (searchIn.includes('name')) {
-      textConditions.push({ name: { _icontains: q } });
-      if (qNorm !== q) textConditions.push({ name: { _icontains: qNorm } });
-    }
-    if (searchIn.includes('letter')) {
-      textConditions.push({ letter_hymn: { _icontains: q } });
-      if (qNorm !== q) textConditions.push({ letter_hymn: { _icontains: qNorm } });
-    }
-    if (searchIn.includes('number') && /^\d+$/.test(q)) {
-      textConditions.push({ hymn_number: { _eq: Number(q) } });
+    // Genera condiciones _icontains por palabra (AND) para un campo dado
+    const wordConditions = (field: string) => {
+      if (words.length > 1) {
+        textConditions.push({ _and: words.map((w) => ({ [field]: { _icontains: w } })) });
+        if (cleanNorm !== clean) {
+          textConditions.push({ _and: wordsNorm.map((w) => ({ [field]: { _icontains: w } })) });
+        }
+      } else if (words.length === 1) {
+        textConditions.push({ [field]: { _icontains: words[0] } });
+        if (cleanNorm !== clean) {
+          textConditions.push({ [field]: { _icontains: wordsNorm[0] } });
+        }
+      }
+    };
+
+    if (searchIn.includes('name')) wordConditions('name');
+    if (searchIn.includes('letter')) wordConditions('letter_hymn');
+
+    // Número: extraer dígitos del query para buscar por hymn_number
+    if (searchIn.includes('number')) {
+      const digits = clean.replace(/\D/g, '');
+      if (digits.length > 0) {
+        textConditions.push({ hymn_number: { _eq: Number(digits) } });
+      }
     }
 
     if (textConditions.length > 0) {

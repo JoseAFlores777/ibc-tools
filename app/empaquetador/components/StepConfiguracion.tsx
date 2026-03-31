@@ -714,7 +714,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                   Incluir presentación
                 </Label>
                 <p className="text-xs text-slate-500">
-                  Genera un PDF tipo diapositivas con cada estrofa y coro en una página, ideal para proyector
+                  Genera presentación (.pptx + .pdf) con cada estrofa y coro en una diapositiva, ideal para proyector
                 </p>
               </div>
             </div>

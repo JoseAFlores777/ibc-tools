@@ -231,23 +231,34 @@ export async function assembleHymnPackage(
     }
   }
 
-  // Generar presentación PowerPoint (.pptx) si fue solicitada
+  // Generar presentaciones (.pptx + .pdf) si fue solicitada
   if (request.includePresentation && allSuccessfulHymns.length > 0) {
+    const parsedHymns = allSuccessfulHymns.map((hymn) => ({
+      hymn,
+      verses: parseHymnHtml(hymn.letter_hymn || ''),
+    }));
+    const presTitle = request.bookletTitle || 'Himnos';
+
+    // PowerPoint
     try {
       const { generateHymnPptx } = await import(
         '@/app/lib/presentation/generate-hymn-pptx'
       );
-
-      const parsedHymns = allSuccessfulHymns.map((hymn) => ({
-        hymn,
-        verses: parseHymnHtml(hymn.letter_hymn || ''),
-      }));
-
-      const presTitle = request.bookletTitle || 'Himnos';
       const pptxBuffer = await generateHymnPptx(parsedHymns, presTitle);
       archive.append(pptxBuffer, { name: 'presentacion.pptx' });
     } catch (err) {
-      console.error('Error al generar presentación:', err);
+      console.error('Error al generar presentación PPTX:', err);
+    }
+
+    // PDF presentación (misma estructura, formato PDF)
+    try {
+      const { generateHymnPresentationPdf } = await import(
+        '@/app/lib/presentation/generate-hymn-presentation-pdf'
+      );
+      const pdfBuffer = await generateHymnPresentationPdf(parsedHymns, presTitle);
+      archive.append(pdfBuffer, { name: 'presentacion.pdf' });
+    } catch (err) {
+      console.error('Error al generar presentación PDF:', err);
     }
   }
 

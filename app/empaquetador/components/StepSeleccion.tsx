@@ -69,8 +69,16 @@ export default function StepSeleccion({ state, dispatch }: StepSeleccionProps) {
     ])
       .then(([hymnalsData, categoriesData]) => {
         if (cancelled) return;
-        setHymnals(hymnalsData.data ?? []);
+        const loadedHymnals = hymnalsData.data ?? [];
+        setHymnals(loadedHymnals);
         setCategories(categoriesData.data ?? []);
+        // Preseleccionar "Himnos majestuosos" si no hay himnario seleccionado
+        if (!hymnal) {
+          const majestuosos = loadedHymnals.find(
+            (h: { id: string; name: string }) => h.name.toLowerCase().includes('majestuosos'),
+          );
+          if (majestuosos) setHymnal(majestuosos.id);
+        }
       })
       .catch((err) => console.error('Error al cargar filtros:', err))
       .finally(() => { if (!cancelled) setFiltersLoading(false); });

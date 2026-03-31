@@ -14,11 +14,23 @@ import type { HymnForPdf, ParsedVerse } from '@/app/interfaces/Hymn.interface';
  *
  * Los labels usan "ESTROFA" en vez de números romanos solos
  * para mayor claridad en el navegador de ProPresenter.
+ *
+ * Formato:
+ *   - Sin transiciones (corte directo)
+ *   - Alineación vertical: arriba (top) en todas las diapositivas
+ *   - Introducción: título grande bold, texto bíblico pequeño cursiva,
+ *     referencia bíblica derecha bold
  */
 
 interface ParsedHymn {
   hymn: HymnForPdf;
   verses: ParsedVerse[];
+}
+
+interface IntroData {
+  hymnName: string;
+  bibleText?: string;
+  bibleReference?: string;
 }
 
 /** Mapa de números romanos a número ordinal */
@@ -109,28 +121,95 @@ function buildSlideGroups(
 
 /** Tamaño de fuente en half-points RTF (26pt * 2 = 52) */
 const RTF_FONT_SIZE = 52;
+/** Tamaño título introducción: 36pt */
+const INTRO_TITLE_FS = 72;
+/** Tamaño cuerpo introducción: 22pt */
+const INTRO_BODY_FS = 44;
+
+/** Escapa caracteres especiales RTF y codifica no-ASCII como escapes Latin-1 */
+function escapeRtf(text: string): string {
+  let result = '';
+  for (const ch of text) {
+    const code = ch.charCodeAt(0);
+    if (code === 0x5c) result += '\\\\';
+    else if (code === 0x7b) result += '\\{';
+    else if (code === 0x7d) result += '\\}';
+    else if (code >= 0x20 && code <= 0x7e) result += ch;
+    else if (code <= 0xff) result += `\\'${code.toString(16).padStart(2, '0')}`;
+    else result += `\\u${code}?`;
+  }
+  return result;
+}
 
 /**
- * Post-procesa bloques RTF base64 en el XML de ProPresenter:
- * 1. Corrige encoding: UTF-8 → Latin-1 (Windows-1252) para acentos españoles
- * 2. Aplica font size correcto (la librería hardcodea fs120)
- * 3. Agrega bold (\b) a Helvetica
+ * Construye RTF personalizado para la diapositiva de introducción:
+ * - HIMNO + nombre: centrado, bold, grande
+ * - Texto bíblico: centrado, cursiva, más pequeño
+ * - Referencia bíblica: alineada derecha, bold
  */
-function fixRtfBlocks(xml: string): string {
-  return xml.replace(/>([A-Za-z0-9+/=]{20,})</g, (match, b64) => {
+function buildIntroRtf(intro: IntroData): string {
+  const header =
+    '{\\rtf1\\ansi\\ansicpg1252\\cocoartf1038\\cocoasubrtf320' +
+    '{\\fonttbl\\f0\\fswiss\\fcharset0 Helvetica;}' +
+    '{\\colortbl;\\red255\\green255\\blue255;}';
+
+  // Título: centrado, bold, grande
+  let body =
+    `\\pard\\qc\\pardirnatural\\f0\\b\\fs${INTRO_TITLE_FS} \\cf1 HIMNO\\par\n` +
+    escapeRtf(`"${intro.hymnName.toUpperCase()}"`);
+
+  if (intro.bibleText) {
+    // Línea vacía + texto bíblico: centrado, cursiva, más pequeño
+    body +=
+      `\\par\n\\pard\\qc\\pardirnatural\\b0\\i\\fs${INTRO_BODY_FS} \\cf1 \\par\n` +
+      escapeRtf(`"${intro.bibleText}"`);
+  }
+
+  if (intro.bibleReference) {
+    // Referencia: alineada a la derecha, bold, sin cursiva
+    body +=
+      `\\par\n\\pard\\qr\\pardirnatural\\i0\\b\\fs${INTRO_BODY_FS} \\cf1 ` +
+      escapeRtf(intro.bibleReference);
+  }
+
+  return header + body + '}';
+}
+
+/**
+ * Post-procesa el XML de ProPresenter:
+ * 1. Quita transiciones (corte directo)
+ * 2. Aplica RTF personalizado a la intro
+ * 3. Corrige encoding y formato en estrofas/coro
+ */
+function postProcessXml(xml: string, introData: IntroData): string {
+  // Quitar transiciones: forzar tipo 0 (Cut/None) y duración 0
+  let result = xml
+    .replace(/transitionType="-1"/, 'transitionType="0"')
+    .replace(/transitionDuration="1"/, 'transitionDuration="0"');
+
+  // Procesar bloques RTF
+  let isFirstRtf = true;
+  result = result.replace(/>([A-Za-z0-9+/=]{20,})</g, (match, b64) => {
     const utf8 = Buffer.from(b64, 'base64').toString('utf8');
     if (!utf8.includes('rtf1')) return match;
 
-    let fixed = utf8;
-    // Fix font size: replace hardcoded fs120 with desired size
-    fixed = fixed.replace(/\\fs\d+/, `\\fs${RTF_FONT_SIZE}`);
-    // Add bold after font declaration
-    fixed = fixed.replace(/(\\f0\\fs\d+)/, '$1\\b');
+    if (isFirstRtf) {
+      // Diapositiva de introducción: RTF personalizado
+      isFirstRtf = false;
+      const introRtf = buildIntroRtf(introData);
+      const latin1B64 = Buffer.from(introRtf, 'latin1').toString('base64');
+      return '>' + latin1B64 + '<';
+    }
 
-    // Re-encode as Latin-1 for Windows-1252 compatibility
+    // Estrofas y coro: formato uniforme
+    let fixed = utf8;
+    fixed = fixed.replace(/\\fs\d+/, `\\fs${RTF_FONT_SIZE}`);
+    fixed = fixed.replace(/(\\f0\\fs\d+)/, '$1\\b');
     const latin1B64 = Buffer.from(fixed, 'latin1').toString('base64');
     return '>' + latin1B64 + '<';
   });
+
+  return result;
 }
 
 /** Caracteres no permitidos en nombres de archivos */
@@ -182,10 +261,16 @@ export function generateHymnProPresenter(hymns: ParsedHymn[]): ProPresenterFile[
       slideGroups,
     });
 
+    const introData: IntroData = {
+      hymnName: ph.hymn.name,
+      bibleText: ph.hymn.bible_text || undefined,
+      bibleReference: ph.hymn.bible_reference || undefined,
+    };
+
     const safeName = title.replace(UNSAFE_CHARS, '_');
     files.push({
       fileName: `${safeName}.pro6`,
-      content: fixRtfBlocks(xml),
+      content: postProcessXml(xml, introData),
     });
   }
 

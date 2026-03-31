@@ -29,6 +29,9 @@ import {
   Music,
   Check,
   Plus,
+  Presentation,
+  Monitor,
+  Film,
 } from 'lucide-react';
 
 interface HymnDetailViewProps {
@@ -293,8 +296,9 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
     });
   };
 
-  const handleExportPdf = (style: 'decorated' | 'plain') => {
-    window.open(`/pdf-gen/hymns/${hymn.id}?style=${style}`, '_blank');
+  const handleExport = (format: string) => {
+    const url = `/api/hymns/${hymn.id}/export?format=${format}`;
+    window.open(url, '_blank');
   };
 
   return (
@@ -599,18 +603,18 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
                   <CardContent className="space-y-2 pt-0">
                     <Button
                       variant="outline"
-                      onClick={() => handleExportPdf('decorated')}
+                      onClick={() => handleExport('pdf-decorated')}
                       className="w-full justify-start min-h-[44px] cursor-pointer"
                     >
                       <Sparkles className="h-4 w-4 mr-2 text-primary" />
                       <div className="text-left">
                         <span className="text-sm font-medium block">PDF Decorado</span>
-                        <span className="text-[10px] text-slate-400">Con diseño institucional</span>
+                        <span className="text-[10px] text-slate-400">Con diseno institucional</span>
                       </div>
                     </Button>
                     <Button
                       variant="outline"
-                      onClick={() => handleExportPdf('plain')}
+                      onClick={() => handleExport('pdf-plain')}
                       className="w-full justify-start min-h-[44px] cursor-pointer"
                     >
                       <FileText className="h-4 w-4 mr-2 text-slate-400" />
@@ -619,18 +623,58 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
                         <span className="text-[10px] text-slate-400">Ahorra tinta</span>
                       </div>
                     </Button>
+
+                    <Separator className="my-2" />
+
+                    <Button
+                      variant="outline"
+                      onClick={() => handleExport('pptx')}
+                      className="w-full justify-start min-h-[44px] cursor-pointer"
+                    >
+                      <Presentation className="h-4 w-4 mr-2 text-orange-500" />
+                      <div className="text-left">
+                        <span className="text-sm font-medium block">PowerPoint</span>
+                        <span className="text-[10px] text-slate-400">Presentacion editable (.pptx)</span>
+                      </div>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleExport('presentation-pdf')}
+                      className="w-full justify-start min-h-[44px] cursor-pointer"
+                    >
+                      <Monitor className="h-4 w-4 mr-2 text-blue-500" />
+                      <div className="text-left">
+                        <span className="text-sm font-medium block">Presentacion PDF</span>
+                        <span className="text-[10px] text-slate-400">Diapositivas para proyector</span>
+                      </div>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleExport('pro6')}
+                      className="w-full justify-start min-h-[44px] cursor-pointer"
+                    >
+                      <Film className="h-4 w-4 mr-2 text-purple-500" />
+                      <div className="text-left">
+                        <span className="text-sm font-medium block">ProPresenter</span>
+                        <span className="text-[10px] text-slate-400">Archivo .pro6 importable</span>
+                      </div>
+                    </Button>
+
                     {details?.letter_hymn && (
-                      <Button
-                        variant="outline"
-                        onClick={handleCopyLetter}
-                        className="w-full justify-start min-h-[44px] cursor-pointer"
-                      >
-                        <Copy className="h-4 w-4 mr-2 text-slate-400" />
-                        <div className="text-left">
-                          <span className="text-sm font-medium block">Copiar letra</span>
-                          <span className="text-[10px] text-slate-400">Texto plano</span>
-                        </div>
-                      </Button>
+                      <>
+                        <Separator className="my-2" />
+                        <Button
+                          variant="outline"
+                          onClick={handleCopyLetter}
+                          className="w-full justify-start min-h-[44px] cursor-pointer"
+                        >
+                          <Copy className="h-4 w-4 mr-2 text-slate-400" />
+                          <div className="text-left">
+                            <span className="text-sm font-medium block">Copiar letra</span>
+                            <span className="text-[10px] text-slate-400">Texto plano</span>
+                          </div>
+                        </Button>
+                      </>
                     )}
                   </CardContent>
                 </Card>
@@ -654,7 +698,7 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
             <div className="grid grid-cols-2 gap-2">
               <Button
                 variant="outline"
-                onClick={() => handleExportPdf('decorated')}
+                onClick={() => handleExport('pdf-decorated')}
                 className="min-h-[44px] cursor-pointer"
               >
                 <Sparkles className="h-4 w-4 mr-1.5 text-primary" />
@@ -662,11 +706,35 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
               </Button>
               <Button
                 variant="outline"
-                onClick={() => handleExportPdf('plain')}
+                onClick={() => handleExport('pdf-plain')}
                 className="min-h-[44px] cursor-pointer"
               >
                 <FileText className="h-4 w-4 mr-1.5" />
                 Plano
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleExport('pptx')}
+                className="min-h-[44px] cursor-pointer"
+              >
+                <Presentation className="h-4 w-4 mr-1.5 text-orange-500" />
+                PowerPoint
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleExport('presentation-pdf')}
+                className="min-h-[44px] cursor-pointer"
+              >
+                <Monitor className="h-4 w-4 mr-1.5 text-blue-500" />
+                Presentacion
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleExport('pro6')}
+                className="col-span-2 min-h-[44px] cursor-pointer"
+              >
+                <Film className="h-4 w-4 mr-1.5 text-purple-500" />
+                ProPresenter
               </Button>
               {details?.letter_hymn && (
                 <Button
