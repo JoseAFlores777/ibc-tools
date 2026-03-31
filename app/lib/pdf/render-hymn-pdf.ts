@@ -10,6 +10,8 @@ export interface RenderHymnPdfOptions {
   hymns: HymnForPdf[];
   layout: PdfLayout;
   style: PdfStyle;
+  copiesPerPage?: 1 | 2 | 4;
+  copiesFontSize?: number;
 }
 
 interface ParsedHymn {
@@ -28,6 +30,8 @@ interface ParsedHymn {
  */
 export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buffer> {
   const { hymns, layout, style } = options;
+  const copiesPerPage = options.copiesPerPage ?? 1;
+  const copiesFontSize = options.copiesFontSize ?? 9;
 
   if (hymns.length === 0) {
     throw new Error('renderHymnPdf: at least one hymn is required');
@@ -41,7 +45,23 @@ export async function renderHymnPdf(options: RenderHymnPdfOptions): Promise<Buff
 
   let pages: React.ReactElement[];
 
-  if (layout === 'one-per-page') {
+  // Modo copias: multiples copias del mismo himno por pagina
+  if (copiesPerPage > 1 && layout === 'one-per-page') {
+    const { HymnPageCopies } = await import(
+      '@/app/components/pdf-components/pdf-pages/HymnPageCopies'
+    );
+
+    pages = parsedHymns.map((ph, i) =>
+      React.createElement(HymnPageCopies, {
+        key: i,
+        hymn: ph.hymn,
+        verses: ph.verses,
+        copies: copiesPerPage as 2 | 4,
+        fontSize: copiesFontSize,
+        style,
+      }),
+    );
+  } else if (layout === 'one-per-page') {
     // Una pagina por himno, usando el componente decorado o plano
     const PageComponent =
       style === 'decorated'
