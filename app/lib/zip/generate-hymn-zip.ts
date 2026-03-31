@@ -9,10 +9,24 @@ import type { PackageRequest } from './zip.schema';
 /** Caracteres no permitidos en nombres de archivos/carpetas */
 const UNSAFE_CHARS = /[/\\:*?"<>|]/g;
 
+/** Etiquetas en español para los campos de audio */
+const AUDIO_LABELS: Record<string, string> = {
+  track_only: 'Pista completa',
+  midi_file: 'MIDI',
+  soprano_voice: 'Soprano',
+  alto_voice: 'Alto',
+  tenor_voice: 'Tenor',
+  bass_voice: 'Bajo',
+};
+
+/** Sanitiza un string para uso como nombre de archivo/carpeta */
+function sanitize(name: string): string {
+  return name.replace(UNSAFE_CHARS, '_');
+}
+
 /**
- * Genera el nombre de carpeta para un himno dentro del ZIP.
+ * Genera el nombre base para un himno (usado en carpeta y archivos).
  * Formato: "{hymn_number} - {name}" sanitizado para filesystem.
- * Si hymn_number es null, usa "himno-{id}" como prefijo.
  */
 export function hymnFolderName(
   hymnNumber: number | null,
@@ -20,8 +34,7 @@ export function hymnFolderName(
   id: string,
 ): string {
   const prefix = hymnNumber !== null ? String(hymnNumber) : `himno-${id}`;
-  const sanitizedName = name.replace(UNSAFE_CHARS, '_');
-  return `${prefix} - ${sanitizedName}`;
+  return `${prefix} - ${sanitize(name)}`;
 }
 
 /**
@@ -146,9 +159,11 @@ export async function assembleHymnPackage(
           continue;
         }
 
-        const fileName =
-          audioInfo.filename_download ||
-          `${audioField}.${extensionFromMime(audioInfo.type)}`;
+        const ext = audioInfo.filename_download
+          ? audioInfo.filename_download.split('.').pop() || extensionFromMime(audioInfo.type)
+          : extensionFromMime(audioInfo.type);
+        const label = AUDIO_LABELS[audioField] || audioField;
+        const fileName = `${folderName} - ${label}.${ext}`;
         const nodeStream = Readable.fromWeb(response.body as any);
         archive.append(nodeStream, { name: `${folderName}/${fileName}` });
       } catch {
