@@ -5,6 +5,7 @@ status: draft
 shadcn_initialized: true
 preset: default (slate base, CSS variables)
 created: 2026-03-31
+revised: 2026-03-31
 ---
 
 # Phase 6 — UI Design Contract
@@ -43,7 +44,6 @@ Declared values (multiples of 4):
 | 3xl | 64px | Not used in this phase |
 
 Exceptions:
-- Slide thumbnails use 6px gap (`gap-1.5`) for dense grid packing
 - Projection slide content uses 80px padding on all sides for screen-safe area
 - Audio seek bar is 44px tall (touch target minimum)
 
@@ -56,7 +56,7 @@ Exceptions:
 | Role | Size | Weight | Line Height | Usage |
 |------|------|--------|-------------|-------|
 | Body | 14px | 400 (regular) | 1.5 | Playlist items, track names, status text |
-| Label | 12px | 500 (medium) | 1.4 | Column headers, verse labels in thumbnails, timestamps |
+| Label | 12px | 400 (regular) | 1.4 | Column headers, verse labels in thumbnails, timestamps |
 | Heading | 18px | 600 (semibold) | 1.2 | Active hymn title, section headings |
 | Display | 20px | 600 (semibold) | 1.2 | Not used in control panel |
 
@@ -66,7 +66,7 @@ Exceptions:
 |------|------|--------|-------------|-------|
 | Verse label | 24px | 400 (regular) | 1.2 | "ESTROFA I", "CORO" — subtle, above lyrics |
 | Lyrics | auto-sized (16px-120px) | 400 (regular) | 1.4 | Main projected text, binary-search sized to fill screen |
-| Title slide: hymn name | auto-sized (32px-80px) | 700 (bold) | 1.2 | Hymn name on cover slide |
+| Title slide: hymn name | auto-sized (32px-80px) | 600 (semibold) | 1.2 | Hymn name on cover slide |
 | Title slide: reference | 24px | 400 (regular) | 1.4 | Bible reference below hymn name |
 
 Font auto-sizing algorithm: binary search between 16px min and 120px max using canvas measureText. Container area = viewport minus 80px padding per side. Operator manual adjustment via Ctrl+Plus/Ctrl+Minus applies a size offset (-20 to +20) to the auto-calculated base.
