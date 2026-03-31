@@ -85,10 +85,10 @@ export default function SlideRenderer({
   // Modo slide: fondo tematico con etiqueta de verso y texto de la letra
   return (
     <div className={containerClasses} style={backgroundStyle}>
-      {/* Area segura con padding de 80px */}
+      {/* Area segura con padding proporcional */}
       <div
         className="absolute inset-0 flex flex-col"
-        style={{ padding: '80px' }}
+        style={{ padding: isPreview ? '8%' : '80px' }}
       >
         {/* Etiqueta del verso en la parte superior */}
         {slide?.verseLabel && (
