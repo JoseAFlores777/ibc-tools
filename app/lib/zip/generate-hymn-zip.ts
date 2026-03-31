@@ -1,6 +1,9 @@
+import React from 'react';
 import archiver from 'archiver';
 import { PassThrough, Readable } from 'stream';
+import { renderToBuffer, Document } from '@react-pdf/renderer';
 import { renderHymnPdf } from '@/app/lib/pdf/render-hymn-pdf';
+import { parseHymnHtml } from '@/app/lib/pdf/html-to-pdf';
 import { fetchHymnForPdf, fetchAsset } from '@/app/lib/directus/services/hymns';
 import type { HymnForPdf, HymnAudioFiles } from '@/app/interfaces/Hymn.interface';
 import type { PackageRequest } from './zip.schema';
@@ -193,6 +196,31 @@ export async function assembleHymnPackage(
     } catch (err) {
       console.error('Error al generar PDF combinado:', err);
       // No es critico, se omite el PDF combinado
+    }
+  }
+
+  // Generar presentación PDF (diapositivas) si fue solicitada
+  if (request.includePresentation && allSuccessfulHymns.length > 0) {
+    try {
+      const { HymnPresentation } = await import(
+        '@/app/components/pdf-components/pdf-documents/HymnPresentation'
+      );
+
+      const parsedHymns = allSuccessfulHymns.map((hymn) => ({
+        hymn,
+        verses: parseHymnHtml(hymn.letter_hymn || ''),
+      }));
+
+      const presTitle = request.bookletTitle || 'Himnos';
+      const presDoc = React.createElement(HymnPresentation, {
+        hymns: parsedHymns,
+        title: presTitle,
+      });
+
+      const presBuffer = await renderToBuffer(presDoc);
+      archive.append(presBuffer, { name: 'presentacion.pdf' });
+    } catch (err) {
+      console.error('Error al generar presentación:', err);
     }
   }
 

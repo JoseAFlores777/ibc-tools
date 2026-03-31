@@ -38,6 +38,7 @@ export const packageRequestSchema = z.object({
   bookletBibleRef: z.string().optional().default(''),
   copiesPerPage: z.union([z.literal(1), z.literal(2), z.literal(4)]).optional().default(1),
   copiesFontSize: z.number().min(6).max(14).optional().default(9),
+  includePresentation: z.boolean().optional().default(false),
 });
 
 export type PackageRequest = z.infer<typeof packageRequestSchema>;

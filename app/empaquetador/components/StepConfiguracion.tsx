@@ -38,6 +38,7 @@ import {
   AlertTriangle,
   CalendarIcon,
   Copy,
+  Presentation,
 } from 'lucide-react';
 
 /** Formatea una Date como "30 de marzo del 2026" */
@@ -694,6 +695,27 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                   Incluir referencia bíblica
                 </Label>
                 <p className="text-xs text-slate-500">Muestra el texto y cita bíblica en el PDF</p>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Incluir presentación */}
+            <div className="flex items-center gap-3">
+              <Switch
+                id="include-presentation"
+                checked={state.includePresentation}
+                onCheckedChange={(checked) =>
+                  dispatch({ type: 'SET_INCLUDE_PRESENTATION', includePresentation: Boolean(checked) })
+                }
+              />
+              <div>
+                <Label htmlFor="include-presentation" className="text-sm cursor-pointer">
+                  Incluir presentación
+                </Label>
+                <p className="text-xs text-slate-500">
+                  Genera un PDF tipo diapositivas con cada estrofa y coro en una página, ideal para proyector
+                </p>
               </div>
             </div>
 

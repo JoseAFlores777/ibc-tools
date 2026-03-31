@@ -31,6 +31,7 @@ export interface WizardState {
   bookletBibleRef: string;
   copiesPerPage: 1 | 2 | 4;
   copiesFontSize: number;
+  includePresentation: boolean;
   audioSelections: Map<string, Set<string>>;
   isGenerating: boolean;
   error: string | null;
@@ -57,8 +58,9 @@ export type WizardAction =
   | { type: 'SET_BOOKLET_BIBLE_REF'; bookletBibleRef: string }
   | { type: 'SET_COPIES_PER_PAGE'; copiesPerPage: 1 | 2 | 4 }
   | { type: 'SET_COPIES_FONT_SIZE'; copiesFontSize: number }
+  | { type: 'SET_INCLUDE_PRESENTATION'; includePresentation: boolean }
   | { type: 'RESET' }
-  | { type: 'LOAD_PACKAGE'; hymns: HymnSearchResult[]; layout: WizardState['layout']; style: WizardState['style']; audioSelections: Map<string, Set<string>>; printMode?: WizardState['printMode']; orientation?: WizardState['orientation']; fontPreset?: WizardState['fontPreset']; includeBibleRef?: boolean; bookletTitle?: string; bookletSubtitle?: string; bookletDate?: string; bookletBibleRef?: string; copiesPerPage?: 1 | 2 | 4; copiesFontSize?: number };
+  | { type: 'LOAD_PACKAGE'; hymns: HymnSearchResult[]; layout: WizardState['layout']; style: WizardState['style']; audioSelections: Map<string, Set<string>>; printMode?: WizardState['printMode']; orientation?: WizardState['orientation']; fontPreset?: WizardState['fontPreset']; includeBibleRef?: boolean; bookletTitle?: string; bookletSubtitle?: string; bookletDate?: string; bookletBibleRef?: string; copiesPerPage?: 1 | 2 | 4; copiesFontSize?: number; includePresentation?: boolean };
 
 /** Estado inicial del wizard */
 export const initialWizardState: WizardState = {
@@ -76,6 +78,7 @@ export const initialWizardState: WizardState = {
   bookletBibleRef: '',
   copiesPerPage: 1,
   copiesFontSize: 9,
+  includePresentation: false,
   audioSelections: new Map(),
   isGenerating: false,
   error: null,
@@ -181,6 +184,9 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
     case 'SET_COPIES_FONT_SIZE':
       return { ...state, copiesFontSize: action.copiesFontSize };
 
+    case 'SET_INCLUDE_PRESENTATION':
+      return { ...state, includePresentation: action.includePresentation };
+
     case 'RESET':
       return {
         ...initialWizardState,
@@ -203,6 +209,7 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
         bookletBibleRef: action.bookletBibleRef ?? '',
         copiesPerPage: action.copiesPerPage ?? 1,
         copiesFontSize: action.copiesFontSize ?? 9,
+        includePresentation: action.includePresentation ?? false,
         audioSelections: action.audioSelections,
         isGenerating: false,
         error: null,

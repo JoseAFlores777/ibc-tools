@@ -30,5 +30,6 @@ export function buildPackageRequest(state: WizardState): PackageRequest {
     bookletBibleRef: state.bookletBibleRef,
     copiesPerPage: state.copiesPerPage,
     copiesFontSize: state.copiesFontSize,
+    includePresentation: state.includePresentation,
   };
 }
