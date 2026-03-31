@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -59,11 +59,38 @@ const AUDIO_LABELS: Record<string, string> = {
 };
 
 /**
+ * Parsea HTML del campo letter_hymn en el cliente.
+ * Convierte <p>...</p> en lineas de texto, detecta titulos (I, II, CORO, etc).
+ */
+const TITLE_WORDS = new Set(['CORO', 'CHORUS', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']);
+const HYMN_HEADER_RE = /^HIMNO\s*#?\s*\d+\s*[-–—]\s*.+$/i;
+
+interface PreviewLine {
+  text: string;
+  isTitle: boolean;
+}
+
+function parseHymnHtmlClient(html: string): PreviewLine[] {
+  if (!html) return [];
+  // Crear un div temporal para parsear HTML
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  const paragraphs = div.querySelectorAll('p');
+  const lines: PreviewLine[] = [];
+
+  paragraphs.forEach((p) => {
+    const text = (p.textContent || '').trim();
+    if (!text || HYMN_HEADER_RE.test(text)) return;
+    const isTitle = TITLE_WORDS.has(text.toUpperCase());
+    lines.push({ text, isTitle });
+  });
+
+  return lines;
+}
+
+/**
  * Preview HTML del layout de copias — proporcional al PDF real.
- *
- * El PDF usa tamaño LETTER (612x792pt). La preview usa un ancho fijo y calcula
- * un factor de escala (previewWidth / pageWidth) para que todos los font sizes
- * sean proporcionales al resultado impreso.
+ * Usa la letra completa del himno obtenida via API.
  */
 const PAGE_W_PT = 612;
 const PAGE_H_PT = 792;
@@ -75,25 +102,23 @@ function CopiesPreview({
   hymnName,
   hymnNumber,
   orientation,
+  hymnLines,
 }: {
   copies: 1 | 2 | 4;
   fontSize: number;
   hymnName: string;
   hymnNumber: number | null;
   orientation: 'portrait' | 'landscape';
+  hymnLines: PreviewLine[];
 }) {
   const isLandscape = orientation === 'landscape';
-  // Dimensiones de la pagina en pt segun orientacion
   const pageW = isLandscape ? PAGE_H_PT : PAGE_W_PT;
   const pageH = isLandscape ? PAGE_W_PT : PAGE_H_PT;
 
-  // Ancho fijo del preview en px
   const previewW = isLandscape ? 320 : 260;
-  // Factor de escala: 1pt del PDF = scale px en el preview
   const scale = previewW / pageW;
   const previewH = pageH * scale;
 
-  // Tamaños del PDF escalados a px (mismos que HymnPageCopies.tsx)
   const titlePx = (fontSize + 2) * scale;
   const markerPx = fontSize * scale;
   const bodyPx = fontSize * scale;
@@ -114,27 +139,25 @@ function CopiesPreview({
       >
         {title}
       </p>
-      <p className="text-amber-700 text-center font-bold" style={{ fontSize: `${markerPx}px`, marginBottom: `${mbVersePx}px` }}>I</p>
-      <div className="text-slate-600 text-center w-full" style={{ fontSize: `${bodyPx}px`, lineHeight: 1.35, marginBottom: `${mbVersePx}px` }}>
-        <p>LA CREACION NO PUEDO EXPLICARLA,</p>
-        <p>NI LOS PLANETAS EN SU ENORMIDAD;</p>
-        <p>CONTAR LA ARENA DE LA MAR NO PUEDO,</p>
-        <p>NI LAS ESTRELLAS DE LA ANTIGUEDAD.</p>
-      </div>
-      <p className="text-amber-700 text-center font-bold" style={{ fontSize: `${markerPx}px`, marginBottom: `${mbVersePx}px` }}>CORO</p>
-      <div className="text-slate-600 text-center w-full" style={{ fontSize: `${bodyPx}px`, lineHeight: 1.35, marginBottom: `${mbVersePx}px` }}>
-        <p>LO IMPOSIBLE OBRA NUESTRO DIOS,</p>
-        <p>CONTROLANDO EL MUNDO ESTA;</p>
-        <p>Y AUNQUE YO COMPRENDO POCO,</p>
-        <p>NO DUDO QUE ME CUIDARA.</p>
-      </div>
-      <p className="text-amber-700 text-center font-bold" style={{ fontSize: `${markerPx}px`, marginBottom: `${mbVersePx}px` }}>II</p>
-      <div className="text-slate-600 text-center w-full" style={{ fontSize: `${bodyPx}px`, lineHeight: 1.35 }}>
-        <p>SU GRAN PERDON NO PUEDO EXPLICARLO</p>
-        <p>NI COMO A TAN VIL PECADOR AMO;</p>
-        <p>O COMPRENDER LA OBRA DEL CALVARIO,</p>
-        <p>O COMO POR SU GRACIA ME SALVO.</p>
-      </div>
+      {hymnLines.map((line, i) =>
+        line.isTitle ? (
+          <p
+            key={i}
+            className="text-amber-700 text-center font-bold"
+            style={{ fontSize: `${markerPx}px`, marginTop: `${mbVersePx}px`, marginBottom: `${mbVersePx}px` }}
+          >
+            {line.text}
+          </p>
+        ) : (
+          <p
+            key={i}
+            className="text-slate-600 text-center w-full"
+            style={{ fontSize: `${bodyPx}px`, lineHeight: 1.35 }}
+          >
+            {line.text}
+          </p>
+        ),
+      )}
     </div>
   );
 
@@ -161,7 +184,6 @@ function CopiesPreview({
     );
   }
 
-  // 4 copies: 2x2 grid
   return (
     <div className="border border-slate-300 rounded mx-auto overflow-hidden shadow-sm flex flex-col" style={pageStyle}>
       <div className="flex flex-1 overflow-hidden border-b border-dashed border-slate-400">
@@ -183,6 +205,23 @@ interface StepConfiguracionProps {
 
 export default function StepConfiguracion({ state, dispatch }: StepConfiguracionProps) {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [hymnLines, setHymnLines] = useState<PreviewLine[]>([]);
+
+  // Fetch letra del himno cuando hay exactamente 1 seleccionado
+  const singleHymnId = state.selectedHymns.length === 1 ? state.selectedHymns[0].id : null;
+  useEffect(() => {
+    if (!singleHymnId) { setHymnLines([]); return; }
+    let cancelled = false;
+    fetch(`/api/hymns/${singleHymnId}`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (cancelled || !json.ok) return;
+        const lines = parseHymnHtmlClient(json.data.letter_hymn || '');
+        setHymnLines(lines);
+      })
+      .catch(() => {/* silenciar error */});
+    return () => { cancelled = true; };
+  }, [singleHymnId]);
   // Calcular si todas las pistas disponibles estan seleccionadas
   const hymnsWithAudio = state.selectedHymns.filter((h) => h.hasAnyAudio);
   const allSelected =
@@ -492,6 +531,7 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
                     hymnName={state.selectedHymns[0]?.name ?? 'Himno'}
                     hymnNumber={state.selectedHymns[0]?.hymn_number ?? null}
                     orientation={state.orientation}
+                    hymnLines={hymnLines}
                   />
                   {state.copiesPerPage > 1 && (
                     <p className="text-xs text-slate-400 text-center mt-2">
