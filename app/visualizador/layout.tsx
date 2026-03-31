@@ -12,6 +12,6 @@ export default function VisualizadorLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="dark bg-background text-foreground">{children}</div>
+    <div>{children}</div>
   );
 }

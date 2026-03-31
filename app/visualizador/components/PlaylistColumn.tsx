@@ -101,7 +101,7 @@ export function PlaylistColumn({
 
       {/* Dialog con HymnExplorer */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-4xl h-[80vh] flex flex-col p-0 gap-0">
+        <DialogContent className="max-w-[95vw] w-full h-[92vh] flex flex-col p-0 gap-0">
           <DialogTitle className="px-6 pt-5 pb-0 text-lg font-semibold">
             Explorar Himnario
           </DialogTitle>
