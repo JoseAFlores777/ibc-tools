@@ -1,7 +1,8 @@
 ---
 phase: 6
 slug: visualizador-de-himnos-con-panel-tipo-propresenter
-status: draft
+status: approved
+reviewed_at: 2026-03-31
 shadcn_initialized: true
 preset: default (slate base, CSS variables)
 created: 2026-03-31
