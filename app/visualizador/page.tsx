@@ -149,21 +149,18 @@ export default function VisualizadorPage() {
     }
   }, [state.projectionOpen, dispatch]);
 
-  // Toggle de modos de proyeccion: si ya esta activo, volver a 'slide'
+  // Modos de proyeccion: mutuamente excluyentes, seleccionar diapositiva vuelve a 'slide'
   const handleBlack = useCallback(() => {
-    const newMode = state.projectionMode === 'black' ? 'slide' : 'black';
-    dispatch({ type: 'SET_PROJECTION_MODE', mode: newMode });
-  }, [state.projectionMode, dispatch]);
+    dispatch({ type: 'SET_PROJECTION_MODE', mode: 'black' });
+  }, [dispatch]);
 
   const handleClear = useCallback(() => {
-    const newMode = state.projectionMode === 'clear' ? 'slide' : 'clear';
-    dispatch({ type: 'SET_PROJECTION_MODE', mode: newMode });
-  }, [state.projectionMode, dispatch]);
+    dispatch({ type: 'SET_PROJECTION_MODE', mode: 'clear' });
+  }, [dispatch]);
 
   const handleLogo = useCallback(() => {
-    const newMode = state.projectionMode === 'logo' ? 'slide' : 'logo';
-    dispatch({ type: 'SET_PROJECTION_MODE', mode: newMode });
-  }, [state.projectionMode, dispatch]);
+    dispatch({ type: 'SET_PROJECTION_MODE', mode: 'logo' });
+  }, [dispatch]);
 
   const handleFontSizeUp = useCallback(() => {
     dispatch({ type: 'FONT_SIZE_UP' });

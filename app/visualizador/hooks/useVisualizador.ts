@@ -126,7 +126,7 @@ export function visualizadorReducer(
     }
 
     case 'SET_ACTIVE_SLIDE':
-      return { ...state, activeSlideIndex: action.index };
+      return { ...state, activeSlideIndex: action.index, projectionMode: 'slide' };
 
     case 'NEXT_SLIDE': {
       if (state.activeHymnIndex < 0) return state;
@@ -134,7 +134,7 @@ export function visualizadorReducer(
       if (!currentHymn) return state;
 
       if (state.activeSlideIndex < currentHymn.slides.length - 1) {
-        return { ...state, activeSlideIndex: state.activeSlideIndex + 1 };
+        return { ...state, activeSlideIndex: state.activeSlideIndex + 1, projectionMode: 'slide' };
       }
       // Auto-advance al siguiente himno en la playlist (D-07)
       if (state.activeHymnIndex < state.playlist.length - 1) {
@@ -142,6 +142,7 @@ export function visualizadorReducer(
           ...state,
           activeHymnIndex: state.activeHymnIndex + 1,
           activeSlideIndex: 0,
+          projectionMode: 'slide',
         };
       }
       return state;
@@ -151,7 +152,7 @@ export function visualizadorReducer(
       if (state.activeHymnIndex < 0) return state;
 
       if (state.activeSlideIndex > 0) {
-        return { ...state, activeSlideIndex: state.activeSlideIndex - 1 };
+        return { ...state, activeSlideIndex: state.activeSlideIndex - 1, projectionMode: 'slide' };
       }
       // Ir al ultimo slide del himno anterior
       if (state.activeHymnIndex > 0) {
@@ -160,6 +161,7 @@ export function visualizadorReducer(
           ...state,
           activeHymnIndex: state.activeHymnIndex - 1,
           activeSlideIndex: prevHymn.slides.length - 1,
+          projectionMode: 'slide',
         };
       }
       return state;
