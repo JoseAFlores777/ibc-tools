@@ -14,6 +14,8 @@ import type { WizardState, WizardAction } from '@/app/empaquetador/hooks/useWiza
 import { AUDIO_FIELD_NAMES } from '@/app/empaquetador/hooks/useWizardReducer';
 import type { HymnAudioFiles } from '@/app/interfaces/Hymn.interface';
 import AudioTrackRow from './AudioTrackRow';
+import { cn } from '@/app/lib/shadcn/utils';
+import { Copy } from 'lucide-react';
 
 /** Mapa de campo de audio a etiqueta en espanol (per UI-SPEC Section 9) */
 const AUDIO_LABELS: Record<string, string> = {
@@ -24,6 +26,72 @@ const AUDIO_LABELS: Record<string, string> = {
   tenor_voice: 'Tenor',
   bass_voice: 'Bajo',
 };
+
+/** Preview HTML del layout de copias en miniatura */
+function CopiesPreview({
+  copies,
+  fontSize,
+  hymnName,
+}: {
+  copies: 2 | 4;
+  fontSize: number;
+  hymnName: string;
+}) {
+  // Escala relativa: fontSize 9 = base, rango 6-14
+  const scale = fontSize / 9;
+  const titleSize = Math.round(10 * scale);
+  const bodySize = Math.round(7 * scale);
+
+  const cellContent = (
+    <div className="flex flex-col items-center justify-start p-2 overflow-hidden h-full">
+      <p
+        className="font-semibold text-slate-700 text-center leading-tight truncate w-full"
+        style={{ fontSize: `${titleSize}px` }}
+      >
+        {hymnName}
+      </p>
+      <p
+        className="text-slate-400 text-center mt-1 leading-tight"
+        style={{ fontSize: `${bodySize}px` }}
+      >
+        Verso 1...
+      </p>
+    </div>
+  );
+
+  if (copies === 2) {
+    return (
+      <div
+        className="bg-white border border-slate-200 rounded mx-auto overflow-hidden"
+        style={{ aspectRatio: '8.5 / 11', maxWidth: 180 }}
+      >
+        <div className="flex h-full">
+          <div className="flex-1 border-r border-dashed border-slate-300">{cellContent}</div>
+          <div className="flex-1">{cellContent}</div>
+        </div>
+      </div>
+    );
+  }
+
+  // 4 copies: 2x2 grid
+  return (
+    <div
+      className="bg-white border border-slate-200 rounded mx-auto overflow-hidden"
+      style={{ aspectRatio: '8.5 / 11', maxWidth: 180 }}
+    >
+      <div className="flex flex-col h-full">
+        <div className="flex flex-1 border-b border-dashed border-slate-300">
+          <div className="flex-1 border-r border-dashed border-slate-300">{cellContent}</div>
+          <div className="flex-1">{cellContent}</div>
+        </div>
+        <div className="flex flex-1">
+          <div className="flex-1 border-r border-dashed border-slate-300">{cellContent}</div>
+          <div className="flex-1">{cellContent}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface StepConfiguracionProps {
   state: WizardState;
@@ -52,31 +120,98 @@ export default function StepConfiguracion({ state, dispatch }: StepConfiguracion
       <Card className="p-4">
         <h3 className="text-base font-semibold mb-3">Impresion</h3>
 
-        <div className="space-y-3">
-          <Label className="text-sm text-muted-foreground">Disposicion</Label>
-          <RadioGroup
-            value={state.layout}
-            onValueChange={(v) =>
-              dispatch({ type: 'SET_LAYOUT', layout: v as 'one-per-page' | 'two-per-page' })
-            }
-            className="flex flex-col gap-2"
-          >
-            <div className="flex items-center gap-2">
-              <RadioGroupItem value="one-per-page" id="layout-one" />
-              <Label htmlFor="layout-one" className="cursor-pointer">
-                1 himno por pagina
-              </Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <RadioGroupItem value="two-per-page" id="layout-two" />
-              <Label htmlFor="layout-two" className="cursor-pointer">
-                2 himnos por pagina
-              </Label>
-            </div>
-          </RadioGroup>
-        </div>
+        {/* Disposicion: oculta cuando copiesPerPage > 1 */}
+        {state.copiesPerPage <= 1 && (
+          <div className="space-y-3">
+            <Label className="text-sm text-muted-foreground">Disposicion</Label>
+            <RadioGroup
+              value={state.layout}
+              onValueChange={(v) =>
+                dispatch({ type: 'SET_LAYOUT', layout: v as 'one-per-page' | 'two-per-page' })
+              }
+              className="flex flex-col gap-2"
+            >
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="one-per-page" id="layout-one" />
+                <Label htmlFor="layout-one" className="cursor-pointer">
+                  1 himno por pagina
+                </Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="two-per-page" id="layout-two" />
+                <Label htmlFor="layout-two" className="cursor-pointer">
+                  2 himnos por pagina
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+        )}
 
-        <Separator className="my-4" />
+        {state.copiesPerPage <= 1 && <Separator className="my-4" />}
+
+        {/* Copias por pagina: visible solo con 1 himno seleccionado */}
+        {state.selectedHymns.length === 1 && (
+          <>
+            <div className="space-y-3">
+              <Label className="text-sm text-muted-foreground flex items-center gap-1.5">
+                <Copy className="h-4 w-4" />
+                Copias por Pagina
+              </Label>
+              <div className="flex gap-2">
+                {([1, 2, 4] as const).map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => dispatch({ type: 'SET_COPIES_PER_PAGE', copiesPerPage: n })}
+                    className={cn(
+                      'flex-1 py-2 rounded-lg border-2 text-sm font-medium transition-all',
+                      state.copiesPerPage === n
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-muted hover:border-muted-foreground/30 text-muted-foreground',
+                    )}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tamano de fuente: solo visible cuando copies > 1 */}
+              {state.copiesPerPage > 1 && (
+                <div className="space-y-2 mt-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-muted-foreground">Tamano de fuente</Label>
+                    <span className="text-xs font-mono text-muted-foreground">{state.copiesFontSize}pt</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={6}
+                    max={14}
+                    step={1}
+                    value={state.copiesFontSize}
+                    onChange={(e) =>
+                      dispatch({ type: 'SET_COPIES_FONT_SIZE', copiesFontSize: Number(e.target.value) })
+                    }
+                    className="w-full accent-primary"
+                  />
+                </div>
+              )}
+
+              {/* Preview del layout de copias */}
+              {state.copiesPerPage > 1 && (
+                <div className="mt-3">
+                  <Label className="text-xs text-muted-foreground mb-2 block">Vista previa</Label>
+                  <CopiesPreview
+                    copies={state.copiesPerPage as 2 | 4}
+                    fontSize={state.copiesFontSize}
+                    hymnName={state.selectedHymns[0]?.name ?? 'Himno'}
+                  />
+                </div>
+              )}
+            </div>
+
+            <Separator className="my-4" />
+          </>
+        )}
 
         <div className="space-y-3">
           <Label className="text-sm text-muted-foreground">Estilo</Label>
