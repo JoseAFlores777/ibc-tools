@@ -1,9 +1,19 @@
 import { Font } from '@react-pdf/renderer';
-import path from 'path';
 
-const fontsDir = path.join(process.cwd(), 'public', 'fonts');
+const isServer = typeof window === 'undefined';
 
-Font.register({
-  family: 'Adamina',
-  src: path.join(fontsDir, 'adamina', 'Adamina.ttf'),
-});
+if (isServer) {
+  // Server-side: usar ruta del filesystem
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require('path');
+  Font.register({
+    family: 'Adamina',
+    src: path.join(process.cwd(), 'public', 'fonts', 'adamina', 'Adamina.ttf'),
+  });
+} else {
+  // Client-side: usar URL pública
+  Font.register({
+    family: 'Adamina',
+    src: '/fonts/adamina/Adamina.ttf',
+  });
+}
