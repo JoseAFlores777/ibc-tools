@@ -58,7 +58,7 @@ export type WizardAction =
   | { type: 'SET_COPIES_PER_PAGE'; copiesPerPage: 1 | 2 | 4 }
   | { type: 'SET_COPIES_FONT_SIZE'; copiesFontSize: number }
   | { type: 'RESET' }
-  | { type: 'LOAD_PACKAGE'; hymns: HymnSearchResult[]; layout: WizardState['layout']; style: WizardState['style']; audioSelections: Map<string, Set<string>>; printMode?: WizardState['printMode']; orientation?: WizardState['orientation']; fontPreset?: WizardState['fontPreset']; includeBibleRef?: boolean; bookletTitle?: string; bookletSubtitle?: string; bookletDate?: string; bookletBibleRef?: string; copiesPerPage?: WizardState['copiesPerPage']; copiesFontSize?: number };
+  | { type: 'LOAD_PACKAGE'; hymns: HymnSearchResult[]; layout: WizardState['layout']; style: WizardState['style']; audioSelections: Map<string, Set<string>>; printMode?: WizardState['printMode']; orientation?: WizardState['orientation']; fontPreset?: WizardState['fontPreset']; includeBibleRef?: boolean; bookletTitle?: string; bookletSubtitle?: string; bookletDate?: string; bookletBibleRef?: string; copiesPerPage?: 1 | 2 | 4; copiesFontSize?: number };
 
 /** Estado inicial del wizard */
 export const initialWizardState: WizardState = {

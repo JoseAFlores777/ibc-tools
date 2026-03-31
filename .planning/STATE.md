@@ -107,10 +107,12 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260329-ve4 | UX/UI audit: rewrite navbar, create herramientas page, fix empaquetador issues | 2026-03-30 | b10de94 | [260329-ve4-ux-ui-audit-rewrite-navbar-create-herram](./quick/260329-ve4-ux-ui-audit-rewrite-navbar-create-herram/) |
+| 260330 | Decorated PDF: 10 visual improvements (badge, ornaments, spacing, contrast) | 2026-03-30 | ab03a71 | [260330-decorated-pdf-visual-improvements](./quick/260330-decorated-pdf-visual-improvements/) |
+| 260330-pjx | Copias por página con preview para empaquetador de himnos | 2026-03-31 | aad5f31 | [260330-pjx-copias-por-pagina-con-preview-para-empaq](./quick/260330-pjx-copias-por-pagina-con-preview-para-empaq/) |
 
 ## Session Continuity
 
-Last activity: 2026-03-30
+Last activity: 2026-03-31
 Last session: 2026-03-30T21:29:56.229Z
 Stopped at: Completed 05-02-PLAN.md
 Resume file: None
