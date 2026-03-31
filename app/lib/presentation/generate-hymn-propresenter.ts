@@ -3,8 +3,17 @@ import type { HymnForPdf, ParsedVerse } from '@/app/interfaces/Hymn.interface';
 
 /**
  * Genera archivos ProPresenter 6 (.pro6) para cada himno.
- * Cada himno produce un archivo .pro6 independiente con slideGroups
- * para cada estrofa, intercalando el coro después de cada una.
+ *
+ * Estructura de slideGroups:
+ *   - Introducción: título del himno, cita bíblica y referencia
+ *   - ESTROFA I: letras de la primera estrofa
+ *   - CORO: letras del coro
+ *   - ESTROFA II: letras de la segunda estrofa
+ *   - CORO: (repetido)
+ *   - ESTROFA III → CORO → etc.
+ *
+ * Los labels usan "ESTROFA" en vez de números romanos solos
+ * para mayor claridad en el navegador de ProPresenter.
  */
 
 interface ParsedHymn {
@@ -12,30 +21,41 @@ interface ParsedHymn {
   verses: ParsedVerse[];
 }
 
-interface SlideContent {
-  marker: string;
-  lines: string[];
+/** Mapa de números romanos a número ordinal */
+const ROMAN_TO_NUM: Record<string, number> = {
+  'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5,
+  'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9, 'X': 10,
+};
+
+interface SlideGroup {
+  label: string;
+  text: string;
 }
 
 /**
- * Separa los versos en secciones e intercala el coro después de cada estrofa.
+ * Construye los slideGroups con Introducción + estrofas/coro intercalados.
  */
-function buildSlides(verses: ParsedVerse[]): SlideContent[] {
-  const sections: SlideContent[] = [];
+function buildSlideGroups(
+  hymn: HymnForPdf,
+  verses: ParsedVerse[],
+): SlideGroup[] {
+  // Separar estrofas y coro
+  const stanzas: Array<{ marker: string; label: string; lines: string[] }> = [];
   let chorusLines: string[] | null = null;
-  let chorusMarker = 'CORO';
   let currentMarker = '';
   let currentLines: string[] = [];
   let isCollectingChorus = false;
 
   for (const verse of verses) {
     if (verse.type === 'title') {
+      // Guardar sección previa
       if (currentLines.length > 0) {
         if (isCollectingChorus) {
           chorusLines = currentLines;
-          chorusMarker = currentMarker;
         } else {
-          sections.push({ marker: currentMarker, lines: currentLines });
+          const num = ROMAN_TO_NUM[currentMarker.trim().toUpperCase()];
+          const label = num ? `ESTROFA ${currentMarker.trim()}` : currentMarker.trim();
+          stanzas.push({ marker: currentMarker, label, lines: currentLines });
         }
       }
       currentMarker = verse.lines.map((l) => l.text).join(' ');
@@ -47,24 +67,44 @@ function buildSlides(verses: ParsedVerse[]): SlideContent[] {
     }
   }
 
+  // Guardar última sección
   if (currentLines.length > 0) {
     if (isCollectingChorus) {
       chorusLines = currentLines;
-      chorusMarker = currentMarker;
     } else {
-      sections.push({ marker: currentMarker, lines: currentLines });
+      const num = ROMAN_TO_NUM[currentMarker.trim().toUpperCase()];
+      const label = num ? `ESTROFA ${currentMarker.trim()}` : currentMarker.trim();
+      stanzas.push({ marker: currentMarker, label, lines: currentLines });
     }
   }
 
-  const slides: SlideContent[] = [];
-  for (const section of sections) {
-    slides.push(section);
+  const groups: SlideGroup[] = [];
+
+  // 1. Introducción: título del himno con cita bíblica
+  const introLines: string[] = ['HIMNO', `"${hymn.name.toUpperCase()}"`];
+  if (hymn.bible_text) introLines.push('', `"${hymn.bible_text}"`);
+  if (hymn.bible_reference) introLines.push(hymn.bible_reference);
+  groups.push({
+    label: 'Introducción',
+    text: introLines.join('\n'),
+  });
+
+  // 2. Intercalar estrofas y coro
+  for (const stanza of stanzas) {
+    groups.push({
+      label: stanza.label,
+      text: `${stanza.marker}\n${stanza.lines.join('\n')}`,
+    });
+
     if (chorusLines) {
-      slides.push({ marker: chorusMarker, lines: chorusLines });
+      groups.push({
+        label: 'CORO',
+        text: `CORO\n${chorusLines.join('\n')}`,
+      });
     }
   }
 
-  return slides;
+  return groups;
 }
 
 /** Caracteres no permitidos en nombres de archivos */
@@ -83,16 +123,16 @@ export function generateHymnProPresenter(hymns: ParsedHymn[]): ProPresenterFile[
   const files: ProPresenterFile[] = [];
 
   for (const ph of hymns) {
-    const slides = buildSlides(ph.verses);
+    const groups = buildSlideGroups(ph.hymn, ph.verses);
     const title = ph.hymn.hymn_number != null
       ? `${ph.hymn.hymn_number} - ${ph.hymn.name}`
       : ph.hymn.name;
 
-    const slideGroups = slides.map((slide) => ({
-      label: slide.marker,
+    const slideGroups = groups.map((g) => ({
+      label: g.label,
       slides: [{
-        label: slide.marker,
-        text: slide.lines.join('\n'),
+        label: g.label,
+        text: g.text,
       }],
     }));
 
