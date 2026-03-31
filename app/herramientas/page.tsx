@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/app/sections/Navbar';
 import { Button, Card, CardHeader, CardTitle, CardDescription } from '@/lib/shadcn/ui';
-import { Package } from 'lucide-react';
+import { Package, Monitor } from 'lucide-react';
 
 const tools = [
   {
@@ -10,6 +10,12 @@ const tools = [
     description: 'Selecciona himnos, configura letras y audio, y descarga un ZIP listo para usar.',
     href: '/empaquetador',
     icon: Package,
+  },
+  {
+    title: 'Visualizador de Himnos',
+    description: 'Proyectar letras de himnos en pantalla completa con pistas de audio.',
+    href: '/visualizador',
+    icon: Monitor,
   },
 ];
 

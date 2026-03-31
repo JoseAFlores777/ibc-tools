@@ -2,12 +2,14 @@
 
 import { useCallback, useRef, useState, useEffect } from 'react';
 import type { HymnSearchResult } from '@/app/interfaces/Hymn.interface';
-import type { HymnForPdf } from '@/app/interfaces/Hymn.interface';
+import type { HymnForPdf, HymnAudioFiles } from '@/app/interfaces/Hymn.interface';
 import { useVisualizador } from './hooks/useVisualizador';
 import { useBroadcastChannel } from './hooks/useBroadcastChannel';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { PlaylistColumn } from './components/PlaylistColumn';
 import { SlideGridColumn } from './components/SlideGridColumn';
 import LivePreviewColumn from './components/LivePreviewColumn';
+import AudioBar from './components/AudioBar';
 import type { ProjectionMessage } from './lib/projection-channel';
 
 /**
@@ -215,6 +217,38 @@ export default function VisualizadorPage() {
     [dispatch],
   );
 
+  // Audio: derivar datos del himno activo
+  const currentHymnAudio: HymnAudioFiles | null =
+    activeHymn?.hymnData.audioFiles ?? null;
+  const currentHymnId: string | null = activeHymn?.id ?? null;
+
+  const handleTrackChange = useCallback(
+    (trackField: string) => {
+      if (!currentHymnId) return;
+      dispatch({ type: 'SET_AUDIO_TRACK', hymnId: currentHymnId, trackField });
+    },
+    [currentHymnId, dispatch],
+  );
+
+  const handlePlayingChange = useCallback(
+    (playing: boolean) => {
+      dispatch({ type: 'SET_AUDIO_PLAYING', playing });
+    },
+    [dispatch],
+  );
+
+  // Toggle play/pause para atajos de teclado
+  const togglePlayPause = useCallback(() => {
+    dispatch({ type: 'SET_AUDIO_PLAYING', playing: !state.audio.playing });
+  }, [state.audio.playing, dispatch]);
+
+  // Registrar atajos de teclado globales
+  useKeyboardShortcuts({
+    dispatch,
+    togglePlayPause,
+    projectionOpen: state.projectionOpen,
+  });
+
   // Guardia de viewport minimo
   if (isSmallScreen) {
     return (
@@ -275,10 +309,15 @@ export default function VisualizadorPage() {
         </div>
       </div>
 
-      {/* Barra inferior: Controles de audio (Plan 04) */}
-      <div className="h-[72px] flex-shrink-0 border-t border-border flex items-center justify-center text-muted-foreground text-sm">
-        Barra de audio
-      </div>
+      {/* Barra inferior: Controles de audio */}
+      <AudioBar
+        hymnAudio={currentHymnAudio}
+        hymnId={currentHymnId}
+        activeTrackField={state.audio.trackField}
+        playing={state.audio.playing}
+        onTrackChange={handleTrackChange}
+        onPlayingChange={handlePlayingChange}
+      />
     </div>
   );
 }
