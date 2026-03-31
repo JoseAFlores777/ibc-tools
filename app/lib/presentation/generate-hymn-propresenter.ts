@@ -107,6 +107,21 @@ function buildSlideGroups(
   return groups;
 }
 
+/**
+ * Corrige la codificación de bloques RTF base64 en el XML de ProPresenter.
+ * La librería genera RTF con ansicpg1252 pero codifica los bytes como UTF-8.
+ * ProPresenter interpreta los bytes como Windows-1252, causando mojibake en
+ * caracteres acentuados. Este fix re-codifica los bloques RTF de UTF-8 a Latin-1.
+ */
+function fixRtfEncoding(xml: string): string {
+  return xml.replace(/>([A-Za-z0-9+/=]{20,})</g, (match, b64) => {
+    const utf8 = Buffer.from(b64, 'base64').toString('utf8');
+    if (!utf8.includes('rtf1')) return match;
+    const latin1B64 = Buffer.from(utf8, 'latin1').toString('base64');
+    return '>' + latin1B64 + '<';
+  });
+}
+
 /** Caracteres no permitidos en nombres de archivos */
 const UNSAFE_CHARS = /[/\\:*?"<>|]/g;
 
@@ -153,7 +168,7 @@ export function generateHymnProPresenter(hymns: ParsedHymn[]): ProPresenterFile[
     const safeName = title.replace(UNSAFE_CHARS, '_');
     files.push({
       fileName: `${safeName}.pro6`,
-      content: xml,
+      content: fixRtfEncoding(xml),
     });
   }
 
