@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import SlideRenderer, { VIRTUAL_W, VIRTUAL_H } from './SlideRenderer';
 import { useAutoFontSize } from '../hooks/useAutoFontSize';
+import { getFontFamily } from '../lib/theme-presets';
 import type { SlideData, ThemeConfig } from '../lib/types';
 import { cn } from '@/app/lib/shadcn/utils';
 
@@ -46,7 +47,7 @@ export function SlideThumbnail({
     text: slide.text,
     containerWidth: VIRTUAL_W,
     containerHeight: VIRTUAL_H,
-    fontFamily: 'system-ui, sans-serif',
+    fontFamily: getFontFamily(theme.fontPreset),
     sizeOffset: theme.fontSizeOffset,
   });
 

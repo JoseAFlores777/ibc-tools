@@ -22,6 +22,9 @@ export interface PlaylistHymn {
   slides: SlideData[];
 }
 
+/** Font family preset for projection text */
+export type FontPresetKey = 'sans' | 'serif' | 'condensed' | 'rounded';
+
 /** Theme configuration for projection display */
 export interface ThemeConfig {
   /** CSS background value (hex, gradient, or image URL) */
@@ -30,6 +33,8 @@ export interface ThemeConfig {
   backgroundType: 'solid' | 'gradient' | 'image';
   /** Font size offset from auto-calculated base (px) */
   fontSizeOffset: number;
+  /** Selected font family preset */
+  fontPreset: FontPresetKey;
 }
 
 /** Current projection display mode */
@@ -71,4 +76,5 @@ export type VisualizadorAction =
   | { type: 'SET_AUDIO_TRACK'; hymnId: string; trackField: string }
   | { type: 'SET_AUDIO_PLAYING'; playing: boolean }
   | { type: 'FONT_SIZE_UP' }
-  | { type: 'FONT_SIZE_DOWN' };
+  | { type: 'FONT_SIZE_DOWN' }
+  | { type: 'SET_FONT_PRESET'; preset: FontPresetKey };

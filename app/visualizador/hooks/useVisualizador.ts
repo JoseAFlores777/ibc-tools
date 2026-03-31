@@ -213,6 +213,12 @@ export function visualizadorReducer(
         },
       };
 
+    case 'SET_FONT_PRESET':
+      return {
+        ...state,
+        theme: { ...state.theme, fontPreset: action.preset },
+      };
+
     default:
       return state;
   }

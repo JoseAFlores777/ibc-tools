@@ -12,7 +12,8 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import SlideRenderer, { VIRTUAL_W, VIRTUAL_H } from './SlideRenderer';
 import ProjectionControls from './ProjectionControls';
 import { useAutoFontSize } from '../hooks/useAutoFontSize';
-import type { SlideData, ThemeConfig, ProjectionMode } from '../lib/types';
+import { getFontFamily } from '../lib/theme-presets';
+import type { SlideData, ThemeConfig, ProjectionMode, FontPresetKey } from '../lib/types';
 
 interface LivePreviewColumnProps {
   currentSlide: SlideData | null;
@@ -25,6 +26,7 @@ interface LivePreviewColumnProps {
   onLogo: () => void;
   onFontSizeUp: () => void;
   onFontSizeDown: () => void;
+  onFontPresetChange: (preset: FontPresetKey) => void;
 }
 
 export default function LivePreviewColumn({
@@ -38,6 +40,7 @@ export default function LivePreviewColumn({
   onLogo,
   onFontSizeUp,
   onFontSizeDown,
+  onFontPresetChange,
 }: LivePreviewColumnProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -66,7 +69,7 @@ export default function LivePreviewColumn({
     text: currentSlide?.text ?? '',
     containerWidth: VIRTUAL_W,
     containerHeight: VIRTUAL_H,
-    fontFamily: 'system-ui, sans-serif',
+    fontFamily: getFontFamily(theme.fontPreset),
     sizeOffset: theme.fontSizeOffset,
   });
 
@@ -99,7 +102,7 @@ export default function LivePreviewColumn({
                   className="text-white/60 text-center px-4"
                   style={{
                     fontSize: '10px',
-                    fontFamily: 'system-ui, sans-serif',
+                    fontFamily: getFontFamily(theme.fontPreset),
                   }}
                 >
                   Iglesia Bautista El Calvario
@@ -149,12 +152,14 @@ export default function LivePreviewColumn({
         <ProjectionControls
           projectionOpen={projectionOpen}
           projectionMode={projectionMode}
+          fontPreset={theme.fontPreset}
           onProjectToggle={onProjectToggle}
           onBlack={onBlack}
           onClear={onClear}
           onLogo={onLogo}
           onFontSizeUp={onFontSizeUp}
           onFontSizeDown={onFontSizeDown}
+          onFontPresetChange={onFontPresetChange}
         />
       </div>
     </div>

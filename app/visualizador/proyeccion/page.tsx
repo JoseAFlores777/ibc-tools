@@ -12,6 +12,7 @@ import SlideRenderer, { VIRTUAL_W, VIRTUAL_H } from '../components/SlideRenderer
 import { CHANNEL_NAME } from '../lib/projection-channel';
 import { DEFAULT_THEME } from '../lib/theme-presets';
 import { useAutoFontSize } from '../hooks/useAutoFontSize';
+import { getFontFamily } from '../lib/theme-presets';
 import type { ProjectionMessage } from '../lib/projection-channel';
 import type { SlideData, ThemeConfig, ProjectionMode } from '../lib/types';
 
@@ -41,7 +42,7 @@ export default function ProyeccionPage() {
     text: currentSlide?.text ?? '',
     containerWidth: VIRTUAL_W,
     containerHeight: VIRTUAL_H,
-    fontFamily: 'system-ui, sans-serif',
+    fontFamily: getFontFamily(theme.fontPreset),
     sizeOffset: fontSizeOffset,
   });
 

@@ -2,11 +2,16 @@
 
 /**
  * Auto font sizing hook using binary search + canvas measurement.
- * Calculates optimal font size for variable-length text content
- * to fit within projection container dimensions.
+ * Calculates the largest font size that guarantees ALL text fits
+ * within the virtual 1920x1080 projection container with no overflow.
  */
 
 import { useMemo, useRef } from 'react';
+
+/** Height reserved for the verse label (24px font + margin) */
+const LABEL_HEIGHT = 40;
+/** Padding on all sides (matches SlideRenderer) */
+const PADDING = 80;
 
 interface UseAutoFontSizeOptions {
   /** Text content to measure */
@@ -22,8 +27,11 @@ interface UseAutoFontSizeOptions {
 }
 
 /**
- * Binary search for the largest font size that fits all text lines
- * within the container, respecting padding.
+ * Binary search for the largest font size where all text lines
+ * fit within the available area, accounting for:
+ *   - 80px padding on all sides
+ *   - Verse label height (40px)
+ *   - Word wrapping: lines longer than maxWidth wrap to additional visual lines
  */
 export function useAutoFontSize({
   text,
@@ -37,7 +45,6 @@ export function useAutoFontSize({
   return useMemo(() => {
     if (!text || containerWidth <= 0 || containerHeight <= 0) return 16;
 
-    // Crear canvas una sola vez y reutilizar
     if (!canvasRef.current) {
       canvasRef.current = document.createElement('canvas');
     }
@@ -45,41 +52,75 @@ export function useAutoFontSize({
     if (!ctx) return 16;
 
     const lines = text.split('\n');
-    // Padding: 80px cada lado
-    const maxWidth = containerWidth - 160;
-    const maxHeight = containerHeight - 160;
+    const maxWidth = containerWidth - PADDING * 2;
+    // Reserve space for label at top + padding
+    const maxHeight = containerHeight - PADDING * 2 - LABEL_HEIGHT;
 
     if (maxWidth <= 0 || maxHeight <= 0) return 16;
 
-    let lo = 16;
+    let lo = 12;
     let hi = 120;
 
-    // Busqueda binaria: encontrar el tamano mas grande que quepa
     while (lo < hi) {
       const mid = Math.ceil((lo + hi) / 2);
       ctx.font = `${mid}px ${fontFamily}`;
 
       const lineHeight = mid * 1.4;
-      const totalHeight = lines.length * lineHeight;
+      let totalVisualLines = 0;
 
-      // Verificar que ninguna linea exceda el ancho y que la altura total quepa
-      let fits = totalHeight <= maxHeight;
-      if (fits) {
-        for (const line of lines) {
-          if (ctx.measureText(line).width > maxWidth) {
-            fits = false;
-            break;
-          }
+      // Count visual lines including word wrapping
+      for (const line of lines) {
+        if (!line.trim()) {
+          totalVisualLines += 1; // Empty line still takes space
+          continue;
+        }
+        const measured = ctx.measureText(line).width;
+        if (measured <= maxWidth) {
+          totalVisualLines += 1;
+        } else {
+          // Estimate wrapped lines by measuring word by word
+          totalVisualLines += countWrappedLines(ctx, line, maxWidth);
         }
       }
 
-      if (fits) {
+      const totalHeight = totalVisualLines * lineHeight;
+
+      if (totalHeight <= maxHeight) {
         lo = mid;
       } else {
         hi = mid - 1;
       }
     }
 
-    return Math.max(16, lo + sizeOffset);
+    // Apply offset but never go below minimum or above what fits
+    const adjusted = lo + sizeOffset;
+    return Math.max(12, Math.min(adjusted, lo + 20));
   }, [text, containerWidth, containerHeight, fontFamily, sizeOffset]);
+}
+
+/**
+ * Count how many visual lines a single text line produces
+ * when word-wrapped within maxWidth.
+ */
+function countWrappedLines(
+  ctx: CanvasRenderingContext2D,
+  line: string,
+  maxWidth: number
+): number {
+  const words = line.split(/\s+/);
+  let currentLine = '';
+  let lineCount = 1;
+
+  for (const word of words) {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    if (ctx.measureText(testLine).width <= maxWidth) {
+      currentLine = testLine;
+    } else {
+      // If a single word is wider than maxWidth, it still takes one line
+      if (currentLine) lineCount++;
+      currentLine = word;
+    }
+  }
+
+  return lineCount;
 }

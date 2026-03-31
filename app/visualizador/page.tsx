@@ -170,6 +170,13 @@ export default function VisualizadorPage() {
     dispatch({ type: 'FONT_SIZE_DOWN' });
   }, [dispatch]);
 
+  const handleFontPresetChange = useCallback(
+    (preset: import('./lib/types').FontPresetKey) => {
+      dispatch({ type: 'SET_FONT_PRESET', preset });
+    },
+    [dispatch],
+  );
+
   // Agregar himno: buscar detalle completo, luego dispatch ADD_HYMN
   const handleAddHymn = useCallback(
     async (result: HymnSearchResult) => {
@@ -303,6 +310,7 @@ export default function VisualizadorPage() {
             onLogo={handleLogo}
             onFontSizeUp={handleFontSizeUp}
             onFontSizeDown={handleFontSizeDown}
+            onFontPresetChange={handleFontPresetChange}
           />
         </div>
       </div>

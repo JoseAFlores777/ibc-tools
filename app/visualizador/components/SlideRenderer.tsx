@@ -9,6 +9,7 @@
 
 import { useState } from 'react';
 import type { SlideData, ThemeConfig, ProjectionMode } from '../lib/types';
+import { getFontFamily } from '../lib/theme-presets';
 
 /** Dimensiones virtuales de referencia para la proyeccion */
 const VIRTUAL_W = 1920;
@@ -75,7 +76,7 @@ export default function SlideRenderer({
               style={{
                 color: '#ffffff',
                 fontSize: '48px',
-                fontFamily: 'system-ui, sans-serif',
+                fontFamily: getFontFamily(theme.fontPreset),
                 textAlign: 'center',
               }}
             >
@@ -102,7 +103,7 @@ export default function SlideRenderer({
             style={{
               fontSize: '24px',
               color: 'rgba(255,255,255,0.5)',
-              fontFamily: 'system-ui, sans-serif',
+              fontFamily: getFontFamily(theme.fontPreset),
             }}
           >
             {slide.verseLabel}
@@ -116,7 +117,7 @@ export default function SlideRenderer({
               fontSize: `${fontSize}px`,
               color: '#ffffff',
               lineHeight: 1.4,
-              fontFamily: 'system-ui, sans-serif',
+              fontFamily: getFontFamily(theme.fontPreset),
               textAlign: 'center',
               width: '100%',
             }}
