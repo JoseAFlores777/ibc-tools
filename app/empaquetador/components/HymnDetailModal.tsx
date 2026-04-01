@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import type { HymnSearchResult, AudioFileInfo } from '@/app/interfaces/Hymn.interface';
 import type { HymnForPdf } from '@/app/interfaces/Hymn.interface';
 import {
@@ -16,6 +17,8 @@ import {
   TabsTrigger,
   TabsContent,
 } from '@/lib/shadcn/ui';
+
+const ScoreViewer = dynamic(() => import('@/app/components/ScoreViewer'), { ssr: false });
 import { cn } from '@/app/lib/shadcn/utils';
 import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
@@ -657,11 +660,18 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
 
                 {/* Tab: Partitura */}
                 <TabsContent value="partitura">
-                  <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <ScrollText className="h-10 w-10 text-slate-200 mb-3" />
-                    <p className="text-sm font-medium text-slate-500 mb-1">Partitura</p>
-                    <p className="text-xs text-slate-400">Próximamente</p>
-                  </div>
+                  {hymn.hasMusicXml && hymn.musicxmlFileId ? (
+                    <ScoreViewer
+                      musicxmlFileId={hymn.musicxmlFileId}
+                      midiFileId={hymn.audioFiles.midi_file?.id}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                      <ScrollText className="h-10 w-10 text-slate-200 mb-3" />
+                      <p className="text-sm font-medium text-slate-500 mb-1">Partitura</p>
+                      <p className="text-xs text-slate-400">Próximamente</p>
+                    </div>
+                  )}
                 </TabsContent>
 
                 {/* Tab: Historia */}
