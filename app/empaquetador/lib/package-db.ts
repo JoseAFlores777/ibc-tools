@@ -1,9 +1,11 @@
 /**
  * IndexedDB service para persistir historial de paquetes de himnos.
- * Almacena configuración completa para poder re-generar o modificar paquetes anteriores.
+ * Almacena configuracion completa para poder re-generar o modificar paquetes anteriores.
+ * Usa la base de datos unificada ibc-tools via ibc-db.
  */
 
 import type { HymnSearchResult } from '@/app/interfaces/Hymn.interface';
+import { openIbcDB, txStore as ibcTxStore } from '@/app/lib/ibc-db';
 
 export interface SavedPackage {
   id: string;
@@ -25,37 +27,19 @@ export interface SavedPackage {
   audioCount: number;
 }
 
-const DB_NAME = 'ibc-empaquetador';
-const DB_VERSION = 1;
-const STORE_NAME = 'packages';
-
-function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-        store.createIndex('createdAt', 'createdAt', { unique: false });
-        store.createIndex('status', 'status', { unique: false });
-      }
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
+const STORE = 'empaquetador';
 
 function txStore(db: IDBDatabase, mode: IDBTransactionMode): IDBObjectStore {
-  return db.transaction(STORE_NAME, mode).objectStore(STORE_NAME);
+  return ibcTxStore(db, STORE, mode);
 }
 
 /** Genera un ID corto basado en timestamp */
-function generateId(): string {
+export function generateId(): string {
   return `pkg-${Date.now().toString(36)}`;
 }
 
 /** Genera un nombre descriptivo para el paquete */
-function generateName(hymns: SavedPackage['hymns']): string {
+export function generateName(hymns: SavedPackage['hymns']): string {
   if (hymns.length === 0) return 'Paquete vacío';
   if (hymns.length === 1) return hymns[0].name;
   if (hymns.length <= 3) return hymns.map((h) => h.hymn_number ?? h.name).join(', ');
@@ -88,7 +72,7 @@ export async function savePackage(
   audioSelections: Map<string, Set<string>>,
   status: SavedPackage['status'] = 'completed',
 ): Promise<SavedPackage> {
-  const db = await openDB();
+  const db = await openIbcDB();
   const now = new Date().toISOString();
 
   let audioCount = 0;
@@ -127,7 +111,7 @@ export async function savePackage(
 
 /** Actualiza un paquete existente */
 export async function updatePackage(pkg: SavedPackage): Promise<void> {
-  const db = await openDB();
+  const db = await openIbcDB();
   pkg.updatedAt = new Date().toISOString();
   return new Promise((resolve, reject) => {
     const request = txStore(db, 'readwrite').put(pkg);
@@ -136,14 +120,14 @@ export async function updatePackage(pkg: SavedPackage): Promise<void> {
   });
 }
 
-/** Obtiene todos los paquetes ordenados por fecha (más reciente primero) */
+/** Obtiene todos los paquetes ordenados por fecha (mas reciente primero) */
 export async function getAllPackages(): Promise<SavedPackage[]> {
-  const db = await openDB();
+  const db = await openIbcDB();
   return new Promise((resolve, reject) => {
     const request = txStore(db, 'readonly').index('createdAt').getAll();
     request.onsuccess = () => {
       const results = request.result as SavedPackage[];
-      results.reverse(); // Más reciente primero
+      results.reverse(); // Mas reciente primero
       resolve(results);
     };
     request.onerror = () => reject(request.error);
@@ -152,7 +136,7 @@ export async function getAllPackages(): Promise<SavedPackage[]> {
 
 /** Obtiene un paquete por ID */
 export async function getPackage(id: string): Promise<SavedPackage | null> {
-  const db = await openDB();
+  const db = await openIbcDB();
   return new Promise((resolve, reject) => {
     const request = txStore(db, 'readonly').get(id);
     request.onsuccess = () => resolve(request.result ?? null);
@@ -162,7 +146,7 @@ export async function getPackage(id: string): Promise<SavedPackage | null> {
 
 /** Elimina un paquete */
 export async function deletePackage(id: string): Promise<void> {
-  const db = await openDB();
+  const db = await openIbcDB();
   return new Promise((resolve, reject) => {
     const request = txStore(db, 'readwrite').delete(id);
     request.onsuccess = () => resolve();

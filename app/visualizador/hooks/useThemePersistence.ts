@@ -4,76 +4,38 @@
  * IndexedDB persistence for visualizador settings.
  * Saves/loads ThemeConfig and playlist (hymn IDs) so user
  * preferences and song list survive page reloads.
+ * Uses unified ibc-db service.
  */
 
 import { useEffect, useCallback, useRef } from 'react';
 import type { ThemeConfig, PlaylistHymn } from '../lib/types';
 import { DEFAULT_THEME } from '../lib/theme-presets';
+import { getKey, setKey } from '@/app/lib/ibc-db';
 
-const DB_NAME = 'ibc-visualizador';
-const DB_VERSION = 1;
-const STORE_NAME = 'settings';
+const STORE = 'visualizador';
 const THEME_KEY = 'theme';
 const PLAYLIST_KEY = 'playlist';
 
-function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
-      }
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function getKey<T>(key: string): Promise<T | null> {
-  try {
-    const db = await openDB();
-    return new Promise((resolve) => {
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const req = tx.objectStore(STORE_NAME).get(key);
-      req.onsuccess = () => resolve(req.result ?? null);
-      req.onerror = () => resolve(null);
-    });
-  } catch {
-    return null;
-  }
-}
-
-async function setKey(key: string, value: unknown): Promise<void> {
-  try {
-    const db = await openDB();
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    tx.objectStore(STORE_NAME).put(value, key);
-  } catch {
-    // Best-effort
-  }
-}
-
 /** Load saved theme from IndexedDB. Returns DEFAULT_THEME if none saved. */
 export async function loadTheme(): Promise<ThemeConfig> {
-  const saved = await getKey<Partial<ThemeConfig>>(THEME_KEY);
+  const saved = await getKey<Partial<ThemeConfig>>(STORE, THEME_KEY);
   return saved ? { ...DEFAULT_THEME, ...saved } : { ...DEFAULT_THEME };
 }
 
 /** Load saved playlist hymn IDs from IndexedDB. */
 export async function loadPlaylistIds(): Promise<string[]> {
-  const saved = await getKey<string[]>(PLAYLIST_KEY);
+  const saved = await getKey<string[]>(STORE, PLAYLIST_KEY);
   return Array.isArray(saved) ? saved : [];
 }
 
 /** Save playlist hymn IDs to IndexedDB. */
 async function savePlaylistIds(ids: string[]): Promise<void> {
-  await setKey(PLAYLIST_KEY, ids);
+  await setKey(STORE, PLAYLIST_KEY, ids);
 }
 
 /** Save theme to IndexedDB. */
 async function saveTheme(theme: ThemeConfig): Promise<void> {
-  await setKey(THEME_KEY, theme);
+  await setKey(STORE, THEME_KEY, theme);
 }
 
 /**
