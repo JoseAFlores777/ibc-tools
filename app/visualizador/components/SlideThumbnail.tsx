@@ -47,9 +47,11 @@ export function SlideThumbnail({
       ref={containerRef}
       onClick={onClick}
       className={cn(
-        'relative aspect-video w-full rounded-md overflow-hidden text-left transition-all cursor-pointer',
-        'hover:ring-1 hover:ring-primary/50',
-        isActive && 'ring-2 ring-[#eaba1c]',
+        'relative aspect-video w-full rounded-lg overflow-hidden text-left transition-all cursor-pointer',
+        'hover:ring-2 hover:ring-primary/40',
+        isActive
+          ? 'ring-[3px] ring-[#eaba1c] shadow-[0_0_12px_rgba(234,186,28,0.4)]'
+          : 'ring-1 ring-white/10',
       )}
       aria-label={`Diapositiva ${index + 1}: ${slide.verseLabel}`}
       aria-pressed={isActive}
@@ -67,8 +69,18 @@ export function SlideThumbnail({
         </div>
       )}
 
+      {/* Etiqueta de seccion */}
+      <span className={cn(
+        'absolute top-1.5 left-2 text-[10px] font-bold uppercase tracking-wide z-10 px-1.5 py-0.5 rounded',
+        isActive
+          ? 'bg-[#eaba1c] text-black'
+          : 'bg-black/50 text-white/80',
+      )}>
+        {slide.verseLabel}
+      </span>
+
       {/* Numero de diapositiva */}
-      <span className="absolute bottom-1 right-1.5 text-[9px] text-white/30 z-10">
+      <span className="absolute bottom-1 right-1.5 text-[9px] text-white/40 z-10 font-medium">
         {index + 1}
       </span>
     </button>
