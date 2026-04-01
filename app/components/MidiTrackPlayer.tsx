@@ -194,7 +194,7 @@ export default function MidiTrackPlayer({ field, fileInfo, label, colorClass, hy
       sources.push(src);
     });
     sourceNodesRef.current = sources;
-    playStartRef.current = c.currentTime;
+    playStartRef.current = performance.now() / 1000;
     playOffsetRef.current = offset;
 
     // Auto-stop al final natural
@@ -213,12 +213,15 @@ export default function MidiTrackPlayer({ field, fileInfo, label, colorClass, hy
   }, []);
 
   const tick = useCallback(() => {
-    const c = audioCtxRef.current;
-    if (!c || !durationRef.current) return;
-    const el = playOffsetRef.current + (c.currentTime - playStartRef.current);
+    if (!durationRef.current || !isPlayingRef.current) return;
+    const el = playOffsetRef.current + (performance.now() / 1000 - playStartRef.current);
+    if (el >= durationRef.current) {
+      // Let onended handler deal with cleanup
+      return;
+    }
     setProgress(Math.min((el / durationRef.current) * 100, 100));
     setCurrentTime(Math.min(el, durationRef.current));
-    if (el < durationRef.current) rafRef.current = requestAnimationFrame(tick);
+    rafRef.current = requestAnimationFrame(tick);
   }, []);
 
   const play = useCallback(async () => {
@@ -230,7 +233,7 @@ export default function MidiTrackPlayer({ field, fileInfo, label, colorClass, hy
     if (isPlayingRef.current) {
       // Pause
       cancelAnimationFrame(rafRef.current);
-      playOffsetRef.current += c.currentTime - playStartRef.current;
+      playOffsetRef.current += performance.now() / 1000 - playStartRef.current;
       killSources();
       isPlayingRef.current = false;
       setStatus('ready');
