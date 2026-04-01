@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { broadcastToDesktop } from '../../room-store';
+import { broadcastToDesktop, checkIpRateLimit } from '../../room-store';
 import type { RemoteCommand } from '@/app/visualizador/lib/remote-types';
 
 /** Tipos de comando validos */
@@ -26,6 +26,17 @@ export async function POST(
   { params }: { params: Promise<{ pin: string }> },
 ) {
   const { pin } = await params;
+
+  // Validar formato del PIN (4-6 digitos, compatible con transicion)
+  if (!/^\d{4,6}$/.test(pin)) {
+    return NextResponse.json({ error: 'Formato de PIN invalido' }, { status: 400 });
+  }
+
+  // Rate limit por IP: maximo 60 comandos por minuto
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  if (!checkIpRateLimit(ip, 60)) {
+    return NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 });
+  }
 
   let body: RemoteCommand;
   try {
@@ -50,6 +61,27 @@ export async function POST(
   if (body.type === 'SET_AUDIO_PLAYING') {
     if (!('playing' in body) || typeof body.playing !== 'boolean') {
       return NextResponse.json({ error: 'Campo playing invalido' }, { status: 400 });
+    }
+  }
+
+  // Validar index para SET_SLIDE (entero no negativo)
+  if (body.type === 'SET_SLIDE') {
+    if (!('index' in body) || typeof body.index !== 'number' || !Number.isInteger(body.index) || body.index < 0) {
+      return NextResponse.json({ error: 'Index invalido' }, { status: 400 });
+    }
+  }
+
+  // Validar index para SET_HYMN (entero no negativo)
+  if (body.type === 'SET_HYMN') {
+    if (!('index' in body) || typeof body.index !== 'number' || !Number.isInteger(body.index) || body.index < 0) {
+      return NextResponse.json({ error: 'Index invalido' }, { status: 400 });
+    }
+  }
+
+  // Validar trackField para SET_AUDIO_TRACK (solo lowercase y underscore)
+  if (body.type === 'SET_AUDIO_TRACK') {
+    if (!('trackField' in body) || typeof body.trackField !== 'string' || !/^[a-z_]+$/.test(body.trackField)) {
+      return NextResponse.json({ error: 'trackField invalido' }, { status: 400 });
     }
   }
 
