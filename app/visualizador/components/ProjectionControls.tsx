@@ -5,11 +5,13 @@
  * colores, imagen de fondo, y tamano de texto.
  */
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import {
   Monitor, EyeOff, Type, ImageIcon, Minus, Plus,
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
   ArrowUpToLine, ArrowDownToLine, Maximize2, Image, Palette,
+  Copy, Check,
 } from 'lucide-react';
 import {
   Button,
@@ -41,6 +43,8 @@ interface ProjectionControlsProps {
   onFontSizeUp: () => void;
   onFontSizeDown: () => void;
   onThemeChange: (partial: Partial<ThemeConfig>) => void;
+  remotePin: string | null;
+  remoteConnected: boolean;
 }
 
 const PRESET_KEYS = Object.keys(FONT_PRESETS) as FontPresetKey[];
@@ -69,8 +73,20 @@ export default function ProjectionControls({
   onFontSizeUp,
   onFontSizeDown,
   onThemeChange,
+  remotePin,
+  remoteConnected,
 }: ProjectionControlsProps) {
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const [copied, setCopied] = useState(false);
+
+  function handleCopyLink() {
+    if (!remotePin) return;
+    const url = `${window.location.origin}/visualizador/control?pin=${remotePin}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -98,6 +114,44 @@ export default function ProjectionControls({
           <Monitor className="mr-2 h-4 w-4" />
           {projectionOpen ? 'Cerrar Proyeccion' : 'Proyectar'}
         </Button>
+
+        {/* Control remoto: QR + PIN */}
+        {remotePin && (
+          <div className="bg-muted/50 rounded-lg p-3 flex flex-col items-center gap-2">
+            <div className="bg-zinc-900 rounded-md p-2">
+              <QRCodeSVG
+                value={`${typeof window !== 'undefined' ? window.location.origin : ''}/visualizador/control?pin=${remotePin}`}
+                size={120}
+                level="M"
+                fgColor="#ffffff"
+                bgColor="transparent"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className={cn(
+                  'inline-block h-2 w-2 rounded-full',
+                  remoteConnected ? 'bg-green-500' : 'bg-yellow-500',
+                )}
+              />
+              <span className="text-lg font-bold font-mono tracking-widest">
+                {remotePin}
+              </span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs w-full"
+              onClick={handleCopyLink}
+            >
+              {copied ? (
+                <><Check className="mr-1 h-3 w-3" /> Copiado</>
+              ) : (
+                <><Copy className="mr-1 h-3 w-3" /> Copiar enlace</>
+              )}
+            </Button>
+          </div>
+        )}
 
         <Separator />
 

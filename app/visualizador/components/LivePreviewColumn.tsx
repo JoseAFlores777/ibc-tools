@@ -25,6 +25,8 @@ interface LivePreviewColumnProps {
   onFontSizeUp: () => void;
   onFontSizeDown: () => void;
   onThemeChange: (partial: Partial<ThemeConfig>) => void;
+  remotePin: string | null;
+  remoteConnected: boolean;
 }
 
 export default function LivePreviewColumn({
@@ -39,6 +41,8 @@ export default function LivePreviewColumn({
   onFontSizeUp,
   onFontSizeDown,
   onThemeChange,
+  remotePin,
+  remoteConnected,
 }: LivePreviewColumnProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -148,6 +152,8 @@ export default function LivePreviewColumn({
           onFontSizeUp={onFontSizeUp}
           onFontSizeDown={onFontSizeDown}
           onThemeChange={onThemeChange}
+          remotePin={remotePin}
+          remoteConnected={remoteConnected}
         />
       </div>
     </div>

@@ -7,7 +7,9 @@ import { useVisualizador } from './hooks/useVisualizador';
 import { useBroadcastChannel } from './hooks/useBroadcastChannel';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useThemePersistence, loadTheme } from './hooks/useThemePersistence';
+import { useRemoteRoom } from './hooks/useRemoteRoom';
 import type { ThemeConfig } from './lib/types';
+import type { RemoteCommand, RemoteState } from './lib/remote-types';
 import { PlaylistColumn } from './components/PlaylistColumn';
 import { SlideGridColumn } from './components/SlideGridColumn';
 import LivePreviewColumn from './components/LivePreviewColumn';
@@ -265,6 +267,52 @@ export default function VisualizadorPage() {
     projectionOpen: state.projectionOpen,
   });
 
+  // Control remoto: mapear comandos del movil a dispatch
+  const handleRemoteCommand = useCallback(
+    (cmd: RemoteCommand) => {
+      switch (cmd.type) {
+        case 'NEXT_SLIDE':
+          dispatch({ type: 'NEXT_SLIDE' });
+          break;
+        case 'PREV_SLIDE':
+          dispatch({ type: 'PREV_SLIDE' });
+          break;
+        case 'SET_PROJECTION_MODE':
+          dispatch({ type: 'SET_PROJECTION_MODE', mode: cmd.mode });
+          break;
+        case 'SET_AUDIO_PLAYING':
+          dispatch({ type: 'SET_AUDIO_PLAYING', playing: cmd.playing });
+          break;
+      }
+    },
+    [dispatch],
+  );
+
+  const { pin, connected, pushState } = useRemoteRoom({
+    onCommand: handleRemoteCommand,
+  });
+
+  // Enviar estado remoto a moviles cuando cambia
+  useEffect(() => {
+    const remoteState: RemoteState = {
+      activeHymnName: activeHymn?.hymnData.name ?? '',
+      activeSlideLabel: currentSlide?.label ?? '',
+      activeSlideIndex: state.activeSlideIndex,
+      totalSlides: activeHymn?.slides.length ?? 0,
+      projectionMode: state.projectionMode,
+      audioPlaying: state.audio.playing,
+    };
+    pushState(remoteState);
+  }, [
+    state.activeHymnIndex,
+    state.activeSlideIndex,
+    state.projectionMode,
+    state.audio.playing,
+    activeHymn,
+    currentSlide,
+    pushState,
+  ]);
+
   // Guardia de viewport minimo
   if (isSmallScreen) {
     return (
@@ -323,6 +371,8 @@ export default function VisualizadorPage() {
             onFontSizeUp={handleFontSizeUp}
             onFontSizeDown={handleFontSizeDown}
             onThemeChange={handleThemeChange}
+            remotePin={pin}
+            remoteConnected={connected}
           />
         </div>
       </div>
