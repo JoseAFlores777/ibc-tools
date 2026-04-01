@@ -162,10 +162,37 @@ export default function ScoreViewer({ musicxmlFileId, midiFileId, className }: S
   // ── Cargar MIDI en sequencer cuando SoundFont esta listo ──
   useEffect(() => {
     if (!synth || !scoreLoaded || !toolkit) return;
-    // Usar MIDI generado por Verovio (per Research: no usar MIDI original)
+
+    // Intentar MIDI generado por Verovio primero
     const midiBase64 = getMidi();
     if (midiBase64) {
-      loadMidi(midiBase64);
+      // Validar que el MIDI tiene header correcto (MThd = TWh0aA en base64)
+      if (midiBase64.startsWith('TVRoZA')) {
+        loadMidi(midiBase64);
+        return;
+      }
+      console.warn('Verovio renderToMIDI generó MIDI inválido, intentando MIDI de Directus...');
+    }
+
+    // Fallback: usar el archivo MIDI original de Directus si existe
+    if (midiFileId) {
+      fetch(`/api/hymns/audio/${midiFileId}`)
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.arrayBuffer();
+        })
+        .then((buf) => {
+          const bytes = new Uint8Array(buf);
+          let binary = '';
+          for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+          const base64 = btoa(binary);
+          if (base64.startsWith('TVRoZA')) {
+            loadMidi(base64);
+          } else {
+            console.warn('MIDI de Directus tampoco es válido');
+          }
+        })
+        .catch((err) => console.warn('No se pudo cargar MIDI de Directus:', err));
     }
   }, [synth, scoreLoaded, toolkit, getMidi, loadMidi]);
 
