@@ -492,17 +492,22 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
       <Separator className="mb-8" />
 
       {loading ? (
-        /* Skeleton que refleja el layout real */
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
-          <div className="space-y-4">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div key={i} className="animate-pulse bg-slate-100 rounded-md h-4" style={{ width: `${95 - (i % 3) * 15}%` }} />
-            ))}
+        <div className="space-y-8">
+          <div className="flex items-center gap-3">
+            <div className="h-6 w-6 rounded-full border-2 border-slate-200 border-t-primary animate-spin" />
+            <span className="text-sm text-slate-400">Cargando detalle del himno...</span>
           </div>
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse bg-slate-100 rounded-xl h-16" />
-            ))}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <div key={i} className="animate-pulse bg-slate-100 rounded-md h-4" style={{ width: `${95 - (i % 3) * 15}%` }} />
+              ))}
+            </div>
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="animate-pulse bg-slate-100 rounded-xl h-16" />
+              ))}
+            </div>
           </div>
         </div>
       ) : (

@@ -333,15 +333,25 @@ export default function HymnExplorer({
 
       {/* Tabla */}
       {isLoading ? (
-        <div className="space-y-2 mt-4">
-          {[1, 2, 3, 4, 5].map((i) => <div key={i} className="animate-pulse bg-slate-100 rounded h-12" />)}
+        <div className="flex-1 flex flex-col items-center justify-center py-16 gap-3">
+          <div className="h-8 w-8 rounded-full border-2 border-slate-200 border-t-primary animate-spin" />
+          <p className="text-sm text-slate-400">Buscando himnos...</p>
         </div>
       ) : error ? (
         <p className="text-destructive text-sm mt-4">Error al buscar. Intenta de nuevo.</p>
       ) : !hasQuery ? (
         <div className="text-center py-16">
-          <Search className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-400 text-sm">Escribe un numero, nombre o fragmento de letra para buscar.</p>
+          {filtersLoading ? (
+            <>
+              <div className="h-8 w-8 rounded-full border-2 border-slate-200 border-t-primary animate-spin mx-auto mb-3" />
+              <p className="text-slate-400 text-sm">Cargando filtros...</p>
+            </>
+          ) : (
+            <>
+              <Search className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+              <p className="text-slate-400 text-sm">Escribe un numero, nombre o fragmento de letra para buscar.</p>
+            </>
+          )}
         </div>
       ) : tableData.length === 0 ? (
         <div className="text-center py-16">
