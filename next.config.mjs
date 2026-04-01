@@ -7,6 +7,18 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
+  // 🔹 WASM support for Verovio (client-side MusicXML rendering)
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.experiments = {
+        ...config.experiments,
+        asyncWebAssembly: true,
+        layers: true,
+      };
+    }
+    return config;
+  },
+
   // 🔹 Security headers + cache control
   headers: async () => [
     {
