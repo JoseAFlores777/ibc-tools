@@ -19,7 +19,7 @@ import {
 import { cn } from '@/app/lib/shadcn/utils';
 import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
-import MidiTrackPlayer from '@/app/components/MidiTrackPlayer';
+import MidiPlayer from '@/app/components/MidiPlayer';
 import {
   BookOpen,
   User,
@@ -559,7 +559,7 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
                 <div className="space-y-2">
                   {availableAudio.map(([field, info]) =>
                     NON_PLAYABLE.has(field) ? (
-                      <MidiTrackPlayer
+                      <MidiPlayer
                         key={field}
                         field={field}
                         fileInfo={info}
@@ -690,7 +690,7 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
                     <CardContent className="space-y-2 pt-0">
                       {availableAudio.map(([field, info]) =>
                         NON_PLAYABLE.has(field) ? (
-                          <MidiTrackPlayer
+                          <MidiPlayer
                             key={field}
                             field={field}
                             fileInfo={info}
