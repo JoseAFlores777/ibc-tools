@@ -8,9 +8,10 @@ import { Button } from '@/lib/shadcn/ui';
 
 // react-joyride usa window — importar sin SSR
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const Joyride = dynamic(() => import('react-joyride') as any, {
-  ssr: false,
-}) as any;
+const Joyride = dynamic(
+  () => import('react-joyride').then((mod) => ({ default: (mod as any).default ?? mod })),
+  { ssr: false },
+) as any;
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
