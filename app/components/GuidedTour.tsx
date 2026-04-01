@@ -6,10 +6,10 @@ import type { Step } from 'react-joyride';
 import { HelpCircle } from 'lucide-react';
 import { Button } from '@/lib/shadcn/ui';
 
-// react-joyride usa window — importar sin SSR
+// react-joyride usa window — exporta named `Joyride`, no default
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Joyride = dynamic(
-  () => import('react-joyride').then((mod) => ({ default: (mod as any).default ?? mod })),
+  () => import('react-joyride').then((mod) => ({ default: (mod as any).Joyride })),
   { ssr: false },
 ) as any;
 
