@@ -23,6 +23,92 @@ const STORE_VISUALIZADOR = 'visualizador';
 const STORE_EMPAQUETADOR = 'empaquetador';
 const MIGRATION_FLAG = '_migrated';
 
+// ---------------------------------------------------------------------------
+// Crypto: AES-256-GCM con clave derivada de secreto de la app
+// Solo la app puede leer/escribir archivos .ibctools
+// ---------------------------------------------------------------------------
+
+/** Secreto de la aplicacion para derivar la clave de encriptacion */
+const APP_SECRET = 'ibc-tools:v1:iglesia-bautista-el-calvario:2026';
+
+/** Header magico para identificar archivos encriptados */
+const MAGIC_HEADER = new Uint8Array([0x49, 0x42, 0x43, 0x54]); // "IBCT"
+
+/** Deriva una CryptoKey AES-256-GCM desde el secreto de la app */
+async function deriveKey(): Promise<CryptoKey> {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(APP_SECRET),
+    'PBKDF2',
+    false,
+    ['deriveKey'],
+  );
+  return crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt: enc.encode('ibc-tools-salt-v1'),
+      iterations: 100000,
+      hash: 'SHA-256',
+    },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt'],
+  );
+}
+
+/** Encripta JSON a ArrayBuffer: MAGIC(4) + IV(12) + ciphertext */
+async function encryptData(data: IbcToolsExport): Promise<ArrayBuffer> {
+  const key = await deriveKey();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encoded = new TextEncoder().encode(JSON.stringify(data));
+
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    encoded,
+  );
+
+  // Formato: MAGIC(4 bytes) + IV(12 bytes) + ciphertext
+  const result = new Uint8Array(MAGIC_HEADER.length + iv.length + ciphertext.byteLength);
+  result.set(MAGIC_HEADER, 0);
+  result.set(iv, MAGIC_HEADER.length);
+  result.set(new Uint8Array(ciphertext), MAGIC_HEADER.length + iv.length);
+  return result.buffer;
+}
+
+/** Desencripta ArrayBuffer a IbcToolsExport */
+async function decryptData(buffer: ArrayBuffer): Promise<IbcToolsExport> {
+  const bytes = new Uint8Array(buffer);
+
+  // Verificar header magico
+  for (let i = 0; i < MAGIC_HEADER.length; i++) {
+    if (bytes[i] !== MAGIC_HEADER[i]) {
+      throw new Error('El archivo no es un archivo .ibctools valido');
+    }
+  }
+
+  const iv = bytes.slice(MAGIC_HEADER.length, MAGIC_HEADER.length + 12);
+  const ciphertext = bytes.slice(MAGIC_HEADER.length + 12);
+
+  const key = await deriveKey();
+
+  let decrypted: ArrayBuffer;
+  try {
+    decrypted = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      ciphertext,
+    );
+  } catch {
+    throw new Error('No se pudo descifrar el archivo. Puede estar corrupto o ser de otra version.');
+  }
+
+  const json = new TextDecoder().decode(decrypted);
+  return JSON.parse(json) as IbcToolsExport;
+}
+
 let _migrationDone = false;
 
 /** Abre la base de datos unificada "ibc-tools" v1. Ejecuta migracion en primer uso. */
@@ -295,11 +381,11 @@ export async function importToolData(exportData: IbcToolsExport): Promise<void> 
   }
 }
 
-/** Descarga los datos como archivo .ibctools */
+/** Descarga los datos como archivo .ibctools encriptado */
 export async function downloadExport(tool: 'visualizador' | 'empaquetador' | 'all'): Promise<void> {
   const data = await exportToolData(tool);
-  const json = JSON.stringify(data, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
+  const encrypted = await encryptData(data);
+  const blob = new Blob([encrypted], { type: 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
   const date = new Date().toISOString().slice(0, 10);
 
@@ -339,54 +425,44 @@ export async function isToolEmpty(tool: 'visualizador' | 'empaquetador'): Promis
 /** Limite de tamaño para archivos de importacion (10MB) */
 const MAX_IMPORT_SIZE = 10 * 1024 * 1024;
 
-/** Lee y valida un archivo .ibctools */
+/** Lee, desencripta y valida un archivo .ibctools */
 export async function readImportFile(file: File): Promise<IbcToolsExport> {
   if (file.size > MAX_IMPORT_SIZE) {
     throw new Error('El archivo es demasiado grande (maximo 10MB)');
   }
 
-  const text = await file.text();
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    throw new Error('El archivo no contiene JSON valido');
-  }
+  const buffer = await file.arrayBuffer();
 
-  if (typeof parsed !== 'object' || parsed === null) {
-    throw new Error('El archivo no tiene el formato esperado');
-  }
+  // Desencriptar el archivo
+  const parsed = await decryptData(buffer);
 
-  const obj = parsed as Record<string, unknown>;
-
-  if (obj.version !== 1) {
-    throw new Error(`Version no soportada: ${obj.version}`);
+  // Validar estructura
+  if (parsed.version !== 1) {
+    throw new Error(`Version no soportada: ${parsed.version}`);
   }
-  if (!['visualizador', 'empaquetador', 'all'].includes(obj.tool as string)) {
-    throw new Error(`Tipo de herramienta invalido: ${obj.tool}`);
+  if (!['visualizador', 'empaquetador', 'all'].includes(parsed.tool)) {
+    throw new Error(`Tipo de herramienta invalido: ${parsed.tool}`);
   }
-  if (typeof obj.data !== 'object' || obj.data === null) {
+  if (typeof parsed.data !== 'object' || parsed.data === null) {
     throw new Error('El archivo no contiene datos validos');
   }
 
-  const data = obj.data as Record<string, unknown>;
-
   // Validar estructura de datos del visualizador
-  if (data.visualizador !== undefined && (typeof data.visualizador !== 'object' || data.visualizador === null || Array.isArray(data.visualizador))) {
+  if (parsed.data.visualizador !== undefined && (typeof parsed.data.visualizador !== 'object' || parsed.data.visualizador === null || Array.isArray(parsed.data.visualizador))) {
     throw new Error('Datos de visualizador invalidos');
   }
 
   // Validar estructura de datos del empaquetador
-  if (data.empaquetador !== undefined) {
-    if (!Array.isArray(data.empaquetador)) {
+  if (parsed.data.empaquetador !== undefined) {
+    if (!Array.isArray(parsed.data.empaquetador)) {
       throw new Error('Datos de empaquetador invalidos');
     }
-    for (const item of data.empaquetador) {
+    for (const item of parsed.data.empaquetador) {
       if (typeof item !== 'object' || item === null || typeof (item as Record<string, unknown>).id !== 'string') {
         throw new Error('Registro de empaquetador invalido: falta campo id');
       }
     }
   }
 
-  return parsed as IbcToolsExport;
+  return parsed;
 }
