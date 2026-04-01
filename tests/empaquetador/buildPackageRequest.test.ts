@@ -20,6 +20,8 @@ function mockHymn(id: string): HymnSearchResult {
       bass_voice: null,
     },
     hasAnyAudio: true,
+    musicxmlFileId: null,
+    hasMusicXml: false,
   };
 }
 

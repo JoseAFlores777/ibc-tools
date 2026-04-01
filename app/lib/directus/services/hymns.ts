@@ -151,6 +151,7 @@ export async function searchHymns(filters: HymnSearchFilters): Promise<HymnSearc
     'categories.hymn_categories_id.id',
     'categories.hymn_categories_id.name',
     ...buildAudioFields(),
+    'materials.musicxml',
   ];
 
   try {
@@ -168,6 +169,7 @@ export async function searchHymns(filters: HymnSearchFilters): Promise<HymnSearc
     return (items as any[]).map((item) => {
       const audioFiles = mapAudioFiles(item);
       const hasAnyAudio = AUDIO_FIELD_NAMES.some((field) => audioFiles[field] !== null);
+      const musicxmlFileId: string | null = item.materials?.musicxml ?? null;
 
       return {
         id: item.id,
@@ -177,6 +179,8 @@ export async function searchHymns(filters: HymnSearchFilters): Promise<HymnSearc
         categories: item.categories ?? [],
         audioFiles,
         hasAnyAudio,
+        musicxmlFileId,
+        hasMusicXml: musicxmlFileId !== null,
       } satisfies HymnSearchResult;
     });
   } catch (error) {

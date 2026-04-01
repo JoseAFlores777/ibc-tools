@@ -26,6 +26,8 @@ function mockHymn(overrides: Partial<HymnSearchResult> = {}): HymnSearchResult {
       bass_voice: null,
     },
     hasAnyAudio: overrides.hasAnyAudio ?? true,
+    musicxmlFileId: overrides.musicxmlFileId ?? null,
+    hasMusicXml: overrides.hasMusicXml ?? false,
   };
 }
 

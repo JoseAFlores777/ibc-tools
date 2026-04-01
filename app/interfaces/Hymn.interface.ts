@@ -46,6 +46,8 @@ export interface HymnSearchResult {
   }>;
   audioFiles: HymnAudioFiles;
   hasAnyAudio: boolean;
+  musicxmlFileId: string | null;
+  hasMusicXml: boolean;
 }
 
 /** Complete hymn data for PDF generation, returned by fetchHymnForPdf() */
