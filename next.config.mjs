@@ -19,6 +19,9 @@ const nextConfig = {
     return config;
   },
 
+  // 🔹 Turbopack handles WASM natively — empty config silences the webpack warning
+  turbopack: {},
+
   // 🔹 Security headers + cache control
   headers: async () => [
     {
