@@ -9,7 +9,7 @@
 
 import { useRef, useState, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Pause, RotateCcw, Music } from 'lucide-react';
+import { Play, Pause, RotateCcw, Music, Volume2, VolumeX } from 'lucide-react';
 import type { HymnAudioFiles } from '@/app/interfaces/Hymn.interface';
 import {
   Button,
@@ -79,6 +79,10 @@ interface AudioBarProps {
   onTrackChange: (trackField: string) => void;
   /** Callback cuando cambia el estado de reproduccion */
   onPlayingChange: (playing: boolean) => void;
+  /** Volumen actual 0-1 */
+  volume: number;
+  /** Callback cuando cambia el volumen */
+  onVolumeChange: (volume: number) => void;
 }
 
 /** Handle expuesto via ref para controlar el audio desde el padre */
@@ -93,9 +97,13 @@ const AudioBar = forwardRef<AudioBarHandle, AudioBarProps>(function AudioBar({
   playing,
   onTrackChange,
   onPlayingChange,
+  volume,
+  onVolumeChange,
 }, ref) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const prevHymnIdRef = useRef<string | null>(null);
+  const fadeOutRef = useRef<HTMLAudioElement | null>(null);
+  const fadeAnimRef = useRef<number | null>(null);
 
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -105,15 +113,67 @@ const AudioBar = forwardRef<AudioBarHandle, AudioBarProps>(function AudioBar({
   const hasAudio = availableTracks.length > 0;
   const hasHymn = hymnId !== null;
 
-  // Detectar cambio de himno: pausar, resetear progreso, seleccionar pista default
+  // Crossfade: fade out viejo audio cuando cambia el himno
+  const startCrossfade = useCallback((oldAudio: HTMLAudioElement) => {
+    // Cancelar fade anterior si existe
+    if (fadeAnimRef.current) cancelAnimationFrame(fadeAnimRef.current);
+    if (fadeOutRef.current) {
+      fadeOutRef.current.pause();
+      fadeOutRef.current = null;
+    }
+
+    fadeOutRef.current = oldAudio;
+    const FADE_DURATION = 800; // ms
+    const startTime = performance.now();
+    const startVol = oldAudio.volume;
+
+    function tick(now: number) {
+      const elapsed = now - startTime;
+      const t = Math.min(elapsed / FADE_DURATION, 1);
+      oldAudio.volume = startVol * (1 - t);
+
+      if (t < 1) {
+        fadeAnimRef.current = requestAnimationFrame(tick);
+      } else {
+        oldAudio.pause();
+        oldAudio.removeAttribute('src');
+        oldAudio.load();
+        fadeOutRef.current = null;
+        fadeAnimRef.current = null;
+      }
+    }
+
+    fadeAnimRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  // Limpiar fade al desmontar
+  useEffect(() => {
+    return () => {
+      if (fadeAnimRef.current) cancelAnimationFrame(fadeAnimRef.current);
+      if (fadeOutRef.current) {
+        fadeOutRef.current.pause();
+        fadeOutRef.current = null;
+      }
+    };
+  }, []);
+
+  // Detectar cambio de himno: crossfade, resetear progreso, seleccionar pista default
   useEffect(() => {
     if (hymnId === prevHymnIdRef.current) return;
 
     const audio = audioRef.current;
-    if (audio) {
+    if (audio && audio.src && !audio.paused) {
+      // Crossfade: clonar el audio actual para fade out
+      const clone = new Audio(audio.src);
+      clone.currentTime = audio.currentTime;
+      clone.volume = audio.volume;
+      clone.play().catch(() => {});
+      startCrossfade(clone);
+    } else if (audio) {
       audio.pause();
-      audio.currentTime = 0;
     }
+
+    if (audio) audio.currentTime = 0;
     setProgress(0);
     setCurrentTime(0);
     setDuration(0);
@@ -181,6 +241,12 @@ const AudioBar = forwardRef<AudioBarHandle, AudioBarProps>(function AudioBar({
       audio.pause();
     }
   }, [playing, onPlayingChange]);
+
+  // Sincronizar volumen con el prop
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) audio.volume = volume;
+  }, [volume]);
 
   // Handlers de eventos del elemento audio
   const handleTimeUpdate = useCallback(() => {
@@ -374,6 +440,29 @@ const AudioBar = forwardRef<AudioBarHandle, AudioBarProps>(function AudioBar({
         <span className="text-xs tabular-nums text-muted-foreground flex-shrink-0 min-w-[70px] text-right">
           {formatTime(currentTime)} / {formatTime(duration)}
         </span>
+
+        {/* Volume */}
+        <div className="flex items-center gap-1.5 flex-shrink-0 w-[120px]">
+          <button
+            type="button"
+            onClick={() => onVolumeChange(volume > 0 ? 0 : 1)}
+            disabled={isDisabled}
+            className="text-muted-foreground hover:text-foreground disabled:opacity-50"
+            aria-label={volume > 0 ? 'Silenciar' : 'Activar sonido'}
+          >
+            {volume > 0 ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          </button>
+          <Slider
+            min={0}
+            max={100}
+            step={1}
+            value={[volume * 100]}
+            onValueChange={(v) => onVolumeChange(v[0] / 100)}
+            disabled={isDisabled}
+            aria-label="Volumen"
+            className="flex-1"
+          />
+        </div>
       </div>
     </motion.div>
   );

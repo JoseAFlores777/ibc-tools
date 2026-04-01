@@ -47,6 +47,7 @@
     "@radix-ui/react-tooltip": "^1.1.2",
     "@react-pdf/renderer": "^4.3.2",
     "@tanstack/react-table": "^8.21.3",
+    "@tonejs/midi": "^2.0.28",
     "@types/archiver": "^7.0.0",
     "@types/dompurify": "^3.0.5",
     "archiver": "^7.0.1",
@@ -77,6 +78,7 @@
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
+    "tone": "^15.1.22",
     "vaul": "^0.9.1",
     "zod": "^3.23.8"
   },

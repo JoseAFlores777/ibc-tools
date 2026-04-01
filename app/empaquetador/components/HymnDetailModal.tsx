@@ -15,6 +15,7 @@ import {
 import { cn } from '@/app/lib/shadcn/utils';
 import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
+import MidiTrackPlayer from '@/app/components/MidiTrackPlayer';
 import {
   BookOpen,
   User,
@@ -550,20 +551,13 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
                 <div className="space-y-2">
                   {availableAudio.map(([field, info]) =>
                     NON_PLAYABLE.has(field) ? (
-                      <a
+                      <MidiTrackPlayer
                         key={field}
-                        href={`/api/hymns/audio/${info.id}`}
-                        download={info.filename_download || 'midi.mid'}
-                        aria-label={`Descargar ${AUDIO_LABELS[field]}`}
-                        className={cn(
-                          'rounded-xl border p-3 flex items-center gap-3 transition-all duration-200 cursor-pointer',
-                          AUDIO_COLORS[field],
-                        )}
-                      >
-                        <Download className="h-4 w-4 flex-shrink-0" />
-                        <span className="text-xs font-semibold">{AUDIO_LABELS[field]}</span>
-                        <span className="text-[10px] opacity-60 ml-auto">Descargar</span>
-                      </a>
+                        field={field}
+                        fileInfo={info}
+                        label={AUDIO_LABELS[field] ?? field}
+                        colorClass={AUDIO_COLORS[field] ?? 'bg-slate-50 text-slate-700 border-slate-200'}
+                      />
                     ) : (
                       <AudioTrackPlayer key={field} field={field} fileInfo={info} />
                     ),
@@ -641,20 +635,13 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
                     <CardContent className="space-y-2 pt-0">
                       {availableAudio.map(([field, info]) =>
                         NON_PLAYABLE.has(field) ? (
-                          <a
+                          <MidiTrackPlayer
                             key={field}
-                            href={`/api/hymns/audio/${info.id}`}
-                            download={info.filename_download || 'midi.mid'}
-                            aria-label={`Descargar ${AUDIO_LABELS[field]}`}
-                            className={cn(
-                              'rounded-xl border p-3 flex items-center gap-3 transition-all duration-200 cursor-pointer',
-                              AUDIO_COLORS[field],
-                            )}
-                          >
-                            <Download className="h-4 w-4 flex-shrink-0" />
-                            <span className="text-xs font-semibold">{AUDIO_LABELS[field]}</span>
-                            <span className="text-[10px] opacity-60 ml-auto">Descargar</span>
-                          </a>
+                            field={field}
+                            fileInfo={info}
+                            label={AUDIO_LABELS[field] ?? field}
+                            colorClass={AUDIO_COLORS[field] ?? 'bg-slate-50 text-slate-700 border-slate-200'}
+                          />
                         ) : (
                           <AudioTrackPlayer key={field} field={field} fileInfo={info} />
                         ),

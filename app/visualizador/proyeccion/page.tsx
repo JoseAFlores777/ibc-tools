@@ -130,8 +130,8 @@ export default function ProyeccionPage() {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  // Duracion de la transicion crossfade (0 si reduced motion)
-  const transitionDuration = shouldReduceMotion ? 0 : 0.4;
+  // Duracion de la transicion dissolve (0 si reduced motion)
+  const transitionDuration = shouldReduceMotion ? 0 : 0.5;
 
   // Key unica para el crossfade basada en contenido
   const slideKey =
@@ -141,22 +141,23 @@ export default function ProyeccionPage() {
 
   return (
     <div className="w-screen h-screen overflow-hidden relative bg-black flex items-center justify-center">
-      {/* Diapositiva con crossfade — escalada de virtual (1920x1080) a pantalla real */}
-      <AnimatePresence mode="wait">
+      {/* Diapositiva con dissolve — escalada de virtual (1920x1080) a pantalla real */}
+      <AnimatePresence mode="popLayout">
         <motion.div
           key={slideKey}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          initial={{ opacity: 0, filter: 'blur(4px)' }}
+          animate={{ opacity: 1, filter: 'blur(0px)' }}
+          exit={{ opacity: 0, filter: 'blur(4px)' }}
           transition={{ duration: transitionDuration, ease: 'easeInOut' }}
-          className="origin-center"
-          style={{ transform: `scale(${projScale})` }}
+          className="absolute inset-0 flex items-center justify-center"
         >
+          <div className="origin-center" style={{ transform: `scale(${projScale})` }}>
           <SlideRenderer
             slide={currentSlide}
             theme={theme}
             mode={mode}
           />
+          </div>
         </motion.div>
       </AnimatePresence>
 

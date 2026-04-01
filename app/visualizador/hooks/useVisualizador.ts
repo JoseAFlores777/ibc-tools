@@ -25,7 +25,7 @@ export const initialState: VisualizadorState = {
   projectionMode: 'slide',
   projectionOpen: false,
   theme: { ...DEFAULT_THEME },
-  audio: { hymnId: null, trackField: null, playing: false },
+  audio: { hymnId: null, trackField: null, playing: false, volume: 1 },
 };
 
 /**
@@ -37,6 +37,15 @@ export function visualizadorReducer(
   action: VisualizadorAction
 ): VisualizadorState {
   switch (action.type) {
+    case 'CLEAR_PLAYLIST':
+      return {
+        ...state,
+        playlist: [],
+        activeHymnIndex: -1,
+        activeSlideIndex: 0,
+        audio: { ...state.audio, playing: false, hymnId: null, trackField: null },
+      };
+
     case 'ADD_HYMN': {
       const verses = parseHymnHtmlClient(action.hymn.letter_hymn ?? '');
       const slides = buildSlideGroups(verses, action.hymn);
@@ -182,6 +191,7 @@ export function visualizadorReducer(
       return {
         ...state,
         audio: {
+          ...state.audio,
           hymnId: action.hymnId,
           trackField: action.trackField,
           playing,
@@ -193,6 +203,12 @@ export function visualizadorReducer(
       return {
         ...state,
         audio: { ...state.audio, playing: action.playing },
+      };
+
+    case 'SET_AUDIO_VOLUME':
+      return {
+        ...state,
+        audio: { ...state.audio, volume: Math.max(0, Math.min(1, action.volume)) },
       };
 
     case 'FONT_SIZE_UP':

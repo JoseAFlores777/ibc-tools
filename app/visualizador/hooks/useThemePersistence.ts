@@ -15,6 +15,15 @@ import { getKey, setKey } from '@/app/lib/ibc-db';
 const STORE = 'visualizador';
 const THEME_KEY = 'theme';
 const PLAYLIST_KEY = 'playlist';
+const SAVED_PLAYLISTS_KEY = 'savedPlaylists';
+
+/** A named playlist saved by the user */
+export interface SavedPlaylist {
+  id: string;
+  name: string;
+  hymnIds: string[];
+  createdAt: string;
+}
 
 /** Load saved theme from IndexedDB. Returns DEFAULT_THEME if none saved. */
 export async function loadTheme(): Promise<ThemeConfig> {
@@ -36,6 +45,32 @@ async function savePlaylistIds(ids: string[]): Promise<void> {
 /** Save theme to IndexedDB. */
 async function saveTheme(theme: ThemeConfig): Promise<void> {
   await setKey(STORE, THEME_KEY, theme);
+}
+
+/** Load all saved playlists from IndexedDB. */
+export async function loadSavedPlaylists(): Promise<SavedPlaylist[]> {
+  const saved = await getKey<SavedPlaylist[]>(STORE, SAVED_PLAYLISTS_KEY);
+  return Array.isArray(saved) ? saved : [];
+}
+
+/** Save a named playlist. */
+export async function saveNamedPlaylist(name: string, hymnIds: string[]): Promise<SavedPlaylist> {
+  const playlists = await loadSavedPlaylists();
+  const newPlaylist: SavedPlaylist = {
+    id: crypto.randomUUID(),
+    name,
+    hymnIds,
+    createdAt: new Date().toISOString(),
+  };
+  playlists.push(newPlaylist);
+  await setKey(STORE, SAVED_PLAYLISTS_KEY, playlists);
+  return newPlaylist;
+}
+
+/** Delete a saved playlist by ID. */
+export async function deleteSavedPlaylist(id: string): Promise<void> {
+  const playlists = await loadSavedPlaylists();
+  await setKey(STORE, SAVED_PLAYLISTS_KEY, playlists.filter((p) => p.id !== id));
 }
 
 /**

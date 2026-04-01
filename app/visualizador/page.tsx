@@ -253,6 +253,29 @@ export default function VisualizadorPage() {
     [state.playlist, dispatch],
   );
 
+  // Cargar una playlist guardada por IDs
+  const handleLoadPlaylist = useCallback(
+    async (hymnIds: string[]) => {
+      dispatch({ type: 'CLEAR_PLAYLIST' });
+      for (const id of hymnIds) {
+        try {
+          let hymnData = detailsCache.current.get(id);
+          if (!hymnData) {
+            const res = await fetch(`/api/hymns/${id}`);
+            if (!res.ok) continue;
+            const json = await res.json();
+            hymnData = json.data as HymnForPdf;
+            detailsCache.current.set(id, hymnData);
+          }
+          dispatch({ type: 'ADD_HYMN', hymn: hymnData });
+        } catch {
+          // Skip hymns that fail
+        }
+      }
+    },
+    [dispatch],
+  );
+
   const handleSelectHymn = useCallback(
     (index: number) => dispatch({ type: 'SET_ACTIVE_HYMN', index }),
     [dispatch],
@@ -290,6 +313,13 @@ export default function VisualizadorPage() {
   const handlePlayingChange = useCallback(
     (playing: boolean) => {
       dispatch({ type: 'SET_AUDIO_PLAYING', playing });
+    },
+    [dispatch],
+  );
+
+  const handleVolumeChange = useCallback(
+    (volume: number) => {
+      dispatch({ type: 'SET_AUDIO_VOLUME', volume });
     },
     [dispatch],
   );
@@ -336,6 +366,9 @@ export default function VisualizadorPage() {
         case 'RESTART_AUDIO':
           audioBarRef.current?.restart();
           break;
+        case 'SET_VOLUME':
+          dispatch({ type: 'SET_AUDIO_VOLUME', volume: cmd.volume });
+          break;
       }
     },
     [dispatch, state.activeHymnIndex, state.playlist],
@@ -375,6 +408,7 @@ export default function VisualizadorPage() {
       projectionMode: state.projectionMode,
       audioPlaying: state.audio.playing,
       audioTrackField: state.audio.trackField,
+      audioVolume: state.audio.volume,
       playlist,
     };
     pushState(remoteState);
@@ -384,6 +418,7 @@ export default function VisualizadorPage() {
     state.projectionMode,
     state.audio.playing,
     state.audio.trackField,
+    state.audio.volume,
     state.playlist,
     activeHymn,
     currentSlide,
@@ -433,6 +468,7 @@ export default function VisualizadorPage() {
             onRemoveHymn={handleRemoveHymn}
             onReorderPlaylist={handleReorderPlaylist}
             onAddHymn={handleAddHymn}
+            onLoadPlaylist={handleLoadPlaylist}
             addingHymnId={addingHymnId}
           />
         </div>
@@ -477,6 +513,8 @@ export default function VisualizadorPage() {
         playing={state.audio.playing}
         onTrackChange={handleTrackChange}
         onPlayingChange={handlePlayingChange}
+        volume={state.audio.volume}
+        onVolumeChange={handleVolumeChange}
       />
     </div>
   );

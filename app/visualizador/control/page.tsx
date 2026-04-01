@@ -21,6 +21,8 @@ import {
   Pause,
   RotateCcw,
   Square,
+  Volume2,
+  VolumeX,
   Music,
   List,
   Search,
@@ -321,6 +323,30 @@ function ControlPage() {
           </div>
         </div>
       )}
+
+      {/* Volume control */}
+      <div className="px-2 pb-1">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => sendCommand(currentPin, { type: 'SET_VOLUME', volume: (st?.audioVolume ?? 1) > 0 ? 0 : 1 })}
+            className="text-zinc-400 active:text-white"
+          >
+            {(st?.audioVolume ?? 1) > 0 ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          </button>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={Math.round((st?.audioVolume ?? 1) * 100)}
+            onChange={(e) => sendCommand(currentPin, { type: 'SET_VOLUME', volume: Number(e.target.value) / 100 })}
+            className="flex-1 h-1 accent-blue-500"
+          />
+          <span className="text-[10px] text-zinc-500 w-7 text-right">
+            {Math.round((st?.audioVolume ?? 1) * 100)}%
+          </span>
+        </div>
+      </div>
 
       {/* Bottom controls */}
       <div className="flex-shrink-0 px-2 pb-2 space-y-1.5">

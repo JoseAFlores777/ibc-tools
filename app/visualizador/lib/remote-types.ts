@@ -31,7 +31,8 @@ export type RemoteCommand =
   | { type: 'SET_PROJECTION_MODE'; mode: 'black' | 'clear' | 'logo' | 'slide' }
   | { type: 'SET_AUDIO_PLAYING'; playing: boolean }
   | { type: 'SET_AUDIO_TRACK'; trackField: string }
-  | { type: 'RESTART_AUDIO' };
+  | { type: 'RESTART_AUDIO' }
+  | { type: 'SET_VOLUME'; volume: number };
 
 /** Snapshot de estado enviado desde desktop a la sala */
 export interface RemoteState {
@@ -43,6 +44,7 @@ export interface RemoteState {
   projectionMode: string;
   audioPlaying: boolean;
   audioTrackField: string | null;
+  audioVolume: number;
   /** Playlist completa con datos minimos */
   playlist: RemotePlaylistHymn[];
 }

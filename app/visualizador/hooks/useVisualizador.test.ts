@@ -202,7 +202,7 @@ describe('visualizadorReducer', () => {
     it('sets audio.playing to false when hymnId changes (D-20)', () => {
       const state: VisualizadorState = {
         ...initialState,
-        audio: { hymnId: 'old-hymn', trackField: 'track_only', playing: true },
+        audio: { hymnId: 'old-hymn', trackField: 'track_only', playing: true, volume: 1 },
       };
       const result = visualizadorReducer(state, {
         type: 'SET_AUDIO_TRACK',
@@ -217,7 +217,7 @@ describe('visualizadorReducer', () => {
     it('keeps audio.playing unchanged when hymnId is the same', () => {
       const state: VisualizadorState = {
         ...initialState,
-        audio: { hymnId: 'same-hymn', trackField: 'track_only', playing: true },
+        audio: { hymnId: 'same-hymn', trackField: 'track_only', playing: true, volume: 1 },
       };
       const result = visualizadorReducer(state, {
         type: 'SET_AUDIO_TRACK',

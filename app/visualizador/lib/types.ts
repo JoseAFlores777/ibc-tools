@@ -66,6 +66,8 @@ export interface AudioState {
   trackField: string | null;
   /** Whether audio is currently playing */
   playing: boolean;
+  /** Volume level 0-1 */
+  volume: number;
 }
 
 /** Full visualizador application state */
@@ -81,6 +83,7 @@ export interface VisualizadorState {
 
 /** Discriminated union of all visualizador actions */
 export type VisualizadorAction =
+  | { type: 'CLEAR_PLAYLIST' }
   | { type: 'ADD_HYMN'; hymn: HymnForPdf }
   | { type: 'REMOVE_HYMN'; index: number }
   | { type: 'REORDER_PLAYLIST'; from: number; to: number }
@@ -93,6 +96,7 @@ export type VisualizadorAction =
   | { type: 'SET_THEME'; theme: Partial<ThemeConfig> }
   | { type: 'SET_AUDIO_TRACK'; hymnId: string; trackField: string }
   | { type: 'SET_AUDIO_PLAYING'; playing: boolean }
+  | { type: 'SET_AUDIO_VOLUME'; volume: number }
   | { type: 'FONT_SIZE_UP' }
   | { type: 'FONT_SIZE_DOWN' }
   | { type: 'SET_FONT_PRESET'; preset: FontPresetKey }
