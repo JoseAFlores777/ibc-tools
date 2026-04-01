@@ -15,6 +15,8 @@ import { SlideGridColumn } from './components/SlideGridColumn';
 import LivePreviewColumn from './components/LivePreviewColumn';
 import AudioBar from './components/AudioBar';
 import { ToolSettingsButton, ToolWelcomeModal } from '@/app/components/LocalStorageWarning';
+import { GuidedTour, HelpButton, useTour } from '@/app/components/GuidedTour';
+import { VISUALIZADOR_TOUR_STEPS } from './lib/tour-steps';
 import type { ProjectionMessage } from './lib/projection-channel';
 
 /**
@@ -29,6 +31,7 @@ export default function VisualizadorPage() {
   const { state, dispatch } = useVisualizador();
   const detailsCache = useRef<Map<string, HymnForPdf>>(new Map());
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const { isActive, startTour, handleComplete } = useTour('visualizador');
   const [isRestoring, setIsRestoring] = useState(true);
   const [addingHymnId, setAddingHymnId] = useState<string | null>(null);
 
@@ -472,6 +475,9 @@ export default function VisualizadorPage() {
         onTrackChange={handleTrackChange}
         onPlayingChange={handlePlayingChange}
       />
+
+      <GuidedTour steps={VISUALIZADOR_TOUR_STEPS} storageKey="visualizador" active={isActive} onComplete={handleComplete} />
+      <HelpButton onClick={startTour} />
     </div>
   );
 }

@@ -90,13 +90,14 @@ export function PlaylistColumn({
   const sortableIds = playlist.map((h) => h.id);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" data-tour="playlist">
       {/* Header: agregar himnos + configuracion */}
       <div className="p-3 border-b border-border flex items-center gap-1.5">
         <Button
           variant="outline"
           className="flex-1 h-8 text-sm cursor-pointer"
           onClick={() => setDialogOpen(true)}
+          data-tour="agregar-himno"
         >
           <Plus className="h-3.5 w-3.5 mr-1.5" />
           Agregar himno

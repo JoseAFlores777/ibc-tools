@@ -15,11 +15,14 @@ import { deserializeAudioSelections } from '@/app/empaquetador/lib/package-db';
 import type { SavedPackage } from '@/app/empaquetador/lib/package-db';
 import type { HymnSearchResult } from '@/app/interfaces/Hymn.interface';
 import { ToolSettingsButton, ToolWelcomeModal } from '@/app/components/LocalStorageWarning';
+import { GuidedTour, HelpButton, useTour } from '@/app/components/GuidedTour';
+import { EMPAQUETADOR_TOUR_STEPS } from '@/app/empaquetador/lib/tour-steps';
 
 export default function EmpaquetadorPage() {
   const [state, dispatch] = useWizardReducer();
   const [showHistory, setShowHistory] = useState(false);
   const [loadingPackage, setLoadingPackage] = useState(false);
+  const { isActive, startTour, handleComplete } = useTour('empaquetador');
   const dirRef = useRef<'forward' | 'backward'>('forward');
   const shouldReduceMotion = useReducedMotion();
 
@@ -157,7 +160,7 @@ export default function EmpaquetadorPage() {
       </div>
 
       {/* Barra de accion inferior fija */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50" data-tour="configuracion-emp">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="hidden sm:block">
             <WizardStepper currentStep={state.step} onStepClick={handleStepClick} />
@@ -200,6 +203,7 @@ export default function EmpaquetadorPage() {
                   onClick={handleNext}
                   disabled={isNextDisabled}
                   className="min-h-[44px]"
+                  data-tour="paso-siguiente"
                 >
                   Siguiente ({state.selectedHymns.length})
                   <ChevronRight className="h-4 w-4 ml-1" />
@@ -216,6 +220,9 @@ export default function EmpaquetadorPage() {
           </div>
         </div>
       </div>
+
+      <GuidedTour steps={EMPAQUETADOR_TOUR_STEPS} storageKey="empaquetador" active={isActive} onComplete={handleComplete} />
+      <HelpButton onClick={startTour} />
     </div>
   );
 }

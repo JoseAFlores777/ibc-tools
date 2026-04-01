@@ -18,7 +18,7 @@ export default function SelectionSidebar({ state, dispatch, onShowHistory }: Sel
   const hasSelected = state.selectedHymns.length > 0;
 
   return (
-    <aside className={`hidden lg:flex lg:flex-col flex-shrink-0 border-r border-slate-200 bg-white transition-all duration-300 ${open ? 'w-[280px]' : 'w-[48px]'}`}>
+    <aside data-tour="mi-seleccion" className={`hidden lg:flex lg:flex-col flex-shrink-0 border-r border-slate-200 bg-white transition-all duration-300 ${open ? 'w-[280px]' : 'w-[48px]'}`}>
       {open ? (
         <>
           <div className="p-4 flex-1 overflow-hidden flex flex-col min-h-0">
@@ -66,6 +66,7 @@ export default function SelectionSidebar({ state, dispatch, onShowHistory }: Sel
                 size="sm"
                 onClick={onShowHistory}
                 className="flex-1 justify-start h-8 text-xs text-slate-400 hover:text-slate-700 cursor-pointer"
+                data-tour="historial"
               >
                 <History className="h-3.5 w-3.5 mr-2" />
                 Historial

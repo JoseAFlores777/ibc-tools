@@ -80,7 +80,7 @@ export default function LivePreviewColumn({
     <div className="flex flex-col h-full">
       {/* Area superior: vista previa en vivo */}
       <div className="flex-1 p-3 flex flex-col gap-2">
-        <div className="rounded-lg overflow-hidden border border-border">
+        <div className="rounded-lg overflow-hidden border border-border" data-tour="preview">
           <div
             ref={containerRef}
             className="relative overflow-hidden"

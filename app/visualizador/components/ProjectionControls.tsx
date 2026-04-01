@@ -124,6 +124,7 @@ export default function ProjectionControls({
           className="w-full"
           onClick={onProjectToggle}
           aria-label={projectionOpen ? 'Cerrar proyeccion' : 'Proyectar'}
+          data-tour="proyectar"
         >
           <Monitor className="mr-2 h-4 w-4" />
           {projectionOpen ? 'Cerrar Proyeccion' : 'Proyectar'}
@@ -136,6 +137,7 @@ export default function ProjectionControls({
               variant="outline"
               className="w-full gap-2"
               onClick={() => setQrOpen(true)}
+              data-tour="control-remoto"
             >
               <Smartphone className="h-4 w-4" />
               Control Remoto
@@ -253,6 +255,7 @@ export default function ProjectionControls({
         <Separator />
 
         {/* Fuente */}
+        <div data-tour="configuracion" className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
           <Label className="text-xs text-muted-foreground flex-shrink-0 w-14">Fuente</Label>
           <Select value={theme.fontPreset} onValueChange={(v) => onThemeChange({ fontPreset: v as FontPresetKey })}>
@@ -391,6 +394,7 @@ export default function ProjectionControls({
               Amarillo
             </Button>
           </div>
+        </div>
         </div>
       </div>
     </TooltipProvider>

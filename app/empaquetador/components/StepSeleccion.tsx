@@ -56,7 +56,7 @@ export default function StepSeleccion({ state, dispatch }: StepSeleccionProps) {
 
   return (
     <div className="flex h-full overflow-hidden">
-      <main className="flex-1 overflow-hidden flex flex-col">
+      <main className="flex-1 overflow-hidden flex flex-col" data-tour="explorar-himnos">
         <HymnExplorer
           selectedIds={selectedIdSet}
           onToggle={handleToggle}
