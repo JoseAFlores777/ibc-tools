@@ -242,22 +242,35 @@ function ControlPage() {
                 gridTemplateColumns: `repeat(auto-fill, minmax(${thumbScale === 100 ? '100%' : `${Math.max(80, thumbScale * 1.6)}px`}, 1fr))`,
               }}
             >
-              {activeHymn.slideLabels.map((label, i) => (
+              {activeHymn.slides.map((slide, i) => (
                 <button
                   key={i}
                   onClick={() => sendCommand(currentPin, { type: 'SET_SLIDE', index: i })}
-                  className={`aspect-video rounded-lg p-2 text-left transition-all ${
+                  className={`aspect-video rounded-lg overflow-hidden text-left transition-all relative ${
                     i === st?.activeSlideIndex
-                      ? 'ring-2 ring-[#eaba1c] bg-zinc-800 shadow-[0_0_8px_rgba(234,186,28,0.3)]'
-                      : 'bg-zinc-900 active:bg-zinc-800'
+                      ? 'ring-[3px] ring-[#eaba1c] shadow-[0_0_10px_rgba(234,186,28,0.35)]'
+                      : 'ring-1 ring-zinc-700/50 active:ring-zinc-600'
                   }`}
+                  style={{ backgroundColor: '#1a1a2e' }}
                 >
-                  <span className={`block text-[10px] font-bold uppercase tracking-wide mb-0.5 ${
-                    i === st?.activeSlideIndex ? 'text-[#eaba1c]' : 'text-zinc-500'
+                  {/* Slide label badge */}
+                  <span className={`absolute top-1 left-1.5 text-[8px] font-bold uppercase tracking-wider px-1 py-0.5 rounded z-10 ${
+                    i === st?.activeSlideIndex
+                      ? 'bg-[#eaba1c] text-black'
+                      : 'bg-black/50 text-white/70'
                   }`}>
-                    {label}
+                    {slide.label}
                   </span>
-                  <span className="block text-[9px] text-zinc-600">{i + 1}</span>
+                  {/* Slide content */}
+                  <div className="absolute inset-0 flex items-center justify-center p-3 pt-5">
+                    <p className="text-[7px] leading-tight text-white/90 text-center font-bold line-clamp-6 whitespace-pre-line">
+                      {slide.text}
+                    </p>
+                  </div>
+                  {/* Slide number */}
+                  <span className="absolute bottom-0.5 right-1 text-[7px] text-white/25">
+                    {i + 1}
+                  </span>
                 </button>
               ))}
             </div>

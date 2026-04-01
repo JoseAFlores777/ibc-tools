@@ -9,7 +9,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useThemePersistence, usePlaylistPersistence, loadTheme, loadPlaylistIds } from './hooks/useThemePersistence';
 import { useRemoteRoom } from './hooks/useRemoteRoom';
 import type { ThemeConfig } from './lib/types';
-import type { RemoteCommand, RemoteState, RemotePlaylistHymn } from './lib/remote-types';
+import type { RemoteCommand, RemoteState, RemotePlaylistHymn, RemoteSlide } from './lib/remote-types';
 import { PlaylistColumn } from './components/PlaylistColumn';
 import { SlideGridColumn } from './components/SlideGridColumn';
 import LivePreviewColumn from './components/LivePreviewColumn';
@@ -333,6 +333,11 @@ export default function VisualizadorPage() {
       hymnNumber: h.hymnData.hymn_number,
       slideCount: h.slides.length,
       slideLabels: h.slides.map((s) => s.verseLabel),
+      slides: h.slides.map((s): RemoteSlide => ({
+        label: s.verseLabel,
+        text: s.text,
+        isIntro: !!s.intro,
+      })),
       audioTracks: AUDIO_FIELDS.filter((f) => {
         const files = h.hymnData.audioFiles;
         return files && (files as unknown as Record<string, unknown>)[f] != null;

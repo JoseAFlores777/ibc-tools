@@ -3,6 +3,13 @@
  * El desktop crea una sala con PIN y el movil envia comandos via POST.
  */
 
+/** Datos de una diapositiva para renderizar en el movil */
+export interface RemoteSlide {
+  label: string;
+  text: string;
+  isIntro: boolean;
+}
+
 /** Datos minimos de un himno en la playlist (para el movil) */
 export interface RemotePlaylistHymn {
   id: string;
@@ -10,6 +17,7 @@ export interface RemotePlaylistHymn {
   hymnNumber: number | null;
   slideCount: number;
   slideLabels: string[];
+  slides: RemoteSlide[];
   /** Pistas de audio disponibles (field names) */
   audioTracks: string[];
 }
