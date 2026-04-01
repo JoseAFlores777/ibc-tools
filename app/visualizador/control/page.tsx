@@ -111,7 +111,7 @@ function ControlPage() {
   }, []);
 
   useEffect(() => {
-    if (urlPin && urlPin.length === 4) connect(urlPin);
+    if (urlPin && urlPin.length >= 4 && urlPin.length <= 6) connect(urlPin);
     return () => { eventSourceRef.current?.close(); };
   }, [urlPin, connect]);
 
@@ -145,7 +145,7 @@ function ControlPage() {
             <input
               type="text"
               inputMode="numeric"
-              maxLength={4}
+              maxLength={6}
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
               placeholder="0000"
@@ -154,7 +154,7 @@ function ControlPage() {
             />
             <button
               type="submit"
-              disabled={pin.length !== 4}
+              disabled={pin.length < 4 || pin.length > 6}
               className="w-full h-12 rounded-xl bg-blue-600 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed active:bg-blue-500 transition-colors"
             >
               Conectar

@@ -336,8 +336,15 @@ export async function isToolEmpty(tool: 'visualizador' | 'empaquetador'): Promis
   }
 }
 
+/** Limite de tamaño para archivos de importacion (10MB) */
+const MAX_IMPORT_SIZE = 10 * 1024 * 1024;
+
 /** Lee y valida un archivo .ibctools */
 export async function readImportFile(file: File): Promise<IbcToolsExport> {
+  if (file.size > MAX_IMPORT_SIZE) {
+    throw new Error('El archivo es demasiado grande (maximo 10MB)');
+  }
+
   const text = await file.text();
   let parsed: unknown;
   try {
@@ -360,6 +367,25 @@ export async function readImportFile(file: File): Promise<IbcToolsExport> {
   }
   if (typeof obj.data !== 'object' || obj.data === null) {
     throw new Error('El archivo no contiene datos validos');
+  }
+
+  const data = obj.data as Record<string, unknown>;
+
+  // Validar estructura de datos del visualizador
+  if (data.visualizador !== undefined && (typeof data.visualizador !== 'object' || data.visualizador === null || Array.isArray(data.visualizador))) {
+    throw new Error('Datos de visualizador invalidos');
+  }
+
+  // Validar estructura de datos del empaquetador
+  if (data.empaquetador !== undefined) {
+    if (!Array.isArray(data.empaquetador)) {
+      throw new Error('Datos de empaquetador invalidos');
+    }
+    for (const item of data.empaquetador) {
+      if (typeof item !== 'object' || item === null || typeof (item as Record<string, unknown>).id !== 'string') {
+        throw new Error('Registro de empaquetador invalido: falta campo id');
+      }
+    }
   }
 
   return parsed as IbcToolsExport;

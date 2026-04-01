@@ -95,6 +95,16 @@ export default function ProjectionControls({
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      alert('Solo se permiten imagenes JPEG, PNG, WebP o GIF');
+      return;
+    }
+    if (file.size > MAX_SIZE) {
+      alert('La imagen debe ser menor a 5MB');
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result as string;
