@@ -169,9 +169,7 @@ export function GuidedTour({ steps, storageKey, active, onComplete }: GuidedTour
           fontSize: '12px',
           color: '#94a3b8',
         },
-        spotlight: {
-          borderRadius: '8px',
-        },
+        spotlight: {},
         overlay: {
           mixBlendMode: undefined as unknown as 'normal',
         },
