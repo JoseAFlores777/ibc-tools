@@ -122,10 +122,32 @@ Plans:
 - [x] 06-03-PLAN.md -- SlideRenderer, LivePreviewColumn, ProjectionControls, projection window with crossfade (Wave 3)
 - [x] 06-04-PLAN.md -- AudioBar with playback controls, herramientas link, human verification (Wave 4)
 
+### Phase 7: MusicXML Score Viewer with Verovio and SpessaSynth
+
+**Goal:** Users can view MusicXML scores rendered as SVG with synchronized MIDI playback cursor, zoom controls, and auto-scroll in the Partituras tab, with SpessaSynth replacing Tone.js for all MIDI playback
+**Depends on:** Phase 6
+**Requirements**: D-01, D-02, D-03, D-04, D-05, D-06, D-07, D-08, D-09, D-10, D-11
+**Success Criteria** (what must be TRUE):
+  1. MusicXML files are served via server proxy and rendered as SVG by Verovio
+  2. SpessaSynth plays Verovio-generated MIDI with SoundFont, with cursor highlighting notes in real-time
+  3. Auto-scroll follows the cursor across pages during playback
+  4. Zoom controls allow scaling the score up and down
+  5. Partituras tab shows ScoreViewer when hymn has MusicXML, placeholder when it does not
+  6. MidiPlayer replaces MidiTrackPlayer as drop-in SpessaSynth-based MIDI player
+  7. All Tone.js code and Salamander samples are removed
+**Plans:** 4 plans
+**UI hint**: yes
+
+Plans:
+- [ ] 07-01-PLAN.md -- Foundation: install packages, webpack WASM config, proxy routes, type extensions (Wave 1)
+- [ ] 07-02-PLAN.md -- Core hooks (useVerovio, useSpessaSynth, useScoreCursor) and MidiPlayer replacement (Wave 2)
+- [ ] 07-03-PLAN.md -- ScoreViewer component with toolbar/controls and HymnDetailModal integration (Wave 3)
+- [ ] 07-04-PLAN.md -- Cleanup (delete Tone.js/MidiTrackPlayer/Salamander) and human verification (Wave 4)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -135,3 +157,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 4. Wizard UI and Download Experience | 0/3 | Not started | - |
 | 5. Impresion de Himnos | 0/3 | Planned    |  |
 | 6. Visualizador de Himnos | 0/4 | Planned | - |
+| 7. MusicXML Score Viewer | 0/4 | Planned | - |
