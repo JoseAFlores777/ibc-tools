@@ -11,11 +11,14 @@ import {
   Monitor, EyeOff, Type, ImageIcon, Minus, Plus,
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
   ArrowUpToLine, ArrowDownToLine, Maximize2, Image, Palette,
-  Copy, Check,
+  Copy, Check, Smartphone,
 } from 'lucide-react';
 import {
   Button,
   Separator,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   Select,
   SelectContent,
   SelectItem,
@@ -78,6 +81,7 @@ export default function ProjectionControls({
 }: ProjectionControlsProps) {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [copied, setCopied] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
 
   function handleCopyLink() {
     if (!remotePin) return;
@@ -115,56 +119,80 @@ export default function ProjectionControls({
           {projectionOpen ? 'Cerrar Proyeccion' : 'Proyectar'}
         </Button>
 
-        {/* Control remoto: QR + PIN */}
+        {/* Control remoto: boton para abrir modal con QR */}
         {remotePin && (
-          <div className="rounded-xl border border-border bg-gradient-to-b from-muted/60 to-muted/30 p-4 flex flex-col items-center gap-3">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Control Remoto</span>
-            <div className="bg-white rounded-xl p-3 shadow-sm">
-              <QRCodeSVG
-                value={`${typeof window !== 'undefined' ? window.location.origin : ''}/visualizador/control?pin=${remotePin}`}
-                size={130}
-                level="M"
-                fgColor="#1a1a2e"
-                bgColor="#ffffff"
-                imageSettings={{
-                  src: '/logo-iglesia.png',
-                  x: undefined,
-                  y: undefined,
-                  height: 24,
-                  width: 24,
-                  excavate: true,
-                }}
-              />
-            </div>
-            <div className="flex items-center gap-2.5">
-              <span
-                className={cn(
-                  'inline-block h-2.5 w-2.5 rounded-full ring-2',
-                  remoteConnected
-                    ? 'bg-green-500 ring-green-500/20 animate-pulse'
-                    : 'bg-amber-400 ring-amber-400/20',
-                )}
-              />
-              <span className="text-2xl font-extrabold font-mono tracking-[0.25em] text-foreground">
-                {remotePin}
-              </span>
-            </div>
-            <p className="text-[10px] text-muted-foreground text-center leading-tight">
-              {remoteConnected ? 'Dispositivo conectado' : 'Escanea el QR o ingresa el PIN'}
-            </p>
+          <>
             <Button
               variant="outline"
-              size="sm"
-              className="h-7 text-xs w-full"
-              onClick={handleCopyLink}
+              className="w-full gap-2"
+              onClick={() => setQrOpen(true)}
             >
-              {copied ? (
-                <><Check className="mr-1 h-3 w-3" /> Copiado</>
-              ) : (
-                <><Copy className="mr-1 h-3 w-3" /> Copiar enlace</>
-              )}
+              <Smartphone className="h-4 w-4" />
+              Control Remoto
+              <span
+                className={cn(
+                  'inline-block h-2 w-2 rounded-full ml-auto',
+                  remoteConnected ? 'bg-green-500 animate-pulse' : 'bg-amber-400',
+                )}
+              />
             </Button>
-          </div>
+
+            <Dialog open={qrOpen} onOpenChange={setQrOpen}>
+              <DialogContent className="max-w-sm p-0 gap-0">
+                <div className="flex flex-col items-center gap-5 p-8">
+                  <DialogTitle className="text-lg font-semibold">Control Remoto</DialogTitle>
+                  <p className="text-sm text-muted-foreground text-center -mt-3">
+                    Escanea el codigo QR o ingresa el PIN en tu celular
+                  </p>
+                  <div className="bg-white rounded-2xl p-5 shadow-md border border-border">
+                    <QRCodeSVG
+                      value={`${typeof window !== 'undefined' ? window.location.origin : ''}/visualizador/control?pin=${remotePin}`}
+                      size={200}
+                      level="M"
+                      fgColor="#1a1a2e"
+                      bgColor="#ffffff"
+                      imageSettings={{
+                        src: '/logo-iglesia.png',
+                        x: undefined,
+                        y: undefined,
+                        height: 32,
+                        width: 32,
+                        excavate: true,
+                      }}
+                    />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        'inline-block h-3 w-3 rounded-full ring-2',
+                        remoteConnected
+                          ? 'bg-green-500 ring-green-500/20 animate-pulse'
+                          : 'bg-amber-400 ring-amber-400/20',
+                      )}
+                    />
+                    <span className="text-3xl font-extrabold font-mono tracking-[0.3em] text-foreground">
+                      {remotePin}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {remoteConnected ? 'Dispositivo conectado' : 'Esperando conexion...'}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={handleCopyLink}
+                  >
+                    {copied ? (
+                      <><Check className="mr-1.5 h-3.5 w-3.5" /> Enlace copiado</>
+                    ) : (
+                      <><Copy className="mr-1.5 h-3.5 w-3.5" /> Copiar enlace</>
+                    )}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </>
         )}
 
         <Separator />
