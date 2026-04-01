@@ -120,11 +120,15 @@ export default function SlideRenderer({
           <div
             className="flex-shrink-0"
             style={{
-              fontSize: '24px',
-              color: labelColor,
+              fontSize: '32px',
+              color: textColor,
+              opacity: 0.7,
               fontFamily,
+              fontWeight: 'bold',
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
               textAlign: hAlign,
-              marginBottom: '16px',
+              marginBottom: '20px',
             }}
           >
             {slide.verseLabel}
