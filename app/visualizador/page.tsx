@@ -14,6 +14,7 @@ import { PlaylistColumn } from './components/PlaylistColumn';
 import { SlideGridColumn } from './components/SlideGridColumn';
 import LivePreviewColumn from './components/LivePreviewColumn';
 import AudioBar from './components/AudioBar';
+import type { AudioBarHandle } from './components/AudioBar';
 import { ToolSettingsButton, ToolWelcomeModal } from '@/app/components/LocalStorageWarning';
 import type { ProjectionMessage } from './lib/projection-channel';
 
@@ -28,6 +29,7 @@ import type { ProjectionMessage } from './lib/projection-channel';
 export default function VisualizadorPage() {
   const { state, dispatch } = useVisualizador();
   const detailsCache = useRef<Map<string, HymnForPdf>>(new Map());
+  const audioBarRef = useRef<AudioBarHandle>(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isRestoring, setIsRestoring] = useState(true);
   const [addingHymnId, setAddingHymnId] = useState<string | null>(null);
@@ -331,6 +333,9 @@ export default function VisualizadorPage() {
           if (hymnId) dispatch({ type: 'SET_AUDIO_TRACK', hymnId, trackField: cmd.trackField });
           break;
         }
+        case 'RESTART_AUDIO':
+          audioBarRef.current?.restart();
+          break;
       }
     },
     [dispatch, state.activeHymnIndex, state.playlist],
@@ -465,6 +470,7 @@ export default function VisualizadorPage() {
 
       {/* Barra inferior: Controles de audio */}
       <AudioBar
+        ref={audioBarRef}
         hymnAudio={currentHymnAudio}
         hymnId={currentHymnId}
         activeTrackField={state.audio.trackField}

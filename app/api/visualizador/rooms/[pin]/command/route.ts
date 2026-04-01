@@ -16,6 +16,7 @@ const VALID_COMMAND_TYPES = new Set([
   'SET_PROJECTION_MODE',
   'SET_AUDIO_PLAYING',
   'SET_AUDIO_TRACK',
+  'RESTART_AUDIO',
 ]);
 
 /** Modos de proyeccion validos */

@@ -9,7 +9,7 @@
  *   - Controles de proyeccion y navegacion
  */
 
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   ChevronLeft,
@@ -19,9 +19,11 @@ import {
   ImageIcon,
   Play,
   Pause,
+  RotateCcw,
   Square,
   Music,
   List,
+  Search,
   X,
   Minus,
   Plus,
@@ -69,6 +71,7 @@ function ControlPage() {
   const [remoteState, setRemoteState] = useState<RemoteState | null>(null);
   const [showHymnList, setShowHymnList] = useState(false);
   const [expandedHymnIndex, setExpandedHymnIndex] = useState<number | null>(null);
+  const [hymnSearch, setHymnSearch] = useState('');
   const [thumbScale, setThumbScale] = useState(50); // 30-100%
 
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -114,6 +117,17 @@ function ControlPage() {
     if (urlPin && urlPin.length >= 4 && urlPin.length <= 6) connect(urlPin);
     return () => { eventSourceRef.current?.close(); };
   }, [urlPin, connect]);
+
+  const filteredRemotePlaylist = useMemo(() => {
+    if (!remoteState?.playlist) return [];
+    if (!hymnSearch.trim()) return remoteState.playlist;
+    const q = hymnSearch.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return remoteState.playlist.filter((h) => {
+      const name = (h.name ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const num = String(h.hymnNumber ?? '');
+      return name.includes(q) || num.includes(q);
+    });
+  }, [remoteState?.playlist, hymnSearch]);
 
   function handlePinSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -320,6 +334,12 @@ function ControlPage() {
             Anterior
           </button>
           <button
+            onClick={() => sendCommand(currentPin, { type: 'RESTART_AUDIO' })}
+            className="w-14 h-14 rounded-xl bg-zinc-800 active:bg-zinc-700 flex items-center justify-center transition-colors"
+          >
+            <RotateCcw className="h-5 w-5" />
+          </button>
+          <button
             onClick={() =>
               sendCommand(currentPin, {
                 type: 'SET_AUDIO_PLAYING',
@@ -371,22 +391,38 @@ function ControlPage() {
         <div className="fixed inset-0 z-50 flex">
           <div
             className="absolute inset-0 bg-black/60"
-            onClick={() => { setShowHymnList(false); setExpandedHymnIndex(null); }}
+            onClick={() => { setShowHymnList(false); setExpandedHymnIndex(null); setHymnSearch(''); }}
           />
           <div className="relative w-[88%] max-w-sm bg-zinc-900 flex flex-col animate-in slide-in-from-left duration-200">
             <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
               <h2 className="text-sm font-semibold">Himnos</h2>
               <button
-                onClick={() => { setShowHymnList(false); setExpandedHymnIndex(null); }}
+                onClick={() => { setShowHymnList(false); setExpandedHymnIndex(null); setHymnSearch(''); }}
                 className="h-8 w-8 rounded-lg flex items-center justify-center text-zinc-400 active:bg-zinc-800"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
+            {/* Buscador */}
+            {st?.playlist && st.playlist.length > 0 && (
+              <div className="px-3 py-2 border-b border-zinc-800">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
+                  <input
+                    type="text"
+                    placeholder="Buscar en la lista..."
+                    value={hymnSearch}
+                    onChange={(e) => setHymnSearch(e.target.value)}
+                    className="w-full h-8 pl-8 pr-3 text-sm rounded-md border border-zinc-700 bg-zinc-800 text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500"
+                  />
+                </div>
+              </div>
+            )}
             <div className="flex-1 overflow-auto">
-              {st?.playlist.map((hymn, i) => {
+              {filteredRemotePlaylist.map((hymn) => {
+                const i = st!.playlist.findIndex((h) => h.id === hymn.id);
                 const isExpanded = expandedHymnIndex === i;
-                const isActive = i === st.activeHymnIndex;
+                const isActive = i === st!.activeHymnIndex;
                 return (
                   <div key={hymn.id} className={isActive ? 'bg-zinc-800/50' : ''}>
                     {/* Hymn row */}
@@ -433,14 +469,14 @@ function ControlPage() {
                                 setExpandedHymnIndex(null);
                               }}
                               className={`aspect-video rounded overflow-hidden relative transition-all ${
-                                isActive && si === st.activeSlideIndex
+                                isActive && si === st!.activeSlideIndex
                                   ? 'ring-2 ring-[#eaba1c] shadow-[0_0_6px_rgba(234,186,28,0.3)]'
                                   : 'ring-1 ring-zinc-700/40 active:ring-zinc-500'
                               }`}
                               style={{ backgroundColor: '#1a1a2e' }}
                             >
                               <span className={`absolute top-0.5 left-1 text-[7px] font-bold uppercase tracking-wider px-1 py-px rounded ${
-                                isActive && si === st.activeSlideIndex
+                                isActive && si === st!.activeSlideIndex
                                   ? 'bg-[#eaba1c] text-black'
                                   : 'bg-black/50 text-white/60'
                               }`}>
@@ -462,6 +498,11 @@ function ControlPage() {
               {(!st?.playlist || st.playlist.length === 0) && (
                 <div className="p-8 text-center text-sm text-zinc-600">
                   Sin himnos en la playlist
+                </div>
+              )}
+              {hymnSearch && filteredRemotePlaylist.length === 0 && st?.playlist && st.playlist.length > 0 && (
+                <div className="p-8 text-center text-sm text-zinc-600">
+                  No se encontraron himnos
                 </div>
               )}
             </div>

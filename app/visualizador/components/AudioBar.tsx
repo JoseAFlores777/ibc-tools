@@ -7,9 +7,9 @@
  * remontajes al cambiar diapositivas dentro del mismo himno (Research pitfall 5).
  */
 
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Pause, Music } from 'lucide-react';
+import { Play, Pause, RotateCcw, Music } from 'lucide-react';
 import type { HymnAudioFiles } from '@/app/interfaces/Hymn.interface';
 import {
   Button,
@@ -81,14 +81,19 @@ interface AudioBarProps {
   onPlayingChange: (playing: boolean) => void;
 }
 
-export default function AudioBar({
+/** Handle expuesto via ref para controlar el audio desde el padre */
+export interface AudioBarHandle {
+  restart: () => void;
+}
+
+const AudioBar = forwardRef<AudioBarHandle, AudioBarProps>(function AudioBar({
   hymnAudio,
   hymnId,
   activeTrackField,
   playing,
   onTrackChange,
   onPlayingChange,
-}: AudioBarProps) {
+}, ref) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const prevHymnIdRef = useRef<string | null>(null);
 
@@ -218,6 +223,18 @@ export default function AudioBar({
     [duration]
   );
 
+  // Reiniciar pista al inicio
+  const handleRestart = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.currentTime = 0;
+    setProgress(0);
+    setCurrentTime(0);
+  }, []);
+
+  // Exponer restart via ref para control remoto
+  useImperativeHandle(ref, () => ({ restart: handleRestart }), [handleRestart]);
+
   // Toggle play/pause
   const handleTogglePlay = useCallback(() => {
     onPlayingChange(!playing);
@@ -252,29 +269,47 @@ export default function AudioBar({
           isDisabled ? 'opacity-50' : ''
         }`}
       >
-        {/* Play/Pause */}
+        {/* Restart + Play/Pause */}
         <TooltipProvider delayDuration={300}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                disabled={isDisabled}
-                onClick={handleTogglePlay}
-                aria-label={playing ? 'Pausar' : 'Reproducir'}
-                className="flex-shrink-0"
-              >
-                {playing ? (
-                  <Pause className="h-5 w-5" />
-                ) : (
-                  <Play className="h-5 w-5" />
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top">
-              <p>{playing ? 'Pausar' : 'Reproducir'} (P)</p>
-            </TooltipContent>
-          </Tooltip>
+          <div className="flex items-center gap-0.5 flex-shrink-0">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  disabled={isDisabled}
+                  onClick={handleRestart}
+                  aria-label="Reiniciar pista"
+                  className="h-9 w-9"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>Reiniciar pista</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  disabled={isDisabled}
+                  onClick={handleTogglePlay}
+                  aria-label={playing ? 'Pausar' : 'Reproducir'}
+                >
+                  {playing ? (
+                    <Pause className="h-5 w-5" />
+                  ) : (
+                    <Play className="h-5 w-5" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>{playing ? 'Pausar' : 'Reproducir'} (P)</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </TooltipProvider>
 
         {/* Track selector */}
@@ -342,4 +377,6 @@ export default function AudioBar({
       </div>
     </motion.div>
   );
-}
+});
+
+export default AudioBar;

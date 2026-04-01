@@ -30,7 +30,8 @@ export type RemoteCommand =
   | { type: 'SET_HYMN'; index: number }
   | { type: 'SET_PROJECTION_MODE'; mode: 'black' | 'clear' | 'logo' | 'slide' }
   | { type: 'SET_AUDIO_PLAYING'; playing: boolean }
-  | { type: 'SET_AUDIO_TRACK'; trackField: string };
+  | { type: 'SET_AUDIO_TRACK'; trackField: string }
+  | { type: 'RESTART_AUDIO' };
 
 /** Snapshot de estado enviado desde desktop a la sala */
 export interface RemoteState {

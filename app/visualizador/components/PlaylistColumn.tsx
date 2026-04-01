@@ -20,13 +20,21 @@ import HymnExplorer from '@/app/components/HymnExplorer';
 import { PlaylistItem } from './PlaylistItem';
 import { ToolSettingsButton } from '@/app/components/LocalStorageWarning';
 import {
-  ScrollArea,
   Button,
   Dialog,
   DialogContent,
   DialogTitle,
-  TooltipProvider,
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
 } from '@/lib/shadcn/ui';
+import { Search } from 'lucide-react';
+
+const MAX_PLAYLIST_SIZE = 30;
 
 interface PlaylistColumnProps {
   playlist: PlaylistHymn[];
@@ -53,6 +61,10 @@ export function PlaylistColumn({
   addingHymnId,
 }: PlaylistColumnProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [limitAlertOpen, setLimitAlertOpen] = useState(false);
+
+  const isAtLimit = playlist.length >= MAX_PLAYLIST_SIZE;
 
   // IDs de himnos ya en la playlist para marcarlos como seleccionados en HymnExplorer
   const playlistIds = useMemo(
@@ -78,13 +90,25 @@ export function PlaylistColumn({
 
   function handleToggle(hymn: HymnSearchResult) {
     if (playlistIds.has(hymn.id)) {
-      // Encontrar el indice y remover
       const idx = playlist.findIndex((h) => h.id === hymn.id);
       if (idx !== -1) onRemoveHymn(idx);
+    } else if (isAtLimit) {
+      setLimitAlertOpen(true);
     } else {
       onAddHymn(hymn);
     }
   }
+
+  // Filtrar playlist por busqueda
+  const filteredPlaylist = useMemo(() => {
+    if (!searchQuery.trim()) return playlist;
+    const q = searchQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return playlist.filter((h) => {
+      const name = (h.hymnData.name ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const num = String(h.hymnData.hymn_number ?? '');
+      return name.includes(q) || num.includes(q);
+    });
+  }, [playlist, searchQuery]);
 
   // IDs para sortable context
   const sortableIds = playlist.map((h) => h.id);
@@ -96,14 +120,36 @@ export function PlaylistColumn({
         <Button
           variant="outline"
           className="flex-1 h-8 text-sm cursor-pointer"
-          onClick={() => setDialogOpen(true)}
-         
+          onClick={() => isAtLimit ? setLimitAlertOpen(true) : setDialogOpen(true)}
         >
           <Plus className="h-3.5 w-3.5 mr-1.5" />
           Agregar himno
+          {playlist.length > 0 && (
+            <span className="ml-1.5 text-xs text-muted-foreground">
+              {playlist.length}/{MAX_PLAYLIST_SIZE}
+            </span>
+          )}
         </Button>
         <ToolSettingsButton tool="visualizador" />
       </div>
+
+      {/* Alerta de limite alcanzado */}
+      <AlertDialog open={limitAlertOpen} onOpenChange={setLimitAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Limite alcanzado</AlertDialogTitle>
+            <AlertDialogDescription>
+              La lista permite un maximo de {MAX_PLAYLIST_SIZE} himnos.
+              Elimine al menos uno antes de agregar otro.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setLimitAlertOpen(false)}>
+              Entendido
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Dialog con HymnExplorer */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -122,53 +168,75 @@ export function PlaylistColumn({
         </DialogContent>
       </Dialog>
 
-      {/* Lista de reproduccion */}
-      <TooltipProvider delayDuration={300}>
-        {playlist.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center p-4">
-            <div className="text-center space-y-2">
-              <h3 className="text-sm font-medium text-foreground">
-                Sin himnos en la lista
-              </h3>
-              <p className="text-xs text-muted-foreground max-w-[200px]">
-                Use el boton &quot;Agregar himno&quot; para buscar y agregar
-                himnos a la lista de reproduccion.
-              </p>
-            </div>
+      {/* Buscador de himnos en la lista */}
+      {playlist.length > 0 && (
+        <div className="px-3 py-2 border-b border-border">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Buscar en la lista..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-8 pl-8 pr-3 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
           </div>
-        ) : (
-          <ScrollArea className="flex-1">
-            <div className="p-2 space-y-0.5">
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
+        </div>
+      )}
+
+      {/* Lista de reproduccion */}
+      {playlist.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center space-y-2">
+            <h3 className="text-sm font-medium text-foreground">
+              Sin himnos en la lista
+            </h3>
+            <p className="text-xs text-muted-foreground max-w-[200px]">
+              Use el boton &quot;Agregar himno&quot; para buscar y agregar
+              himnos a la lista de reproduccion.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="p-2 space-y-0.5">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={sortableIds}
+                strategy={verticalListSortingStrategy}
               >
-                <SortableContext
-                  items={sortableIds}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {playlist.map((hymn, index) => (
+                {filteredPlaylist.map((hymn) => {
+                  const realIndex = playlist.findIndex((h) => h.id === hymn.id);
+                  return (
                     <PlaylistItem
                       key={hymn.id}
                       hymn={hymn}
-                      isActive={index === activeHymnIndex}
-                      onSelect={() => onSelectHymn(index)}
-                      onRemove={() => onRemoveHymn(index)}
+                      isActive={realIndex === activeHymnIndex}
+                      onSelect={() => onSelectHymn(realIndex)}
+                      onRemove={() => onRemoveHymn(realIndex)}
                     />
-                  ))}
-                </SortableContext>
-              </DndContext>
-              {addingHymnId && (
-                <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
-                  <div className="h-3.5 w-3.5 rounded-full border-2 border-muted-foreground/20 border-t-primary animate-spin" />
-                  Agregando himno...
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-        )}
-      </TooltipProvider>
+                  );
+                })}
+              </SortableContext>
+            </DndContext>
+            {addingHymnId && (
+              <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
+                <div className="h-3.5 w-3.5 rounded-full border-2 border-muted-foreground/20 border-t-primary animate-spin" />
+                Agregando himno...
+              </div>
+            )}
+            {searchQuery && filteredPlaylist.length === 0 && (
+              <div className="px-3 py-4 text-center text-xs text-muted-foreground">
+                No se encontraron himnos
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
