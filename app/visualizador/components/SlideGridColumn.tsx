@@ -40,7 +40,7 @@ export function SlideGridColumn({
   }
 
   return (
-    <div className="flex flex-col h-full" data-tour="slide-grid">
+    <div className="flex flex-col h-full">
       {/* Encabezado con nombre del himno activo */}
       <div className="flex-shrink-0 px-4 py-3 border-b border-border">
         <h2 className="text-lg font-semibold truncate">{hymnName}</h2>
