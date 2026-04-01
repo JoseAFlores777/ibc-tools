@@ -11,8 +11,11 @@ import type { RemoteCommand } from '@/app/visualizador/lib/remote-types';
 const VALID_COMMAND_TYPES = new Set([
   'NEXT_SLIDE',
   'PREV_SLIDE',
+  'SET_SLIDE',
+  'SET_HYMN',
   'SET_PROJECTION_MODE',
   'SET_AUDIO_PLAYING',
+  'SET_AUDIO_TRACK',
 ]);
 
 /** Modos de proyeccion validos */
