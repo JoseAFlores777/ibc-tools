@@ -137,8 +137,14 @@ export function ToolWelcomeModal({
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    const dismissedKey = `ibc-welcome-dismissed-${tool}`;
+    if (localStorage.getItem(dismissedKey)) return;
+
     isToolEmpty(tool).then((empty) => {
-      if (empty) setShow(true);
+      if (empty) {
+        setShow(true);
+        localStorage.setItem(dismissedKey, '1');
+      }
     });
   }, [tool]);
 
