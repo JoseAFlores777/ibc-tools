@@ -117,27 +117,41 @@ export default function ProjectionControls({
 
         {/* Control remoto: QR + PIN */}
         {remotePin && (
-          <div className="bg-muted/50 rounded-lg p-3 flex flex-col items-center gap-2">
-            <div className="bg-zinc-900 rounded-md p-2">
+          <div className="rounded-xl border border-border bg-gradient-to-b from-muted/60 to-muted/30 p-4 flex flex-col items-center gap-3">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Control Remoto</span>
+            <div className="bg-white rounded-xl p-3 shadow-sm">
               <QRCodeSVG
                 value={`${typeof window !== 'undefined' ? window.location.origin : ''}/visualizador/control?pin=${remotePin}`}
-                size={120}
+                size={130}
                 level="M"
-                fgColor="#ffffff"
-                bgColor="transparent"
+                fgColor="#1a1a2e"
+                bgColor="#ffffff"
+                imageSettings={{
+                  src: '/logo-iglesia.png',
+                  x: undefined,
+                  y: undefined,
+                  height: 24,
+                  width: 24,
+                  excavate: true,
+                }}
               />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <span
                 className={cn(
-                  'inline-block h-2 w-2 rounded-full',
-                  remoteConnected ? 'bg-green-500' : 'bg-yellow-500',
+                  'inline-block h-2.5 w-2.5 rounded-full ring-2',
+                  remoteConnected
+                    ? 'bg-green-500 ring-green-500/20 animate-pulse'
+                    : 'bg-amber-400 ring-amber-400/20',
                 )}
               />
-              <span className="text-lg font-bold font-mono tracking-widest">
+              <span className="text-2xl font-extrabold font-mono tracking-[0.25em] text-foreground">
                 {remotePin}
               </span>
             </div>
+            <p className="text-[10px] text-muted-foreground text-center leading-tight">
+              {remoteConnected ? 'Dispositivo conectado' : 'Escanea el QR o ingresa el PIN'}
+            </p>
             <Button
               variant="outline"
               size="sm"
