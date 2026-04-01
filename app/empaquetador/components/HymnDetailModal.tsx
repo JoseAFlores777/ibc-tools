@@ -14,6 +14,7 @@ import {
 } from '@/lib/shadcn/ui';
 import { cn } from '@/app/lib/shadcn/utils';
 import { toast } from 'sonner';
+import DOMPurify from 'dompurify';
 import {
   BookOpen,
   User,
@@ -180,9 +181,8 @@ function AudioTrackPlayer({ field, fileInfo }: { field: string; fileInfo: AudioF
 }
 
 function htmlToPlainText(html: string): string {
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  return div.innerText || div.textContent || '';
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return doc.body.textContent || '';
 }
 
 /** Cache en memoria para detalles de himnos ya cargados */
@@ -615,7 +615,7 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
                       [&_strong]:font-semibold [&_strong]:text-slate-500 [&_strong]:tracking-wide [&_strong]:uppercase [&_strong]:text-[11px] [&_strong]:block [&_strong]:mt-2 [&_strong]:mb-1
                       [&_em]:italic [&_em]:text-slate-500
                       selection:bg-primary/10 selection:text-primary"
-                    dangerouslySetInnerHTML={{ __html: details.letter_hymn }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(details.letter_hymn) }}
                   />
                 </article>
               ) : (
