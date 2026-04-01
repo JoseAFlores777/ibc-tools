@@ -9,7 +9,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useThemePersistence, usePlaylistPersistence, loadTheme, loadPlaylistIds } from './hooks/useThemePersistence';
 import { useRemoteRoom } from './hooks/useRemoteRoom';
 import type { ThemeConfig } from './lib/types';
-import type { RemoteCommand, RemoteState } from './lib/remote-types';
+import type { RemoteCommand, RemoteState, RemotePlaylistHymn } from './lib/remote-types';
 import { PlaylistColumn } from './components/PlaylistColumn';
 import { SlideGridColumn } from './components/SlideGridColumn';
 import LivePreviewColumn from './components/LivePreviewColumn';
@@ -297,15 +297,26 @@ export default function VisualizadorPage() {
         case 'PREV_SLIDE':
           dispatch({ type: 'PREV_SLIDE' });
           break;
+        case 'SET_SLIDE':
+          dispatch({ type: 'SET_ACTIVE_SLIDE', index: cmd.index });
+          break;
+        case 'SET_HYMN':
+          dispatch({ type: 'SET_ACTIVE_HYMN', index: cmd.index });
+          break;
         case 'SET_PROJECTION_MODE':
           dispatch({ type: 'SET_PROJECTION_MODE', mode: cmd.mode });
           break;
         case 'SET_AUDIO_PLAYING':
           dispatch({ type: 'SET_AUDIO_PLAYING', playing: cmd.playing });
           break;
+        case 'SET_AUDIO_TRACK': {
+          const hymnId = state.playlist[state.activeHymnIndex]?.id;
+          if (hymnId) dispatch({ type: 'SET_AUDIO_TRACK', hymnId, trackField: cmd.trackField });
+          break;
+        }
       }
     },
-    [dispatch],
+    [dispatch, state.activeHymnIndex, state.playlist],
   );
 
   const { pin, connected, pushState } = useRemoteRoom({
@@ -314,13 +325,30 @@ export default function VisualizadorPage() {
 
   // Enviar estado remoto a moviles cuando cambia
   useEffect(() => {
+    const AUDIO_FIELDS = ['track_only', 'soprano_voice', 'alto_voice', 'tenor_voice', 'bass_voice'] as const;
+
+    const playlist: RemotePlaylistHymn[] = state.playlist.map((h) => ({
+      id: h.id,
+      name: h.hymnData.name,
+      hymnNumber: h.hymnData.hymn_number,
+      slideCount: h.slides.length,
+      slideLabels: h.slides.map((s) => s.verseLabel),
+      audioTracks: AUDIO_FIELDS.filter((f) => {
+        const files = h.hymnData.audioFiles;
+        return files && (files as unknown as Record<string, unknown>)[f] != null;
+      }),
+    }));
+
     const remoteState: RemoteState = {
+      activeHymnIndex: state.activeHymnIndex,
       activeHymnName: activeHymn?.hymnData.name ?? '',
       activeSlideLabel: currentSlide?.label ?? '',
       activeSlideIndex: state.activeSlideIndex,
       totalSlides: activeHymn?.slides.length ?? 0,
       projectionMode: state.projectionMode,
       audioPlaying: state.audio.playing,
+      audioTrackField: state.audio.trackField,
+      playlist,
     };
     pushState(remoteState);
   }, [
@@ -328,6 +356,8 @@ export default function VisualizadorPage() {
     state.activeSlideIndex,
     state.projectionMode,
     state.audio.playing,
+    state.audio.trackField,
+    state.playlist,
     activeHymn,
     currentSlide,
     pushState,
