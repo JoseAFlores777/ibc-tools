@@ -191,7 +191,27 @@ const detailsCache = new Map<string, HymnForPdf>();
 export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSelected, onToggleSelect, onSyncPage }: HymnDetailViewProps) {
   const [details, setDetails] = useState<HymnForPdf | null>(detailsCache.get(hymn.id) ?? null);
   const [loading, setLoading] = useState(!detailsCache.has(hymn.id));
+  const [showStickyHeader, setShowStickyHeader] = useState(false);
+  const headerSentinelRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Detectar cuando el header sale del area visible (funciona dentro de dialogs con scroll)
+  useEffect(() => {
+    const sentinel = headerSentinelRef.current;
+    if (!sentinel) return;
+
+    // Buscar el contenedor scrolleable mas cercano
+    const scrollParent = sentinel.closest('[data-radix-scroll-area-viewport]') ??
+      sentinel.closest('.overflow-auto, .overflow-y-auto') ??
+      null;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyHeader(!entry.isIntersecting),
+      { threshold: 0, root: scrollParent },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, []);
 
   // Fetch con debounce para navegación rápida — cancela peticiones obsoletas
   useEffect(() => {
@@ -302,7 +322,57 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
   };
 
   return (
-    <div className="px-4 sm:px-8 py-6 sm:py-8">
+    <div className="px-4 sm:px-8 py-6 sm:py-8 relative">
+      {/* Sticky compact header — visible al scrollear más allá del header */}
+      {showStickyHeader && (
+        <div className="sticky top-0 z-20 -mx-4 sm:-mx-8 px-4 sm:px-8 py-2.5 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <button
+                onClick={onBack}
+                className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer flex-shrink-0"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              {hymn.hymn_number !== null && (
+                <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+                  {hymn.hymn_number}
+                </span>
+              )}
+              <span className="font-semibold text-sm text-slate-900 truncate">{hymn.name}</span>
+              {hymn.hymnal && (
+                <span className="hidden sm:inline text-xs text-slate-400 flex-shrink-0">{hymn.hymnal.name}</span>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              {results.length > 1 && (
+                <span className="hidden sm:inline text-xs text-slate-400 tabular-nums">
+                  {currentIndex + 1}/{results.length}
+                </span>
+              )}
+              <Button variant="outline" size="icon" className="h-7 w-7" disabled={!prevHymn} onClick={() => prevHymn && onNavigate(prevHymn)}>
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </Button>
+              <Button variant="outline" size="icon" className="h-7 w-7" disabled={!nextHymn} onClick={() => nextHymn && onNavigate(nextHymn)}>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant={isSelected ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 text-xs cursor-pointer gap-1"
+                onClick={() => onToggleSelect(hymn)}
+              >
+                {isSelected ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                <span className="hidden sm:inline">{isSelected ? 'Seleccionado' : 'Seleccionar'}</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sentinel — cuando este elemento sale del viewport, se muestra el sticky header */}
+      <div ref={headerSentinelRef} />
+
       {/* Top bar: breadcrumb + navegación + seleccionar */}
       <div className="flex items-center justify-between gap-4 mb-6">
         {/* Breadcrumb */}
