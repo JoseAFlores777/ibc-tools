@@ -73,10 +73,9 @@ interface PreviewLine {
 
 function parseHymnHtmlClient(html: string): PreviewLine[] {
   if (!html) return [];
-  // Crear un div temporal para parsear HTML
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  const paragraphs = div.querySelectorAll('p');
+  // Usar DOMParser en lugar de innerHTML para evitar XSS
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const paragraphs = doc.querySelectorAll('p');
   const lines: PreviewLine[] = [];
 
   paragraphs.forEach((p) => {

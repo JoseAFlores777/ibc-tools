@@ -37,6 +37,7 @@ export default function RootLayout({
               strategy="afterInteractive"
             />
             {process.env.NEXT_PUBLIC_CHATWOOT_BASE_URL &&
+              process.env.NEXT_PUBLIC_CHATWOOT_BASE_URL.startsWith('https://') &&
               process.env.NEXT_PUBLIC_CHATWOOT_WEBSITE_TOKEN && (
                 <Script
                   id="chatwoot-inline"
