@@ -6,7 +6,7 @@ import type { HymnForPdf, HymnAudioFiles } from '@/app/interfaces/Hymn.interface
 import { useVisualizador } from './hooks/useVisualizador';
 import { useBroadcastChannel } from './hooks/useBroadcastChannel';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
-import { useThemePersistence, loadTheme } from './hooks/useThemePersistence';
+import { useThemePersistence, usePlaylistPersistence, loadTheme, loadPlaylistIds } from './hooks/useThemePersistence';
 import { useRemoteRoom } from './hooks/useRemoteRoom';
 import type { ThemeConfig } from './lib/types';
 import type { RemoteCommand, RemoteState } from './lib/remote-types';
@@ -29,13 +29,33 @@ export default function VisualizadorPage() {
   const detailsCache = useRef<Map<string, HymnForPdf>>(new Map());
   const [isSmallScreen, setIsSmallScreen] = useState(false);
 
-  // Persistir tema en IndexedDB (debounced 500ms)
+  // Persistir tema y playlist en IndexedDB (debounced 500ms)
   useThemePersistence(state.theme);
+  usePlaylistPersistence(state.playlist);
 
-  // Restaurar tema desde IndexedDB al montar
+  // Restaurar tema y playlist desde IndexedDB al montar
   useEffect(() => {
     loadTheme().then((savedTheme) => {
       dispatch({ type: 'LOAD_THEME', theme: savedTheme });
+    });
+
+    loadPlaylistIds().then(async (ids) => {
+      if (ids.length === 0) return;
+      for (const id of ids) {
+        try {
+          let hymnData = detailsCache.current.get(id);
+          if (!hymnData) {
+            const res = await fetch(`/api/hymns/${id}`);
+            if (!res.ok) continue;
+            const json = await res.json();
+            hymnData = json.data as HymnForPdf;
+            detailsCache.current.set(id, hymnData);
+          }
+          dispatch({ type: 'ADD_HYMN', hymn: hymnData });
+        } catch {
+          // Skip hymns that fail to load
+        }
+      }
     });
   }, [dispatch]);
 
