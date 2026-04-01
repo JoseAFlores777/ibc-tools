@@ -515,6 +515,7 @@ export default function VisualizadorPage() {
         onPlayingChange={handlePlayingChange}
         volume={state.audio.volume}
         onVolumeChange={handleVolumeChange}
+        hymnName={activeHymn?.hymnData.name ?? ''}
       />
     </div>
   );

@@ -72,7 +72,7 @@ const AUDIO_COLORS: Record<string, string> = {
 const NON_PLAYABLE = new Set(['midi_file']);
 
 /** Reproductor individual con progress bar accesible */
-function AudioTrackPlayer({ field, fileInfo }: { field: string; fileInfo: AudioFileInfo }) {
+function AudioTrackPlayer({ field, fileInfo, hymnName }: { field: string; fileInfo: AudioFileInfo; hymnName?: string }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -169,7 +169,7 @@ function AudioTrackPlayer({ field, fileInfo }: { field: string; fileInfo: AudioF
 
         <a
           href={audioUrl}
-          download={fileInfo.filename_download || `${field}.mp3`}
+          download={hymnName ? `${hymnName} - ${AUDIO_LABELS[field] ?? field}.mp3` : (fileInfo.filename_download || `${field}.mp3`)}
           aria-label={`Descargar ${label}`}
           className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 opacity-40 hover:opacity-100 hover:bg-black/5 transition-all duration-200"
           onClick={(e) => e.stopPropagation()}
@@ -557,9 +557,10 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
                         fileInfo={info}
                         label={AUDIO_LABELS[field] ?? field}
                         colorClass={AUDIO_COLORS[field] ?? 'bg-slate-50 text-slate-700 border-slate-200'}
+                        hymnName={hymn.name}
                       />
                     ) : (
-                      <AudioTrackPlayer key={field} field={field} fileInfo={info} />
+                      <AudioTrackPlayer key={field} field={field} fileInfo={info} hymnName={hymn.name} />
                     ),
                   )}
                 </div>
@@ -643,7 +644,7 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
                             colorClass={AUDIO_COLORS[field] ?? 'bg-slate-50 text-slate-700 border-slate-200'}
                           />
                         ) : (
-                          <AudioTrackPlayer key={field} field={field} fileInfo={info} />
+                          <AudioTrackPlayer key={field} field={field} fileInfo={info} hymnName={hymn.name} />
                         ),
                       )}
                     </CardContent>

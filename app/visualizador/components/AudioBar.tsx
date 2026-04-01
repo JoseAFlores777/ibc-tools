@@ -83,6 +83,8 @@ interface AudioBarProps {
   volume: number;
   /** Callback cuando cambia el volumen */
   onVolumeChange: (volume: number) => void;
+  /** Nombre del himno actual para mostrar en la barra */
+  hymnName: string;
 }
 
 /** Handle expuesto via ref para controlar el audio desde el padre */
@@ -99,6 +101,7 @@ const AudioBar = forwardRef<AudioBarHandle, AudioBarProps>(function AudioBar({
   onPlayingChange,
   volume,
   onVolumeChange,
+  hymnName,
 }, ref) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const prevHymnIdRef = useRef<string | null>(null);
@@ -380,8 +383,8 @@ const AudioBar = forwardRef<AudioBarHandle, AudioBarProps>(function AudioBar({
 
         {/* Track selector */}
         <div className="flex flex-col gap-0.5 flex-shrink-0">
-          <span className="text-xs text-muted-foreground leading-none">
-            Pista de audio
+          <span className="text-xs text-muted-foreground leading-none truncate max-w-[200px]">
+            {hymnName || 'Pista de audio'}
           </span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

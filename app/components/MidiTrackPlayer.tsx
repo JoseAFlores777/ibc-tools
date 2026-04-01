@@ -10,6 +10,7 @@ interface MidiTrackPlayerProps {
   fileInfo: AudioFileInfo;
   label: string;
   colorClass: string;
+  hymnName?: string;
 }
 
 interface MidiTrackInfo {
@@ -95,7 +96,7 @@ function audioBufferToWav(buffer: AudioBuffer): Blob {
   return new Blob([ab], { type: 'audio/wav' });
 }
 
-export default function MidiTrackPlayer({ field, fileInfo, label, colorClass }: MidiTrackPlayerProps) {
+export default function MidiTrackPlayer({ field, fileInfo, label, colorClass, hymnName }: MidiTrackPlayerProps) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'playing' | 'error'>('idle');
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -294,7 +295,7 @@ export default function MidiTrackPlayer({ field, fileInfo, label, colorClass }: 
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${name}.wav`;
+    a.download = hymnName ? `${hymnName} - ${name}.wav` : `${name}.wav`;
     a.click();
     URL.revokeObjectURL(url);
   }, []);
@@ -356,7 +357,7 @@ export default function MidiTrackPlayer({ field, fileInfo, label, colorClass }: 
           </div>
         </div>
 
-        <a href={audioUrl} download={fileInfo.filename_download || 'midi.mid'} aria-label="Descargar MIDI"
+        <a href={audioUrl} download={hymnName ? `${hymnName} - MIDI.mid` : (fileInfo.filename_download || 'midi.mid')} aria-label="Descargar MIDI"
           className="h-7 w-7 rounded-lg flex items-center justify-center flex-shrink-0 text-slate-400 hover:text-slate-600 hover:bg-slate-200/80 transition-all"
           onClick={(e) => e.stopPropagation()}>
           <Download className="h-3.5 w-3.5" />
