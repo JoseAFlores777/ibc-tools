@@ -116,5 +116,5 @@ None yet.
 
 Last activity: 2026-03-31
 Last session: 2026-03-31T22:10:17Z
-Stopped at: Completed quick task 260331-mdy
+Stopped at: Completed quick task 260331-mdy + PlaylistColumn Dialog integration
 Resume file: None

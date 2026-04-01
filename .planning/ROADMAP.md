@@ -117,10 +117,10 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 06-01-PLAN.md -- Core infrastructure: types, slide builder, BroadcastChannel protocol, reducer, hooks (Wave 1)
-- [ ] 06-02-PLAN.md -- Control panel page shell, PlaylistColumn with DnD, SlideGridColumn with thumbnails (Wave 2)
-- [ ] 06-03-PLAN.md -- SlideRenderer, LivePreviewColumn, ProjectionControls, projection window with crossfade (Wave 3)
-- [ ] 06-04-PLAN.md -- AudioBar with playback controls, herramientas link, human verification (Wave 4)
+- [x] 06-01-PLAN.md -- Core infrastructure: types, slide builder, BroadcastChannel protocol, reducer, hooks (Wave 1)
+- [x] 06-02-PLAN.md -- Control panel page shell, PlaylistColumn with DnD, SlideGridColumn with thumbnails (Wave 2)
+- [x] 06-03-PLAN.md -- SlideRenderer, LivePreviewColumn, ProjectionControls, projection window with crossfade (Wave 3)
+- [x] 06-04-PLAN.md -- AudioBar with playback controls, herramientas link, human verification (Wave 4)
 
 ## Progress
 

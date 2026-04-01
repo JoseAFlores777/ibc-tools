@@ -4,6 +4,10 @@ import { parseHymnHtml } from '@/app/lib/pdf/html-to-pdf';
 
 export const dynamic = 'force-dynamic';
 
+/** Máximo de exports simultáneos (comparte presión con el ZIP) */
+const MAX_CONCURRENT = 5;
+let activeCount = 0;
+
 /** Formatos de exportacion soportados */
 type ExportFormat = 'pdf-decorated' | 'pdf-plain' | 'pptx' | 'presentation-pdf' | 'pro6';
 
@@ -34,6 +38,14 @@ export async function GET(
       );
     }
 
+    if (activeCount >= MAX_CONCURRENT) {
+      return NextResponse.json(
+        { ok: false, error: 'El servidor está procesando otras exportaciones. Intente de nuevo en unos segundos.' },
+        { status: 503, headers: { 'Retry-After': '5' } },
+      );
+    }
+
+    activeCount++;
     const hymn = await fetchHymnForPdf(id);
     const safeName = (hymn.hymn_number != null ? `${hymn.hymn_number} - ${hymn.name}` : hymn.name)
       .replace(/[/\\:*?"<>|]/g, '_');
@@ -104,5 +116,7 @@ export async function GET(
     const msg = error instanceof Error ? error.message : String(error);
     console.error('GET /api/hymns/[id]/export error:', msg);
     return NextResponse.json({ ok: false, error: 'Error al exportar' }, { status: 500 });
+  } finally {
+    activeCount--;
   }
 }
