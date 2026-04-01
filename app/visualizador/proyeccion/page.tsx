@@ -11,8 +11,6 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import SlideRenderer, { VIRTUAL_W, VIRTUAL_H } from '../components/SlideRenderer';
 import { CHANNEL_NAME } from '../lib/projection-channel';
 import { DEFAULT_THEME } from '../lib/theme-presets';
-import { useAutoFontSize } from '../hooks/useAutoFontSize';
-import { getFontFamily } from '../lib/theme-presets';
 import type { ProjectionMessage } from '../lib/projection-channel';
 import type { SlideData, ThemeConfig, ProjectionMode } from '../lib/types';
 
@@ -36,15 +34,6 @@ export default function ProyeccionPage() {
     window.addEventListener('resize', updateSize);
     return () => window.removeEventListener('resize', updateSize);
   }, []);
-
-  // Calcular tamano de fuente a resolucion virtual (igual que previews)
-  const autoFontSize = useAutoFontSize({
-    text: currentSlide?.text ?? '',
-    containerWidth: VIRTUAL_W,
-    containerHeight: VIRTUAL_H,
-    fontFamily: getFontFamily(theme.fontPreset),
-    sizeOffset: fontSizeOffset,
-  });
 
   // Escala para ajustar el render virtual al tamaño real de la ventana
   const scaleX = windowSize.width > 0 ? windowSize.width / VIRTUAL_W : 1;
@@ -149,7 +138,6 @@ export default function ProyeccionPage() {
             slide={currentSlide}
             theme={theme}
             mode={mode}
-            fontSize={autoFontSize}
           />
         </motion.div>
       </AnimatePresence>

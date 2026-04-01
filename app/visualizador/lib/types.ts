@@ -9,10 +9,16 @@ import type { HymnForPdf } from '@/app/interfaces/Hymn.interface';
 export interface SlideData {
   /** Display label (e.g. "Introduccion", "CORO") */
   label: string;
-  /** Slide content text */
+  /** Slide content text (for stanza/chorus slides) */
   text: string;
   /** Verse section label for sidebar grouping (e.g. "ESTROFA I", "CORO") */
   verseLabel: string;
+  /** Intro slide structured fields (only present on intro slides) */
+  intro?: {
+    hymnName: string;
+    bibleText?: string;
+    bibleReference?: string;
+  };
 }
 
 /** A hymn in the playlist with pre-built slides */

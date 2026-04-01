@@ -2,9 +2,14 @@
 
 /**
  * Componente compartido para renderizar diapositivas de himnos.
- * Siempre renderiza a tamaño de proyeccion (1920x1080) con las mismas
- * dimensiones absolutas. Los contenedores de preview lo escalan con
- * CSS transform: scale() para que sea una miniatura pixel-perfect.
+ * Siempre renderiza a tamaño de proyeccion (1920x1080).
+ * Los contenedores de preview lo escalan con CSS transform: scale().
+ *
+ * Tamaños de fuente fijos (identicos a ProPresenter):
+ *   - Estrofas/Coro: Helvetica Bold 26pt
+ *   - Titulo intro (HIMNO + nombre): Helvetica Bold 36pt
+ *   - Texto biblico intro: Helvetica Italic 22pt
+ *   - Referencia biblica intro: Helvetica Bold 22pt (alineada derecha)
  */
 
 import { useState } from 'react';
@@ -15,12 +20,15 @@ import { getFontFamily } from '../lib/theme-presets';
 const VIRTUAL_W = 1920;
 const VIRTUAL_H = 1080;
 
+/** Tamaños de fuente fijos (matching ProPresenter RTF half-points / 2) */
+const STANZA_FONT_SIZE = 26;
+const INTRO_TITLE_FONT_SIZE = 36;
+const INTRO_BODY_FONT_SIZE = 22;
+
 interface SlideRendererProps {
   slide: SlideData | null;
   theme: ThemeConfig;
   mode: ProjectionMode;
-  /** Font size calculado externamente (para la resolucion virtual) */
-  fontSize?: number;
   /** Clases CSS adicionales del contenedor padre */
   className?: string;
 }
@@ -29,13 +37,12 @@ export default function SlideRenderer({
   slide,
   theme,
   mode,
-  fontSize = 48,
   className = '',
 }: SlideRendererProps) {
   const [logoError, setLogoError] = useState(false);
 
-  // Calcular estilos de fondo segun tipo de tema
   const backgroundStyle = getBackgroundStyle(theme);
+  const fontFamily = getFontFamily(theme.fontPreset);
 
   const containerClasses = `relative overflow-hidden ${className}`.trim();
   const containerStyle: React.CSSProperties = {
@@ -44,7 +51,7 @@ export default function SlideRenderer({
     ...backgroundStyle,
   };
 
-  // Modo negro: fondo negro sin texto
+  // Modo negro
   if (mode === 'black') {
     return (
       <div
@@ -54,12 +61,12 @@ export default function SlideRenderer({
     );
   }
 
-  // Modo limpiar: fondo tematico sin texto
+  // Modo limpiar
   if (mode === 'clear') {
     return <div className={containerClasses} style={containerStyle} />;
   }
 
-  // Modo logo: fondo tematico con logo centrado
+  // Modo logo
   if (mode === 'logo') {
     return (
       <div className={containerClasses} style={containerStyle}>
@@ -75,8 +82,9 @@ export default function SlideRenderer({
             <span
               style={{
                 color: '#ffffff',
-                fontSize: '48px',
-                fontFamily: getFontFamily(theme.fontPreset),
+                fontSize: `${INTRO_TITLE_FONT_SIZE}px`,
+                fontFamily,
+                fontWeight: 'bold',
                 textAlign: 'center',
               }}
             >
@@ -88,44 +96,110 @@ export default function SlideRenderer({
     );
   }
 
-  // Modo slide: fondo tematico con etiqueta de verso y texto de la letra
+  // Modo slide: diferenciar intro de estrofa/coro
+  const isIntro = !!slide?.intro;
+  const sizeOffset = theme.fontSizeOffset;
+
   return (
     <div className={containerClasses} style={containerStyle}>
-      {/* Area segura con padding de 80px */}
       <div
         className="absolute inset-0 flex flex-col"
         style={{ padding: '80px' }}
       >
-        {/* Etiqueta del verso en la parte superior */}
-        {slide?.verseLabel && (
+        {/* Etiqueta del verso */}
+        {slide?.verseLabel && !isIntro && (
           <div
             className="text-center flex-shrink-0"
             style={{
               fontSize: '24px',
               color: 'rgba(255,255,255,0.5)',
-              fontFamily: getFontFamily(theme.fontPreset),
+              fontFamily,
+              marginBottom: '16px',
             }}
           >
             {slide.verseLabel}
           </div>
         )}
 
-        {/* Texto de la letra centrado vertical y horizontalmente */}
-        <div className="flex-1 flex items-center justify-center">
-          <div
-            style={{
-              fontSize: `${fontSize}px`,
-              color: '#ffffff',
-              lineHeight: 1.4,
-              fontFamily: getFontFamily(theme.fontPreset),
-              textAlign: 'center',
-              width: '100%',
-            }}
-          >
-            {slide?.text.split('\n').map((line, i) => (
-              <div key={i}>{line || '\u00A0'}</div>
-            ))}
-          </div>
+        {/* Contenido */}
+        <div className="flex-1 flex items-center justify-center overflow-hidden">
+          {isIntro ? (
+            // --- INTRO SLIDE: formato diferenciado ---
+            <div style={{ textAlign: 'center', width: '100%' }}>
+              {/* HIMNO */}
+              <div
+                style={{
+                  fontSize: `${INTRO_TITLE_FONT_SIZE + sizeOffset}px`,
+                  color: '#ffffff',
+                  fontFamily,
+                  fontWeight: 'bold',
+                  lineHeight: 1.4,
+                }}
+              >
+                HIMNO
+              </div>
+              {/* Nombre del himno en mayusculas con comillas */}
+              <div
+                style={{
+                  fontSize: `${INTRO_TITLE_FONT_SIZE + sizeOffset}px`,
+                  color: '#ffffff',
+                  fontFamily,
+                  fontWeight: 'bold',
+                  lineHeight: 1.4,
+                  marginBottom: '24px',
+                }}
+              >
+                &ldquo;{slide.intro!.hymnName.toUpperCase()}&rdquo;
+              </div>
+              {/* Texto biblico (italica, mas pequeno) */}
+              {slide.intro!.bibleText && (
+                <div
+                  style={{
+                    fontSize: `${INTRO_BODY_FONT_SIZE + sizeOffset}px`,
+                    color: '#ffffff',
+                    fontFamily,
+                    fontStyle: 'italic',
+                    lineHeight: 1.5,
+                    marginBottom: '16px',
+                  }}
+                >
+                  &ldquo;{slide.intro!.bibleText}&rdquo;
+                </div>
+              )}
+              {/* Referencia biblica (bold, alineada derecha) */}
+              {slide.intro!.bibleReference && (
+                <div
+                  style={{
+                    fontSize: `${INTRO_BODY_FONT_SIZE + sizeOffset}px`,
+                    color: '#ffffff',
+                    fontFamily,
+                    fontWeight: 'bold',
+                    textAlign: 'right',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {slide.intro!.bibleReference}
+                </div>
+              )}
+            </div>
+          ) : (
+            // --- ESTROFA/CORO: Helvetica Bold 26pt ---
+            <div
+              style={{
+                fontSize: `${STANZA_FONT_SIZE + sizeOffset}px`,
+                color: '#ffffff',
+                lineHeight: 1.5,
+                fontFamily,
+                fontWeight: 'bold',
+                textAlign: 'center',
+                width: '100%',
+              }}
+            >
+              {slide?.text.split('\n').map((line, i) => (
+                <div key={i}>{line || '\u00A0'}</div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -11,8 +11,6 @@ import { useRef, useState, useEffect } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import SlideRenderer, { VIRTUAL_W, VIRTUAL_H } from './SlideRenderer';
 import ProjectionControls from './ProjectionControls';
-import { useAutoFontSize } from '../hooks/useAutoFontSize';
-import { getFontFamily } from '../lib/theme-presets';
 import type { SlideData, ThemeConfig, ProjectionMode, FontPresetKey } from '../lib/types';
 
 interface LivePreviewColumnProps {
@@ -64,15 +62,6 @@ export default function LivePreviewColumn({
   const scale = containerWidth > 0 ? containerWidth / VIRTUAL_W : 0;
   const scaledHeight = VIRTUAL_H * scale;
 
-  // Auto font size a resolucion virtual (misma que la proyeccion fullscreen)
-  const autoFontSize = useAutoFontSize({
-    text: currentSlide?.text ?? '',
-    containerWidth: VIRTUAL_W,
-    containerHeight: VIRTUAL_H,
-    fontFamily: getFontFamily(theme.fontPreset),
-    sizeOffset: theme.fontSizeOffset,
-  });
-
   // Key para crossfade identica a la ventana de proyeccion
   const slideKey =
     projectionMode !== 'slide'
@@ -102,7 +91,7 @@ export default function LivePreviewColumn({
                   className="text-white/60 text-center px-4"
                   style={{
                     fontSize: '10px',
-                    fontFamily: getFontFamily(theme.fontPreset),
+                    fontFamily: 'system-ui, sans-serif',
                   }}
                 >
                   Iglesia Bautista El Calvario
@@ -126,7 +115,6 @@ export default function LivePreviewColumn({
                     slide={currentSlide}
                     theme={theme}
                     mode={projectionMode}
-                    fontSize={autoFontSize}
                   />
                 </motion.div>
               </AnimatePresence>

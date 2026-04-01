@@ -1,9 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import SlideRenderer, { VIRTUAL_W, VIRTUAL_H } from './SlideRenderer';
-import { useAutoFontSize } from '../hooks/useAutoFontSize';
-import { getFontFamily } from '../lib/theme-presets';
+import SlideRenderer, { VIRTUAL_W } from './SlideRenderer';
 import type { SlideData, ThemeConfig } from '../lib/types';
 import { cn } from '@/app/lib/shadcn/utils';
 
@@ -43,14 +41,6 @@ export function SlideThumbnail({
     return () => observer.disconnect();
   }, []);
 
-  const autoFontSize = useAutoFontSize({
-    text: slide.text,
-    containerWidth: VIRTUAL_W,
-    containerHeight: VIRTUAL_H,
-    fontFamily: getFontFamily(theme.fontPreset),
-    sizeOffset: theme.fontSizeOffset,
-  });
-
   return (
     <button
       type="button"
@@ -73,7 +63,6 @@ export function SlideThumbnail({
             slide={slide}
             theme={theme}
             mode="slide"
-            fontSize={autoFontSize}
           />
         </div>
       )}

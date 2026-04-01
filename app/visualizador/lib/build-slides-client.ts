@@ -169,7 +169,7 @@ export function buildSlideGroups(
   // --- Construir slides (identico a ProPresenter) ---
   const slides: SlideData[] = [];
 
-  // 1. Introduccion: HIMNO + nombre en mayusculas + cita biblica
+  // 1. Introduccion con datos estructurados para formato diferenciado
   const introLines: string[] = ['HIMNO', `"${hymn.name.toUpperCase()}"`];
   if (hymn.bible_text) introLines.push('', `"${hymn.bible_text}"`);
   if (hymn.bible_reference) introLines.push(hymn.bible_reference);
@@ -178,6 +178,11 @@ export function buildSlideGroups(
     label: 'Introduccion',
     text: introLines.join('\n'),
     verseLabel: 'Introduccion',
+    intro: {
+      hymnName: hymn.name,
+      bibleText: hymn.bible_text || undefined,
+      bibleReference: hymn.bible_reference || undefined,
+    },
   });
 
   // 2. Intercalar estrofas y coro
