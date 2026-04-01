@@ -18,6 +18,15 @@ export async function GET(
   { params }: { params: Promise<{ pin: string }> },
 ) {
   const { pin } = await params;
+
+  // Validar formato del PIN (4-6 digitos, compatible con transicion)
+  if (!/^\d{4,6}$/.test(pin)) {
+    return new Response(JSON.stringify({ error: 'Formato de PIN invalido' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   const role = request.nextUrl.searchParams.get('role') === 'desktop' ? 'desktop' : 'mobile';
 
   const room = getRoom(pin);
@@ -31,7 +40,14 @@ export async function GET(
   const { readable, writable } = new TransformStream();
   const writer = writable.getWriter();
 
-  addListener(pin, role, writer);
+  const added = addListener(pin, role, writer);
+  if (!added) {
+    writer.close().catch(() => {});
+    return new Response(JSON.stringify({ error: 'Demasiadas conexiones' }), {
+      status: 429,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
   // Enviar estado actual a late-joiners mobile
   if (role === 'mobile') {
