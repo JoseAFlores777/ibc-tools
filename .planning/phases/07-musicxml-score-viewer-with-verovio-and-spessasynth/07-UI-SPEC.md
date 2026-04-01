@@ -48,9 +48,11 @@ Exceptions: Touch targets for playback buttons use 44px minimum (accessibility).
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 14px | 400 (regular) | 1.5 |
-| Label | 12px | 500 (medium) | 1.4 |
+| Label | 12px | 400 (regular) | 1.4 |
 | Heading | 16px | 600 (semibold) | 1.2 |
 | Display | 20px | 600 (semibold) | 1.2 |
+
+Two weights only: 400 (regular) for body text and labels, 600 (semibold) for headings and display.
 
 Source: Matches existing HymnDetailView typography (text-sm = 14px body, text-xs = 12px labels, text-base = 16px headings).
 
@@ -82,6 +84,12 @@ Accent reserved for:
 | Loading overlay | `hsl(var(--background) / 0.8)` | `hsl(var(--background) / 0.8)` | Semi-transparent overlay during WASM/SoundFont loading |
 | Seek bar track | `hsl(var(--border))` | `hsl(var(--border))` | Unfilled portion of the seek slider |
 | Tempo badge | `hsl(var(--muted))` | `hsl(var(--muted))` | Background of the tempo display chip |
+
+---
+
+## Visual Focal Point
+
+Primary visual anchor: SVG Score Area. All surrounding UI (toolbar above, playback controls below) serves this central rendered score. User attention flows to the score first, then to playback controls for interaction.
 
 ---
 
@@ -137,7 +145,7 @@ The main reusable component. `'use client'`, dynamically imported with `ssr: fal
 | Ended | Resets to start. Play button shows Play icon. Seek at 0:00. |
 | Error (WASM) | Red alert banner: "No se pudo cargar el visor de partituras. Intenta recargar la pagina." |
 | Error (SoundFont) | Score still renders (SVG visible). Playback controls disabled. Muted banner: "Audio no disponible. La partitura se puede ver pero no reproducir." |
-| Error (MusicXML) | Empty state: ScrollText icon (muted) + "No se pudo cargar la partitura" |
+| Error (MusicXML) | Empty state: ScrollText icon (muted) + "No se pudo cargar la partitura. Intenta recargar la pagina." |
 
 ### ScoreViewerControls (new)
 
@@ -231,7 +239,7 @@ The existing placeholder in `HymnDetailView` (lines 659-665) is replaced with:
 | Empty state body | Proximamente |
 | Error: WASM failed | No se pudo cargar el visor de partituras. Intenta recargar la pagina. |
 | Error: SoundFont failed | Audio no disponible. La partitura se puede ver pero no reproducir. |
-| Error: MusicXML failed | No se pudo cargar la partitura |
+| Error: MusicXML failed | No se pudo cargar la partitura. Intenta recargar la pagina. |
 | Zoom in tooltip | Acercar |
 | Zoom out tooltip | Alejar |
 | Zoom reset tooltip | Restablecer zoom |
