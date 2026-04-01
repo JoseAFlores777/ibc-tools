@@ -151,7 +151,7 @@ export async function searchHymns(filters: HymnSearchFilters): Promise<HymnSearc
     'categories.hymn_categories_id.id',
     'categories.hymn_categories_id.name',
     ...buildAudioFields(),
-    'materials.musicxml',
+    'musicxml',
   ];
 
   try {
@@ -169,7 +169,7 @@ export async function searchHymns(filters: HymnSearchFilters): Promise<HymnSearc
     return (items as any[]).map((item) => {
       const audioFiles = mapAudioFiles(item);
       const hasAnyAudio = AUDIO_FIELD_NAMES.some((field) => audioFiles[field] !== null);
-      const musicxmlFileId: string | null = item.materials?.musicxml ?? null;
+      const musicxmlFileId: string | null = item.musicxml ?? null;
 
       return {
         id: item.id,
