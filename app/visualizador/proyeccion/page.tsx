@@ -70,19 +70,37 @@ export default function ProyeccionPage() {
     }
   }, []);
 
-  // Crear BroadcastChannel y enviar PING al montar
+  // Crear BroadcastChannel, enviar PING al montar, y heartbeat periodico
   useEffect(() => {
-    const channel = new BroadcastChannel(CHANNEL_NAME);
+    let channel = new BroadcastChannel(CHANNEL_NAME);
     channelRef.current = channel;
 
     channel.onmessage = (event: MessageEvent<ProjectionMessage>) => {
       handleMessage(event.data);
     };
 
-    // Enviar PING para iniciar handshake con el panel de control
+    // PING inicial para handshake
     channel.postMessage({ type: 'PING' } satisfies ProjectionMessage);
 
+    // Heartbeat cada 3s: si el canal se desconecto silenciosamente,
+    // recrearlo y reenviar PING para resincronizar
+    const heartbeat = setInterval(() => {
+      try {
+        channel.postMessage({ type: 'PING' } satisfies ProjectionMessage);
+      } catch {
+        // Canal cerrado — recrear
+        try { channel.close(); } catch { /* ignore */ }
+        channel = new BroadcastChannel(CHANNEL_NAME);
+        channelRef.current = channel;
+        channel.onmessage = (event: MessageEvent<ProjectionMessage>) => {
+          handleMessage(event.data);
+        };
+        channel.postMessage({ type: 'PING' } satisfies ProjectionMessage);
+      }
+    }, 3000);
+
     return () => {
+      clearInterval(heartbeat);
       channel.close();
       channelRef.current = null;
     };

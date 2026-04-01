@@ -3,6 +3,7 @@
 /**
  * BroadcastChannel hook for cross-window projection communication.
  * Creates channel on mount, closes on unmount. Accepts optional onMessage callback.
+ * Automatically recreates the channel if postMessage fails (silent disconnect).
  */
 
 import { useRef, useEffect, useCallback } from 'react';
@@ -22,23 +23,38 @@ export function useBroadcastChannel(options?: UseBroadcastChannelOptions) {
   // Mantener referencia actualizada del callback sin recrear el channel
   onMessageRef.current = options?.onMessage;
 
-  useEffect(() => {
+  const createChannel = useCallback(() => {
     const channel = new BroadcastChannel(CHANNEL_NAME);
-    channelRef.current = channel;
-
     channel.onmessage = (event: MessageEvent<ProjectionMessage>) => {
       onMessageRef.current?.(event.data);
     };
+    channelRef.current = channel;
+    return channel;
+  }, []);
+
+  useEffect(() => {
+    createChannel();
 
     return () => {
-      channel.close();
+      channelRef.current?.close();
       channelRef.current = null;
     };
-  }, []);
+  }, [createChannel]);
 
   const send = useCallback((msg: ProjectionMessage) => {
-    channelRef.current?.postMessage(msg);
-  }, []);
+    try {
+      channelRef.current?.postMessage(msg);
+    } catch {
+      // Canal cerrado silenciosamente — recrear y reintentar
+      try { channelRef.current?.close(); } catch { /* ignore */ }
+      createChannel();
+      try {
+        channelRef.current?.postMessage(msg);
+      } catch {
+        // Si aun falla, no hay nada mas que hacer
+      }
+    }
+  }, [createChannel]);
 
   return { send };
 }
