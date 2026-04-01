@@ -47,8 +47,12 @@ export async function GET(
 
     activeCount++;
     const hymn = await fetchHymnForPdf(id);
-    const safeName = (hymn.hymn_number != null ? `${hymn.hymn_number} - ${hymn.name}` : hymn.name)
+    const rawName = (hymn.hymn_number != null ? `${hymn.hymn_number} - ${hymn.name}` : hymn.name)
       .replace(/[/\\:*?"<>|]/g, '_');
+    // ASCII fallback for Content-Disposition filename (strip non-ASCII)
+    const asciiName = rawName.replace(/[^\x20-\x7E]/g, '_');
+    // UTF-8 encoded version for filename* (RFC 5987)
+    const utf8Name = encodeURIComponent(rawName);
     const parsedHymn = { hymn, verses: parseHymnHtml(hymn.letter_hymn || '') };
 
     if (format === 'pdf-decorated' || format === 'pdf-plain') {
@@ -68,7 +72,7 @@ export async function GET(
       return new Response(new Uint8Array(buffer), {
         headers: {
           'Content-Type': 'application/pdf',
-          'Content-Disposition': `inline; filename="${safeName} (${style}).pdf"`,
+          'Content-Disposition': `inline; filename="${asciiName} (${style}).pdf"; filename*=UTF-8''${utf8Name}%20(${style}).pdf`,
         },
       });
     }
@@ -79,7 +83,7 @@ export async function GET(
       return new Response(new Uint8Array(buffer), {
         headers: {
           'Content-Type': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-          'Content-Disposition': `attachment; filename="${safeName}.pptx"`,
+          'Content-Disposition': `attachment; filename="${asciiName}.pptx"; filename*=UTF-8''${utf8Name}.pptx`,
         },
       });
     }
@@ -92,7 +96,7 @@ export async function GET(
       return new Response(new Uint8Array(buffer), {
         headers: {
           'Content-Type': 'application/pdf',
-          'Content-Disposition': `inline; filename="${safeName} (presentacion).pdf"`,
+          'Content-Disposition': `inline; filename="${asciiName} (presentacion).pdf"; filename*=UTF-8''${utf8Name}%20(presentacion).pdf`,
         },
       });
     }
@@ -106,7 +110,7 @@ export async function GET(
       return new Response(file.content, {
         headers: {
           'Content-Type': 'application/xml',
-          'Content-Disposition': `attachment; filename="${safeName}.pro6"`,
+          'Content-Disposition': `attachment; filename="${asciiName}.pro6"; filename*=UTF-8''${utf8Name}.pro6`,
         },
       });
     }
