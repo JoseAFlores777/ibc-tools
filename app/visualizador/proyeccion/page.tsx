@@ -140,7 +140,7 @@ export default function ProyeccionPage() {
       : `${currentSlide?.label ?? 'empty'}-${currentSlide?.text ?? ''}`;
 
   return (
-    <div className="w-screen h-screen overflow-hidden cursor-none relative bg-black flex items-center justify-center">
+    <div className="w-screen h-screen overflow-hidden relative bg-black flex items-center justify-center">
       {/* Diapositiva con crossfade — escalada de virtual (1920x1080) a pantalla real */}
       <AnimatePresence mode="wait">
         <motion.div
