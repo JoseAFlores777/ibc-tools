@@ -103,6 +103,17 @@ export default function EmpaquetadorPage() {
     }
   };
 
+  if (loadingPackage) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="text-center space-y-3">
+          <div className="inline-block h-8 w-8 rounded-full border-2 border-muted-foreground/20 border-t-primary animate-spin" />
+          <p className="text-sm text-muted-foreground">Cargando paquete...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (showHistory) {
     return (
       <PackageHistory

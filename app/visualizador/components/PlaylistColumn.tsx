@@ -35,6 +35,8 @@ interface PlaylistColumnProps {
   onRemoveHymn: (index: number) => void;
   onReorderPlaylist: (from: number, to: number) => void;
   onAddHymn: (hymn: HymnSearchResult) => void;
+  /** ID del himno que se esta cargando al agregar */
+  addingHymnId?: string | null;
 }
 
 /**
@@ -48,6 +50,7 @@ export function PlaylistColumn({
   onRemoveHymn,
   onReorderPlaylist,
   onAddHymn,
+  addingHymnId,
 }: PlaylistColumnProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -155,6 +158,12 @@ export function PlaylistColumn({
                   ))}
                 </SortableContext>
               </DndContext>
+              {addingHymnId && (
+                <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
+                  <div className="h-3.5 w-3.5 rounded-full border-2 border-muted-foreground/20 border-t-primary animate-spin" />
+                  Agregando himno...
+                </div>
+              )}
             </div>
           </ScrollArea>
         )}

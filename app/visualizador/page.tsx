@@ -29,6 +29,8 @@ export default function VisualizadorPage() {
   const { state, dispatch } = useVisualizador();
   const detailsCache = useRef<Map<string, HymnForPdf>>(new Map());
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(true);
+  const [addingHymnId, setAddingHymnId] = useState<string | null>(null);
 
   // Persistir tema y playlist en IndexedDB (debounced 500ms)
   useThemePersistence(state.theme);
@@ -36,13 +38,21 @@ export default function VisualizadorPage() {
 
   // Restaurar tema y playlist desde IndexedDB al montar
   useEffect(() => {
-    loadTheme().then((savedTheme) => {
-      dispatch({ type: 'LOAD_THEME', theme: savedTheme });
-    });
+    let cancelled = false;
 
-    loadPlaylistIds().then(async (ids) => {
-      if (ids.length === 0) return;
+    async function restore() {
+      const savedTheme = await loadTheme();
+      if (cancelled) return;
+      dispatch({ type: 'LOAD_THEME', theme: savedTheme });
+
+      const ids = await loadPlaylistIds();
+      if (cancelled || ids.length === 0) {
+        setIsRestoring(false);
+        return;
+      }
+
       for (const id of ids) {
+        if (cancelled) break;
         try {
           let hymnData = detailsCache.current.get(id);
           if (!hymnData) {
@@ -57,7 +67,11 @@ export default function VisualizadorPage() {
           // Skip hymns that fail to load
         }
       }
-    });
+      if (!cancelled) setIsRestoring(false);
+    }
+
+    restore();
+    return () => { cancelled = true; };
   }, [dispatch]);
 
   // Refs para la ventana de proyeccion y su monitoreo
@@ -215,9 +229,9 @@ export default function VisualizadorPage() {
   // Agregar himno: buscar detalle completo, luego dispatch ADD_HYMN
   const handleAddHymn = useCallback(
     async (result: HymnSearchResult) => {
-      // Evitar duplicados en la playlist
       if (state.playlist.some((h) => h.id === result.id)) return;
 
+      setAddingHymnId(result.id);
       try {
         let hymnData = detailsCache.current.get(result.id);
         if (!hymnData) {
@@ -230,6 +244,8 @@ export default function VisualizadorPage() {
         dispatch({ type: 'ADD_HYMN', hymn: hymnData });
       } catch (err) {
         console.error('Error al obtener detalle del himno:', err);
+      } finally {
+        setAddingHymnId(null);
       }
     },
     [state.playlist, dispatch],
@@ -369,6 +385,18 @@ export default function VisualizadorPage() {
     pushState,
   ]);
 
+  // Loader mientras se restaura la playlist desde IndexedDB
+  if (isRestoring) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="text-center space-y-3">
+          <div className="inline-block h-8 w-8 rounded-full border-2 border-muted-foreground/20 border-t-primary animate-spin" />
+          <p className="text-sm text-muted-foreground">Cargando visualizador...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Guardia de viewport minimo
   if (isSmallScreen) {
     return (
@@ -400,6 +428,7 @@ export default function VisualizadorPage() {
             onRemoveHymn={handleRemoveHymn}
             onReorderPlaylist={handleReorderPlaylist}
             onAddHymn={handleAddHymn}
+            addingHymnId={addingHymnId}
           />
         </div>
 
