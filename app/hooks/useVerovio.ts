@@ -65,13 +65,31 @@ export function useVerovio() {
   const loadScore = useCallback((musicXmlString: string): boolean => {
     const tk = toolkitRef.current;
     if (!tk) return false;
-    const loaded = tk.loadData(musicXmlString);
-    if (loaded) {
-      // CRITICO: renderToMIDI debe llamarse despues de loadData
-      // para construir el timing map interno (Pitfall 4)
-      tk.renderToMIDI();
+
+    // Verovio WASM emite console.error para warnings no fatales (beam/chord).
+    // Next.js 16 dev overlay los muestra como errores bloqueantes.
+    // Silenciar temporalmente durante loadData y renderToMIDI.
+    const origError = console.error;
+    console.error = (...args: unknown[]) => {
+      const msg = String(args[0] ?? '');
+      if (msg.includes('beam') || msg.includes('Chord') || msg.includes('MusicXML import')) {
+        console.warn('[Verovio]', ...args);
+        return;
+      }
+      origError.apply(console, args);
+    };
+
+    try {
+      const loaded = tk.loadData(musicXmlString);
+      if (loaded) {
+        // CRITICO: renderToMIDI debe llamarse despues de loadData
+        // para construir el timing map interno (Pitfall 4)
+        tk.renderToMIDI();
+      }
+      return loaded;
+    } finally {
+      console.error = origError;
     }
-    return loaded;
   }, []);
 
   /** Renderiza una pagina como SVG */
