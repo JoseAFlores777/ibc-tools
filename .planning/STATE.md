@@ -113,6 +113,7 @@ None yet.
 | 260331-mdy | Refactor hymn selection: extract shared HymnExplorer component | 2026-03-31 | d545a75 | [260331-mdy-refactor-hymn-selection-to-share-hymnexp](./quick/260331-mdy-refactor-hymn-selection-to-share-hymnexp/) |
 | 260331-q3m | SSE + POST remote control for Visualizador (PIN rooms, QR, mobile control) | 2026-03-31 | 1e88427 | [260331-q3m-sse-post-remote-control-for-visualizador](./quick/260331-q3m-sse-post-remote-control-for-visualizador/) |
 | 260331-r1c | Unified IndexedDB with import/export and local-storage warning | 2026-03-31 | 0eade36 | [260331-r1c-unified-indexeddb-with-import-export-and](./quick/260331-r1c-unified-indexeddb-with-import-export-and/) |
+| 260401-bkw | Show hymn name in AudioBar, descriptive download filenames, fix MIDI progress | 2026-04-01 | 8657030 | [260401-bkw-show-track-name-in-audiobar-proper-downl](./quick/260401-bkw-show-track-name-in-audiobar-proper-downl/) |
 
 ## Session Continuity
 
