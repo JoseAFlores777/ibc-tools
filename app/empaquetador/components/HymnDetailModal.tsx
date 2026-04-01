@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import type { HymnSearchResult, AudioFileInfo } from '@/app/interfaces/Hymn.interface';
 import type { HymnForPdf } from '@/app/interfaces/Hymn.interface';
 import {
@@ -11,7 +12,13 @@ import {
   CardHeader,
   CardTitle,
   Separator,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
 } from '@/lib/shadcn/ui';
+
+const ScoreViewer = dynamic(() => import('@/app/components/ScoreViewer'), { ssr: false });
 import { cn } from '@/app/lib/shadcn/utils';
 import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
@@ -34,6 +41,7 @@ import {
   Presentation,
   Monitor,
   Film,
+  ScrollText,
 } from 'lucide-react';
 
 interface HymnDetailViewProps {
@@ -585,13 +593,23 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
                 </Card>
               )}
 
-              {/* Letra */}
+              <Tabs defaultValue="letra">
+                <TabsList className="w-full justify-start">
+                  <TabsTrigger value="letra" className="gap-1.5 cursor-pointer">
+                    <FileText className="h-3.5 w-3.5" />
+                    Letra
+                  </TabsTrigger>
+                  <TabsTrigger value="partitura" className="gap-1.5 cursor-pointer">
+                    <ScrollText className="h-3.5 w-3.5" />
+                    Partitura
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Tab: Letra */}
+                <TabsContent value="letra">
               {details?.letter_hymn ? (
-                <article>
-                  <div className="flex items-center justify-between mb-5">
-                    <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      Letra del Himno
-                    </h2>
+                <article className="pt-4">
+                  <div className="flex items-center justify-end mb-3">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -618,6 +636,24 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
                   <p className="text-sm text-slate-400">Letra no disponible para este himno.</p>
                 </div>
               )}
+                </TabsContent>
+
+                {/* Tab: Partitura */}
+                <TabsContent value="partitura">
+                  {hymn.hasMusicXml && hymn.musicxmlFileId ? (
+                    <ScoreViewer
+                      musicxmlFileId={hymn.musicxmlFileId}
+                      midiFileId={hymn.audioFiles.midi_file?.id}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                      <ScrollText className="h-10 w-10 text-slate-200 mb-3" />
+                      <p className="text-sm font-medium text-slate-500 mb-1">Partitura</p>
+                      <p className="text-xs text-slate-400">Proximamente</p>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
 
             {/* Columna derecha: Audio + Exportar (1/3) — sticky, hidden en mobile (ya se muestra arriba) */}
