@@ -14,7 +14,7 @@ import { ChevronLeft, ChevronRight, History, Package } from 'lucide-react';
 import { deserializeAudioSelections } from '@/app/empaquetador/lib/package-db';
 import type { SavedPackage } from '@/app/empaquetador/lib/package-db';
 import type { HymnSearchResult } from '@/app/interfaces/Hymn.interface';
-import LocalStorageWarning from '@/app/components/LocalStorageWarning';
+import { ToolSettingsButton, ToolWelcomeModal } from '@/app/components/LocalStorageWarning';
 
 export default function EmpaquetadorPage() {
   const [state, dispatch] = useWizardReducer();
@@ -114,7 +114,7 @@ export default function EmpaquetadorPage() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
-      <LocalStorageWarning tool="empaquetador" />
+      <ToolWelcomeModal tool="empaquetador" toolLabel="Empaquetador de Himnos" />
       {/* Contenido: sidebar + step */}
       <div className="flex-1 overflow-hidden pb-[68px] flex">
         {/* Sidebar compartido — visible en todos los steps */}

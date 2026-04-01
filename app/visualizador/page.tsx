@@ -14,7 +14,7 @@ import { PlaylistColumn } from './components/PlaylistColumn';
 import { SlideGridColumn } from './components/SlideGridColumn';
 import LivePreviewColumn from './components/LivePreviewColumn';
 import AudioBar from './components/AudioBar';
-import LocalStorageWarning from '@/app/components/LocalStorageWarning';
+import { ToolSettingsButton, ToolWelcomeModal } from '@/app/components/LocalStorageWarning';
 import type { ProjectionMessage } from './lib/projection-channel';
 
 /**
@@ -388,7 +388,7 @@ export default function VisualizadorPage() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
-      <LocalStorageWarning tool="visualizador" />
+      <ToolWelcomeModal tool="visualizador" toolLabel="Visualizador de Himnos" />
       {/* Area principal: 3 columnas */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Columna izquierda: Playlist */}

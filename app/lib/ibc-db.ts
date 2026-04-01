@@ -312,6 +312,30 @@ export async function downloadExport(tool: 'visualizador' | 'empaquetador' | 'al
   URL.revokeObjectURL(url);
 }
 
+/** Verifica si el store de una herramienta esta vacio */
+export async function isToolEmpty(tool: 'visualizador' | 'empaquetador'): Promise<boolean> {
+  try {
+    const db = await openIbcDB();
+    const store = tool === 'visualizador' ? STORE_VISUALIZADOR : STORE_EMPAQUETADOR;
+    return new Promise((resolve) => {
+      const tx = db.transaction(store, 'readonly');
+      const req = tx.objectStore(store).count();
+      req.onsuccess = () => {
+        const count = req.result;
+        // Visualizador puede tener solo el _migrated flag — eso cuenta como vacio
+        if (tool === 'visualizador') {
+          resolve(count <= 1); // 0 or just the _migrated key
+        } else {
+          resolve(count === 0);
+        }
+      };
+      req.onerror = () => resolve(true);
+    });
+  } catch {
+    return true;
+  }
+}
+
 /** Lee y valida un archivo .ibctools */
 export async function readImportFile(file: File): Promise<IbcToolsExport> {
   const text = await file.text();

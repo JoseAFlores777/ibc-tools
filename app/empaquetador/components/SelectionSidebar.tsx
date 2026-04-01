@@ -5,6 +5,7 @@ import type { WizardState, WizardAction } from '@/app/empaquetador/hooks/useWiza
 import SelectedHymnChip from '@/app/empaquetador/components/SelectedHymnChip';
 import { Badge, Button, ScrollArea } from '@/lib/shadcn/ui';
 import { History, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { ToolSettingsButton } from '@/app/components/LocalStorageWarning';
 
 interface SelectionSidebarProps {
   state: WizardState;
@@ -58,19 +59,20 @@ export default function SelectionSidebar({ state, dispatch, onShowHistory }: Sel
               </p>
             )}
           </div>
-          {onShowHistory && (
-            <div className="px-3 py-2 border-t border-slate-200 flex-shrink-0">
+          <div className="px-3 py-2 border-t border-slate-200 flex-shrink-0 flex items-center gap-1">
+            {onShowHistory && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onShowHistory}
-                className="w-full justify-start h-8 text-xs text-slate-400 hover:text-slate-700 cursor-pointer"
+                className="flex-1 justify-start h-8 text-xs text-slate-400 hover:text-slate-700 cursor-pointer"
               >
                 <History className="h-3.5 w-3.5 mr-2" />
                 Historial
               </Button>
-            </div>
-          )}
+            )}
+            <ToolSettingsButton tool="empaquetador" />
+          </div>
         </>
       ) : (
         <div className="flex flex-col items-center pt-3 gap-2 flex-1">

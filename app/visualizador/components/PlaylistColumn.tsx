@@ -18,6 +18,7 @@ import type { PlaylistHymn } from '../lib/types';
 import type { HymnSearchResult } from '@/app/interfaces/Hymn.interface';
 import HymnExplorer from '@/app/components/HymnExplorer';
 import { PlaylistItem } from './PlaylistItem';
+import { ToolSettingsButton } from '@/app/components/LocalStorageWarning';
 import {
   ScrollArea,
   Button,
@@ -87,16 +88,17 @@ export function PlaylistColumn({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Boton para agregar himnos */}
-      <div className="p-3 border-b border-border">
+      {/* Header: agregar himnos + configuracion */}
+      <div className="p-3 border-b border-border flex items-center gap-1.5">
         <Button
           variant="outline"
-          className="w-full h-8 text-sm cursor-pointer"
+          className="flex-1 h-8 text-sm cursor-pointer"
           onClick={() => setDialogOpen(true)}
         >
           <Plus className="h-3.5 w-3.5 mr-1.5" />
           Agregar himno
         </Button>
+        <ToolSettingsButton tool="visualizador" />
       </div>
 
       {/* Dialog con HymnExplorer */}
