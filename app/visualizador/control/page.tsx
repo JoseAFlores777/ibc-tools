@@ -68,6 +68,7 @@ function ControlPage() {
   const [roomNotFound, setRoomNotFound] = useState(false);
   const [remoteState, setRemoteState] = useState<RemoteState | null>(null);
   const [showHymnList, setShowHymnList] = useState(false);
+  const [expandedHymnIndex, setExpandedHymnIndex] = useState<number | null>(null);
   const [thumbScale, setThumbScale] = useState(50); // 30-100%
 
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -245,7 +246,10 @@ function ControlPage() {
               {activeHymn.slides.map((slide, i) => (
                 <button
                   key={i}
-                  onClick={() => sendCommand(currentPin, { type: 'SET_SLIDE', index: i })}
+                  onClick={() => {
+                    sendCommand(currentPin, { type: 'SET_SLIDE', index: i });
+                    sendCommand(currentPin, { type: 'SET_PROJECTION_MODE', mode: 'slide' });
+                  }}
                   className={`aspect-video rounded-lg overflow-hidden text-left transition-all relative ${
                     i === st?.activeSlideIndex
                       ? 'ring-[3px] ring-[#eaba1c] shadow-[0_0_10px_rgba(234,186,28,0.35)]'
@@ -367,50 +371,94 @@ function ControlPage() {
         <div className="fixed inset-0 z-50 flex">
           <div
             className="absolute inset-0 bg-black/60"
-            onClick={() => setShowHymnList(false)}
+            onClick={() => { setShowHymnList(false); setExpandedHymnIndex(null); }}
           />
-          <div className="relative w-[85%] max-w-xs bg-zinc-900 flex flex-col animate-in slide-in-from-left duration-200">
+          <div className="relative w-[88%] max-w-sm bg-zinc-900 flex flex-col animate-in slide-in-from-left duration-200">
             <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
               <h2 className="text-sm font-semibold">Himnos</h2>
               <button
-                onClick={() => setShowHymnList(false)}
+                onClick={() => { setShowHymnList(false); setExpandedHymnIndex(null); }}
                 className="h-8 w-8 rounded-lg flex items-center justify-center text-zinc-400 active:bg-zinc-800"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
             <div className="flex-1 overflow-auto">
-              {st?.playlist.map((hymn, i) => (
-                <button
-                  key={hymn.id}
-                  onClick={() => {
-                    sendCommand(currentPin, { type: 'SET_HYMN', index: i });
-                    setShowHymnList(false);
-                  }}
-                  className={`w-full px-4 py-3 text-left border-b border-zinc-800/50 transition-colors ${
-                    i === st.activeHymnIndex
-                      ? 'bg-zinc-800 border-l-2 border-l-[#eaba1c]'
-                      : 'active:bg-zinc-800/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    {hymn.hymnNumber != null && (
-                      <span className="text-xs font-mono text-zinc-500 w-8 text-right flex-shrink-0">
-                        {hymn.hymnNumber}
-                      </span>
-                    )}
-                    <div className="min-w-0">
-                      <span className="text-sm font-medium truncate block">{hymn.name}</span>
-                      <span className="text-[10px] text-zinc-500">
-                        {hymn.slideCount} diapositivas
-                        {hymn.audioTracks.length > 0 && (
-                          <> · <Music className="inline h-2.5 w-2.5" /> {hymn.audioTracks.length} pistas</>
+              {st?.playlist.map((hymn, i) => {
+                const isExpanded = expandedHymnIndex === i;
+                const isActive = i === st.activeHymnIndex;
+                return (
+                  <div key={hymn.id} className={isActive ? 'bg-zinc-800/50' : ''}>
+                    {/* Hymn row */}
+                    <button
+                      onClick={() => setExpandedHymnIndex(isExpanded ? null : i)}
+                      className={`w-full px-4 py-3 text-left border-b border-zinc-800/50 transition-colors ${
+                        isActive ? 'border-l-2 border-l-[#eaba1c]' : 'active:bg-zinc-800/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        {hymn.hymnNumber != null && (
+                          <span className="text-xs font-mono text-zinc-500 w-8 text-right flex-shrink-0">
+                            {hymn.hymnNumber}
+                          </span>
                         )}
-                      </span>
-                    </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm font-medium truncate block">{hymn.name}</span>
+                          <span className="text-[10px] text-zinc-500">
+                            {hymn.slideCount} diapositivas
+                            {hymn.audioTracks.length > 0 && (
+                              <> · <Music className="inline h-2.5 w-2.5" /> {hymn.audioTracks.length} pistas</>
+                            )}
+                          </span>
+                        </div>
+                        <ChevronRight className={`h-4 w-4 text-zinc-600 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
+                      </div>
+                    </button>
+
+                    {/* Expanded slide preview */}
+                    {isExpanded && (
+                      <div className="px-3 py-2 bg-zinc-950/50 border-b border-zinc-800/50">
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {hymn.slides.map((slide, si) => (
+                            <button
+                              key={si}
+                              onClick={() => {
+                                sendCommand(currentPin, { type: 'SET_HYMN', index: i });
+                                // Pequeño delay para que el himno se cargue primero
+                                setTimeout(() => {
+                                  sendCommand(currentPin, { type: 'SET_SLIDE', index: si });
+                                  sendCommand(currentPin, { type: 'SET_PROJECTION_MODE', mode: 'slide' });
+                                }, 100);
+                                setShowHymnList(false);
+                                setExpandedHymnIndex(null);
+                              }}
+                              className={`aspect-video rounded overflow-hidden relative transition-all ${
+                                isActive && si === st.activeSlideIndex
+                                  ? 'ring-2 ring-[#eaba1c] shadow-[0_0_6px_rgba(234,186,28,0.3)]'
+                                  : 'ring-1 ring-zinc-700/40 active:ring-zinc-500'
+                              }`}
+                              style={{ backgroundColor: '#1a1a2e' }}
+                            >
+                              <span className={`absolute top-0.5 left-1 text-[7px] font-bold uppercase tracking-wider px-1 py-px rounded ${
+                                isActive && si === st.activeSlideIndex
+                                  ? 'bg-[#eaba1c] text-black'
+                                  : 'bg-black/50 text-white/60'
+                              }`}>
+                                {slide.label}
+                              </span>
+                              <div className="absolute inset-0 flex items-center justify-center p-2 pt-4">
+                                <p className="text-[6px] leading-tight text-white/80 text-center font-bold line-clamp-4 whitespace-pre-line">
+                                  {slide.text}
+                                </p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </button>
-              ))}
+                );
+              })}
               {(!st?.playlist || st.playlist.length === 0) && (
                 <div className="p-8 text-center text-sm text-zinc-600">
                   Sin himnos en la playlist
