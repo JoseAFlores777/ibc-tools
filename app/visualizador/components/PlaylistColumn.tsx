@@ -13,7 +13,8 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Plus, Save, FolderOpen, Trash2 } from 'lucide-react';
+import { Plus, Save, FolderOpen, Trash2, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import type { PlaylistHymn } from '../lib/types';
 import type { HymnSearchResult } from '@/app/interfaces/Hymn.interface';
 import HymnExplorer from '@/app/components/HymnExplorer';
@@ -38,6 +39,10 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogAction,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
 } from '@/lib/shadcn/ui';
 import { Search } from 'lucide-react';
 
@@ -162,6 +167,18 @@ export function PlaylistColumn({
       {/* Header: agregar himnos + playlist management */}
       <div className="p-3 border-b border-border space-y-1.5">
         <div className="flex items-center gap-1.5">
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" asChild>
+                  <Link href="/herramientas" aria-label="Salir a Herramientas">
+                    <ArrowLeft className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom"><p>Salir</p></TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <Button
             variant="outline"
             className="flex-1 h-8 text-sm cursor-pointer"

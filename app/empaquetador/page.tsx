@@ -10,7 +10,8 @@ import StepConfiguracion from '@/app/empaquetador/components/StepConfiguracion';
 import StepDescarga from '@/app/empaquetador/components/StepDescarga';
 import PackageHistory from '@/app/empaquetador/components/PackageHistory';
 import { Button } from '@/lib/shadcn/ui';
-import { ChevronLeft, ChevronRight, History, Package } from 'lucide-react';
+import { ChevronLeft, ChevronRight, History, Package, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import { deserializeAudioSelections } from '@/app/empaquetador/lib/package-db';
 import type { SavedPackage } from '@/app/empaquetador/lib/package-db';
 import type { HymnSearchResult } from '@/app/interfaces/Hymn.interface';
@@ -159,8 +160,15 @@ export default function EmpaquetadorPage() {
       {/* Barra de accion inferior fija */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="hidden sm:block">
-            <WizardStepper currentStep={state.step} onStepClick={handleStepClick} />
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0" asChild>
+              <Link href="/herramientas" aria-label="Salir a Herramientas">
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <div className="hidden sm:block">
+              <WizardStepper currentStep={state.step} onStepClick={handleStepClick} />
+            </div>
           </div>
 
           {state.step === 1 && (

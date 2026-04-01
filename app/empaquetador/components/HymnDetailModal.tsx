@@ -11,6 +11,10 @@ import {
   CardHeader,
   CardTitle,
   Separator,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
 } from '@/lib/shadcn/ui';
 import { cn } from '@/app/lib/shadcn/utils';
 import { toast } from 'sonner';
@@ -34,6 +38,8 @@ import {
   Presentation,
   Monitor,
   Film,
+  ScrollText,
+  Clock,
 } from 'lucide-react';
 
 interface HymnDetailViewProps {
@@ -323,10 +329,10 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
   };
 
   return (
-    <div className="px-4 sm:px-8 py-6 sm:py-8 relative">
-      {/* Sticky compact header — visible al scrollear más allá del header */}
+    <div className="relative">
+      {/* Sticky header — se pega al top del scroll container (fuera del padding del contenido) */}
       {showStickyHeader && (
-        <div className="sticky top-0 z-20 -mx-4 sm:-mx-8 px-4 sm:px-8 py-2.5 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm">
+        <div className="sticky top-0 z-30 px-4 sm:px-8 py-2.5 bg-background border-b border-border shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <button
@@ -371,6 +377,8 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
         </div>
       )}
 
+      {/* Contenido con padding */}
+      <div className="px-4 sm:px-8 py-6 sm:py-8">
       {/* Sentinel — cuando este elemento sale del viewport, se muestra el sticky header */}
       <div ref={headerSentinelRef} />
 
@@ -570,55 +578,101 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
 
           {/* Desktop: layout 2 columnas */}
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 lg:gap-10">
-            {/* Columna izquierda: Letra (2/3) */}
+            {/* Columna izquierda: Tabs (Letra, Partitura, Historia) */}
             <div className="min-w-0">
               {/* Referencia biblica (desktop) */}
               {details?.bible_reference && (
-                <Card className="border-amber-200/60 bg-amber-50/50 mb-8 hidden lg:block">
+                <Card className="border-amber-200/60 bg-amber-50/50 mb-6 hidden lg:block">
                   <CardContent className="p-4">
-                    <p className="text-sm font-medium text-amber-800">{details.bible_reference}</p>
-                    {details.bible_text && (
-                      <p className="text-sm text-amber-700/80 italic mt-1.5 leading-relaxed">
-                        &ldquo;{details.bible_text}&rdquo;
-                      </p>
-                    )}
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-medium text-amber-800">{details.bible_reference}</p>
+                        {details.bible_text && (
+                          <p className="text-sm text-amber-700/80 italic mt-1.5 leading-relaxed">
+                            &ldquo;{details.bible_text}&rdquo;
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={handleCopyVerse}
+                        className="flex-shrink-0 p-1.5 rounded-md text-amber-500 hover:text-amber-700 hover:bg-amber-100 transition-colors cursor-pointer"
+                        aria-label="Copiar versículo"
+                        title="Copiar versículo"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </CardContent>
                 </Card>
               )}
 
-              {/* Letra */}
-              {details?.letter_hymn ? (
-                <article>
-                  <div className="flex items-center justify-between mb-5">
-                    <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      Letra del Himno
-                    </h2>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleCopyLetter}
-                      className="h-8 text-xs text-slate-400 hover:text-slate-700 cursor-pointer"
-                    >
-                      <Copy className="h-3 w-3 mr-1.5" />
-                      Copiar
-                    </Button>
+              <Tabs defaultValue="letra">
+                <TabsList className="w-full justify-start">
+                  <TabsTrigger value="letra" className="gap-1.5 cursor-pointer">
+                    <FileText className="h-3.5 w-3.5" />
+                    Letra
+                  </TabsTrigger>
+                  <TabsTrigger value="partitura" className="gap-1.5 cursor-pointer">
+                    <ScrollText className="h-3.5 w-3.5" />
+                    Partitura
+                  </TabsTrigger>
+                  <TabsTrigger value="historia" className="gap-1.5 cursor-pointer">
+                    <Clock className="h-3.5 w-3.5" />
+                    Historia
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Tab: Letra */}
+                <TabsContent value="letra">
+                  {details?.letter_hymn ? (
+                    <article className="pt-4">
+                      <div className="flex items-center justify-end mb-3">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleCopyLetter}
+                          className="h-8 text-xs text-slate-400 hover:text-slate-700 cursor-pointer"
+                        >
+                          <Copy className="h-3 w-3 mr-1.5" />
+                          Copiar
+                        </Button>
+                      </div>
+                      <div
+                        className="max-w-prose text-[15px] text-slate-800 leading-[1.85]
+                          [&_p]:mb-5
+                          [&_p:empty]:mb-2 [&_p:empty]:h-2
+                          [&_strong]:font-semibold [&_strong]:text-slate-500 [&_strong]:tracking-wide [&_strong]:uppercase [&_strong]:text-[11px] [&_strong]:block [&_strong]:mt-2 [&_strong]:mb-1
+                          [&_em]:italic [&_em]:text-slate-500
+                          selection:bg-primary/10 selection:text-primary"
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(details.letter_hymn) }}
+                      />
+                    </article>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                      <FileText className="h-10 w-10 text-slate-200 mb-3" />
+                      <p className="text-sm text-slate-400">Letra no disponible para este himno.</p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* Tab: Partitura */}
+                <TabsContent value="partitura">
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <ScrollText className="h-10 w-10 text-slate-200 mb-3" />
+                    <p className="text-sm font-medium text-slate-500 mb-1">Partitura</p>
+                    <p className="text-xs text-slate-400">Próximamente</p>
                   </div>
-                  <div
-                    className="max-w-prose text-[15px] text-slate-800 leading-[1.85]
-                      [&_p]:mb-5
-                      [&_p:empty]:mb-2 [&_p:empty]:h-2
-                      [&_strong]:font-semibold [&_strong]:text-slate-500 [&_strong]:tracking-wide [&_strong]:uppercase [&_strong]:text-[11px] [&_strong]:block [&_strong]:mt-2 [&_strong]:mb-1
-                      [&_em]:italic [&_em]:text-slate-500
-                      selection:bg-primary/10 selection:text-primary"
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(details.letter_hymn) }}
-                  />
-                </article>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <FileText className="h-10 w-10 text-slate-200 mb-3" />
-                  <p className="text-sm text-slate-400">Letra no disponible para este himno.</p>
-                </div>
-              )}
+                </TabsContent>
+
+                {/* Tab: Historia */}
+                <TabsContent value="historia">
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <Clock className="h-10 w-10 text-slate-200 mb-3" />
+                    <p className="text-sm font-medium text-slate-500 mb-1">Historia del himno</p>
+                    <p className="text-xs text-slate-400">Próximamente</p>
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
 
             {/* Columna derecha: Audio + Exportar (1/3) — sticky, hidden en mobile (ya se muestra arriba) */}
@@ -642,6 +696,7 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
                             fileInfo={info}
                             label={AUDIO_LABELS[field] ?? field}
                             colorClass={AUDIO_COLORS[field] ?? 'bg-slate-50 text-slate-700 border-slate-200'}
+                            hymnName={hymn.name}
                           />
                         ) : (
                           <AudioTrackPlayer key={field} field={field} fileInfo={info} hymnName={hymn.name} />
@@ -813,6 +868,7 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }

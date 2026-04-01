@@ -222,9 +222,10 @@ export default function HymnExplorer({
   });
 
   // Si estamos en detailView y showDetailView esta activo
+  // Quitar padding del scroll container para que el sticky header quede en top-0 exacto
   if (detailHymn && showDetailView) {
     return (
-      <div className={cn(className, 'overflow-auto')}>
+      <div className={cn(className, 'overflow-auto !p-0')}>
         <HymnDetailView
           hymn={detailHymn}
           onBack={() => setDetailHymn(null)}

@@ -115,6 +115,10 @@ export default function MidiTrackPlayer({ field, fileInfo, label, colorClass, hy
   const durationRef = useRef(0);
   // Ref para status actual (evita closures stale en handlers)
   const isPlayingRef = useRef(false);
+  // Guard contra double-click en play
+  const playLockRef = useRef(false);
+  // Ref para el slider drag
+  const sliderRef = useRef<HTMLDivElement>(null);
 
   const audioUrl = `/api/hymns/audio/${fileInfo.id}`;
 
@@ -181,6 +185,17 @@ export default function MidiTrackPlayer({ field, fileInfo, label, colorClass, hy
     }
   }, [audioUrl]);
 
+  // ── Cleanup completo al terminar reproducción ──
+  const finishPlayback = useCallback(() => {
+    cancelAnimationFrame(rafRef.current);
+    killSources();
+    isPlayingRef.current = false;
+    playOffsetRef.current = 0;
+    setStatus('ready');
+    setProgress(0);
+    setCurrentTime(0);
+  }, []);
+
   // ── PLAY ──
   const startPlayback = useCallback((offset: number) => {
     const c = getCtx();
@@ -196,39 +211,24 @@ export default function MidiTrackPlayer({ field, fileInfo, label, colorClass, hy
     sourceNodesRef.current = sources;
     playStartRef.current = performance.now() / 1000;
     playOffsetRef.current = offset;
-
-    // Auto-stop al final natural
-    const theseSourcesRef = sources;
-    if (sources.length > 0) {
-      sources[0].onended = () => {
-        if (sourceNodesRef.current !== theseSourcesRef) return;
-        cancelAnimationFrame(rafRef.current);
-        isPlayingRef.current = false;
-        setStatus('ready');
-        setProgress(0);
-        setCurrentTime(0);
-        playOffsetRef.current = 0;
-      };
-    }
   }, []);
 
   const tick = useCallback(() => {
     if (!durationRef.current || !isPlayingRef.current) return;
     const el = playOffsetRef.current + (performance.now() / 1000 - playStartRef.current);
     if (el >= durationRef.current) {
-      // Let onended handler deal with cleanup
+      // Llegamos al final — cleanup completo
+      finishPlayback();
       return;
     }
-    setProgress(Math.min((el / durationRef.current) * 100, 100));
-    setCurrentTime(Math.min(el, durationRef.current));
+    setProgress((el / durationRef.current) * 100);
+    setCurrentTime(el);
     rafRef.current = requestAnimationFrame(tick);
-  }, []);
+  }, [finishPlayback]);
 
   const play = useCallback(async () => {
-    if (status === 'idle' || status === 'error') await loadMidi();
-    if (trackBuffersRef.current.length === 0) return;
-    const c = getCtx();
-    if (c.state === 'suspended') await c.resume();
+    // Guard contra double-click
+    if (playLockRef.current) return;
 
     if (isPlayingRef.current) {
       // Pause
@@ -240,43 +240,85 @@ export default function MidiTrackPlayer({ field, fileInfo, label, colorClass, hy
       return;
     }
 
-    const off = playOffsetRef.current > 0 ? playOffsetRef.current : 0;
-    startPlayback(off);
-    isPlayingRef.current = true;
-    setStatus('playing');
-    rafRef.current = requestAnimationFrame(tick);
+    playLockRef.current = true;
+    try {
+      if (status === 'idle' || status === 'error') await loadMidi();
+      if (trackBuffersRef.current.length === 0) return;
+      const c = getCtx();
+      if (c.state === 'suspended') await c.resume();
+
+      const off = playOffsetRef.current > 0 ? playOffsetRef.current : 0;
+      startPlayback(off);
+      isPlayingRef.current = true;
+      setStatus('playing');
+      rafRef.current = requestAnimationFrame(tick);
+    } finally {
+      playLockRef.current = false;
+    }
   }, [status, loadMidi, startPlayback, tick]);
 
   const stop = useCallback(() => {
-    cancelAnimationFrame(rafRef.current);
-    killSources();
-    isPlayingRef.current = false;
-    playOffsetRef.current = 0;
-    setProgress(0);
-    setCurrentTime(0);
-    setStatus('ready');
+    finishPlayback();
+  }, [finishPlayback]);
+
+  // Seek visual: solo mueve la barra, sin tocar el audio (instantáneo)
+  const seekVisual = useCallback((clientX: number) => {
+    const el = sliderRef.current;
+    if (!el || !durationRef.current) return;
+    const rect = el.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    playOffsetRef.current = pct * durationRef.current;
+    setProgress(pct * 100);
+    setCurrentTime(pct * durationRef.current);
   }, []);
 
-  // Seek usa ref en vez de status para evitar closure stale
-  const seek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+  // Seek commit: recrea el audio en la posición final (solo se llama al soltar)
+  const seekCommit = useCallback(() => {
     if (!durationRef.current || trackBuffersRef.current.length === 0) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const to = pct * durationRef.current;
-    const wasPlaying = isPlayingRef.current;
-
-    cancelAnimationFrame(rafRef.current);
-    killSources();
-    playOffsetRef.current = to;
-    setProgress(pct * 100);
-    setCurrentTime(to);
-
-    if (wasPlaying) {
-      startPlayback(to);
+    if (isPlayingRef.current) {
+      startPlayback(playOffsetRef.current);
       rafRef.current = requestAnimationFrame(tick);
-      // status ya es 'playing', isPlayingRef ya es true
     }
   }, [startPlayback, tick]);
+
+  // Mouse down en slider: pausa audio, mueve visual, recrea al soltar
+  const handleSliderDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!durationRef.current || trackBuffersRef.current.length === 0) return;
+    e.preventDefault();
+    // Pausar audio y RAF durante el drag
+    cancelAnimationFrame(rafRef.current);
+    killSources();
+    seekVisual(e.clientX);
+
+    const onMove = (ev: MouseEvent) => seekVisual(ev.clientX);
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      seekCommit();
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }, [seekVisual, seekCommit]);
+
+  // Touch support para mobile
+  const handleSliderTouch = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    if (!durationRef.current || trackBuffersRef.current.length === 0) return;
+    cancelAnimationFrame(rafRef.current);
+    killSources();
+    seekVisual(e.touches[0].clientX);
+
+    const onMove = (ev: TouchEvent) => {
+      ev.preventDefault();
+      seekVisual(ev.touches[0].clientX);
+    };
+    const onEnd = () => {
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onEnd);
+      seekCommit();
+    };
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onEnd);
+  }, [seekVisual, seekCommit]);
 
   const toggleMute = useCallback((idx: number) => {
     setTracks((prev) =>
@@ -301,7 +343,7 @@ export default function MidiTrackPlayer({ field, fileInfo, label, colorClass, hy
     a.download = hymnName ? `${hymnName} - ${name}.wav` : `${name}.wav`;
     a.click();
     URL.revokeObjectURL(url);
-  }, []);
+  }, [hymnName]);
 
   const isLoading = status === 'loading';
   const isPlaying = status === 'playing';
@@ -345,8 +387,9 @@ export default function MidiTrackPlayer({ field, fileInfo, label, colorClass, hy
               {fmt(currentTime)} / {fmt(duration)}
             </span>
           </div>
-          {/* Barra de progreso / seek */}
-          <div className="py-1.5 -my-1.5 cursor-pointer group" onClick={seek}
+          {/* Barra de progreso / seek con drag */}
+          <div ref={sliderRef} className="py-1.5 -my-1.5 cursor-pointer group touch-none select-none"
+            onMouseDown={handleSliderDown} onTouchStart={handleSliderTouch}
             role="slider" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
             <div className="h-1.5 rounded-full bg-slate-200 group-hover:bg-slate-300 transition-colors">
               <div className="h-full rounded-full bg-primary transition-[width] duration-75 relative"
