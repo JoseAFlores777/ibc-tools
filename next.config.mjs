@@ -21,7 +21,7 @@ const nextConfig = {
           key: 'Content-Security-Policy',
           value: [
             "default-src 'self'",
-            "script-src 'self' https://analytics.joseiz.com https://atencion.ibchn.org",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://analytics.joseiz.com https://atencion.ibchn.org",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: https://admin.ibchn.org https://s3.joseiz.com",
