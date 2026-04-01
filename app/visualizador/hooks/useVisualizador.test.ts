@@ -171,22 +171,22 @@ describe('visualizadorReducer', () => {
   });
 
   describe('FONT_SIZE_UP / FONT_SIZE_DOWN', () => {
-    it('increments fontSizeOffset by 4', () => {
+    it('increments fontSizeOffset by 2', () => {
       const result = visualizadorReducer(initialState, { type: 'FONT_SIZE_UP' });
-      expect(result.theme.fontSizeOffset).toBe(4);
+      expect(result.theme.fontSizeOffset).toBe(2);
     });
 
-    it('decrements fontSizeOffset by 4', () => {
+    it('decrements fontSizeOffset by 2', () => {
       const result = visualizadorReducer(initialState, { type: 'FONT_SIZE_DOWN' });
-      expect(result.theme.fontSizeOffset).toBe(-4);
+      expect(result.theme.fontSizeOffset).toBe(-2);
     });
 
-    it('caps fontSizeOffset at +20', () => {
+    it('caps fontSizeOffset at +40', () => {
       let state = initialState;
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 25; i++) {
         state = visualizadorReducer(state, { type: 'FONT_SIZE_UP' });
       }
-      expect(state.theme.fontSizeOffset).toBe(20);
+      expect(state.theme.fontSizeOffset).toBe(40);
     });
 
     it('caps fontSizeOffset at -20', () => {

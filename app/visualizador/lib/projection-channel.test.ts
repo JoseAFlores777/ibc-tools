@@ -11,7 +11,7 @@ describe('projection-channel', () => {
     const msg: ProjectionMessage = {
       type: 'SHOW_SLIDE',
       slide: { label: 'test', text: 'text', verseLabel: 'v' },
-      theme: { background: '#000', backgroundType: 'solid', fontSizeOffset: 0, fontPreset: 'sans' },
+      theme: { background: '#000', backgroundType: 'solid', fontSizeOffset: 0, fontPreset: 'sans', textColor: '#ffffff', textAlign: 'center', verticalAlign: 'center' },
       fontSize: 48,
     };
     expect(msg.type).toBe('SHOW_SLIDE');
@@ -25,7 +25,7 @@ describe('projection-channel', () => {
   it('ProjectionMessage discriminant CLEAR_TEXT is valid', () => {
     const msg: ProjectionMessage = {
       type: 'CLEAR_TEXT',
-      theme: { background: '#000', backgroundType: 'solid', fontSizeOffset: 0, fontPreset: 'sans' },
+      theme: { background: '#000', backgroundType: 'solid', fontSizeOffset: 0, fontPreset: 'sans', textColor: '#ffffff', textAlign: 'center', verticalAlign: 'center' },
     };
     expect(msg.type).toBe('CLEAR_TEXT');
   });
@@ -33,7 +33,7 @@ describe('projection-channel', () => {
   it('ProjectionMessage discriminant SHOW_LOGO is valid', () => {
     const msg: ProjectionMessage = {
       type: 'SHOW_LOGO',
-      theme: { background: '#000', backgroundType: 'solid', fontSizeOffset: 0, fontPreset: 'sans' },
+      theme: { background: '#000', backgroundType: 'solid', fontSizeOffset: 0, fontPreset: 'sans', textColor: '#ffffff', textAlign: 'center', verticalAlign: 'center' },
     };
     expect(msg.type).toBe('SHOW_LOGO');
   });
@@ -47,7 +47,7 @@ describe('projection-channel', () => {
     const msg: ProjectionMessage = {
       type: 'PONG',
       slide: null,
-      theme: { background: '#000', backgroundType: 'solid', fontSizeOffset: 0, fontPreset: 'sans' },
+      theme: { background: '#000', backgroundType: 'solid', fontSizeOffset: 0, fontPreset: 'sans', textColor: '#ffffff', textAlign: 'center', verticalAlign: 'center' },
       mode: 'slide',
       fontSize: 48,
     };

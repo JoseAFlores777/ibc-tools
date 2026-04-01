@@ -11,7 +11,7 @@ import { useRef, useState, useEffect } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import SlideRenderer, { VIRTUAL_W, VIRTUAL_H } from './SlideRenderer';
 import ProjectionControls from './ProjectionControls';
-import type { SlideData, ThemeConfig, ProjectionMode, FontPresetKey } from '../lib/types';
+import type { SlideData, ThemeConfig, ProjectionMode } from '../lib/types';
 
 interface LivePreviewColumnProps {
   currentSlide: SlideData | null;
@@ -24,7 +24,7 @@ interface LivePreviewColumnProps {
   onLogo: () => void;
   onFontSizeUp: () => void;
   onFontSizeDown: () => void;
-  onFontPresetChange: (preset: FontPresetKey) => void;
+  onThemeChange: (partial: Partial<ThemeConfig>) => void;
 }
 
 export default function LivePreviewColumn({
@@ -38,7 +38,7 @@ export default function LivePreviewColumn({
   onLogo,
   onFontSizeUp,
   onFontSizeDown,
-  onFontPresetChange,
+  onThemeChange,
 }: LivePreviewColumnProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -140,14 +140,14 @@ export default function LivePreviewColumn({
         <ProjectionControls
           projectionOpen={projectionOpen}
           projectionMode={projectionMode}
-          fontPreset={theme.fontPreset}
+          theme={theme}
           onProjectToggle={onProjectToggle}
           onBlack={onBlack}
           onClear={onClear}
           onLogo={onLogo}
           onFontSizeUp={onFontSizeUp}
           onFontSizeDown={onFontSizeDown}
-          onFontPresetChange={onFontPresetChange}
+          onThemeChange={onThemeChange}
         />
       </div>
     </div>

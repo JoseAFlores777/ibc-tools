@@ -99,6 +99,15 @@ export default function SlideRenderer({
   // Modo slide: diferenciar intro de estrofa/coro
   const isIntro = !!slide?.intro;
   const sizeOffset = theme.fontSizeOffset;
+  const textColor = theme.textColor ?? '#ffffff';
+  const hAlign = theme.textAlign ?? 'center';
+  const vAlign = theme.verticalAlign ?? 'center';
+
+  // Mapear verticalAlign a flexbox
+  const justifyMap = { top: 'flex-start', center: 'center', bottom: 'flex-end' } as const;
+
+  // Color del label: version semi-transparente del color de texto
+  const labelColor = textColor === '#ffffff' ? 'rgba(255,255,255,0.5)' : textColor + '80';
 
   return (
     <div className={containerClasses} style={containerStyle}>
@@ -109,11 +118,12 @@ export default function SlideRenderer({
         {/* Etiqueta del verso */}
         {slide?.verseLabel && !isIntro && (
           <div
-            className="text-center flex-shrink-0"
+            className="flex-shrink-0"
             style={{
               fontSize: '24px',
-              color: 'rgba(255,255,255,0.5)',
+              color: labelColor,
               fontFamily,
+              textAlign: hAlign,
               marginBottom: '16px',
             }}
           >
@@ -122,15 +132,19 @@ export default function SlideRenderer({
         )}
 
         {/* Contenido */}
-        <div className="flex-1 flex items-center justify-center overflow-hidden">
+        <div
+          className="flex-1 flex overflow-hidden"
+          style={{
+            alignItems: justifyMap[vAlign],
+            justifyContent: 'center',
+          }}
+        >
           {isIntro ? (
-            // --- INTRO SLIDE: formato diferenciado ---
-            <div style={{ textAlign: 'center', width: '100%' }}>
-              {/* HIMNO */}
+            <div style={{ textAlign: hAlign, width: '100%' }}>
               <div
                 style={{
                   fontSize: `${INTRO_TITLE_FONT_SIZE + sizeOffset}px`,
-                  color: '#ffffff',
+                  color: textColor,
                   fontFamily,
                   fontWeight: 'bold',
                   lineHeight: 1.4,
@@ -138,11 +152,10 @@ export default function SlideRenderer({
               >
                 HIMNO
               </div>
-              {/* Nombre del himno en mayusculas con comillas */}
               <div
                 style={{
                   fontSize: `${INTRO_TITLE_FONT_SIZE + sizeOffset}px`,
-                  color: '#ffffff',
+                  color: textColor,
                   fontFamily,
                   fontWeight: 'bold',
                   lineHeight: 1.4,
@@ -151,12 +164,11 @@ export default function SlideRenderer({
               >
                 &ldquo;{slide.intro!.hymnName.toUpperCase()}&rdquo;
               </div>
-              {/* Texto biblico (italica, mas pequeno) */}
               {slide.intro!.bibleText && (
                 <div
                   style={{
                     fontSize: `${INTRO_BODY_FONT_SIZE + sizeOffset}px`,
-                    color: '#ffffff',
+                    color: textColor,
                     fontFamily,
                     fontStyle: 'italic',
                     lineHeight: 1.5,
@@ -166,12 +178,11 @@ export default function SlideRenderer({
                   &ldquo;{slide.intro!.bibleText}&rdquo;
                 </div>
               )}
-              {/* Referencia biblica (bold, alineada derecha) */}
               {slide.intro!.bibleReference && (
                 <div
                   style={{
                     fontSize: `${INTRO_BODY_FONT_SIZE + sizeOffset}px`,
-                    color: '#ffffff',
+                    color: textColor,
                     fontFamily,
                     fontWeight: 'bold',
                     textAlign: 'right',
@@ -183,15 +194,14 @@ export default function SlideRenderer({
               )}
             </div>
           ) : (
-            // --- ESTROFA/CORO: Helvetica Bold 26pt ---
             <div
               style={{
                 fontSize: `${STANZA_FONT_SIZE + sizeOffset}px`,
-                color: '#ffffff',
+                color: textColor,
                 lineHeight: 1.5,
                 fontFamily,
                 fontWeight: 'bold',
-                textAlign: 'center',
+                textAlign: hAlign,
                 width: '100%',
               }}
             >

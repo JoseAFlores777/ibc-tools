@@ -6,6 +6,8 @@ import type { HymnForPdf, HymnAudioFiles } from '@/app/interfaces/Hymn.interface
 import { useVisualizador } from './hooks/useVisualizador';
 import { useBroadcastChannel } from './hooks/useBroadcastChannel';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { useThemePersistence, loadTheme } from './hooks/useThemePersistence';
+import type { ThemeConfig } from './lib/types';
 import { PlaylistColumn } from './components/PlaylistColumn';
 import { SlideGridColumn } from './components/SlideGridColumn';
 import LivePreviewColumn from './components/LivePreviewColumn';
@@ -24,6 +26,16 @@ export default function VisualizadorPage() {
   const { state, dispatch } = useVisualizador();
   const detailsCache = useRef<Map<string, HymnForPdf>>(new Map());
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  // Persistir tema en IndexedDB (debounced 500ms)
+  useThemePersistence(state.theme);
+
+  // Restaurar tema desde IndexedDB al montar
+  useEffect(() => {
+    loadTheme().then((savedTheme) => {
+      dispatch({ type: 'LOAD_THEME', theme: savedTheme });
+    });
+  }, [dispatch]);
 
   // Refs para la ventana de proyeccion y su monitoreo
   const projWindowRef = useRef<Window | null>(null);
@@ -170,9 +182,9 @@ export default function VisualizadorPage() {
     dispatch({ type: 'FONT_SIZE_DOWN' });
   }, [dispatch]);
 
-  const handleFontPresetChange = useCallback(
-    (preset: import('./lib/types').FontPresetKey) => {
-      dispatch({ type: 'SET_FONT_PRESET', preset });
+  const handleThemeChange = useCallback(
+    (partial: Partial<ThemeConfig>) => {
+      dispatch({ type: 'SET_THEME', theme: partial });
     },
     [dispatch],
   );
@@ -310,7 +322,7 @@ export default function VisualizadorPage() {
             onLogo={handleLogo}
             onFontSizeUp={handleFontSizeUp}
             onFontSizeDown={handleFontSizeDown}
-            onFontPresetChange={handleFontPresetChange}
+            onThemeChange={handleThemeChange}
           />
         </div>
       </div>

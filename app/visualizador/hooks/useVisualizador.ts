@@ -200,7 +200,7 @@ export function visualizadorReducer(
         ...state,
         theme: {
           ...state.theme,
-          fontSizeOffset: Math.min(state.theme.fontSizeOffset + 4, 20),
+          fontSizeOffset: Math.min(state.theme.fontSizeOffset + 2, 40),
         },
       };
 
@@ -209,7 +209,7 @@ export function visualizadorReducer(
         ...state,
         theme: {
           ...state.theme,
-          fontSizeOffset: Math.max(state.theme.fontSizeOffset - 4, -20),
+          fontSizeOffset: Math.max(state.theme.fontSizeOffset - 2, -20),
         },
       };
 
@@ -217,6 +217,12 @@ export function visualizadorReducer(
       return {
         ...state,
         theme: { ...state.theme, fontPreset: action.preset },
+      };
+
+    case 'LOAD_THEME':
+      return {
+        ...state,
+        theme: action.theme,
       };
 
     default:

@@ -31,16 +31,28 @@ export interface PlaylistHymn {
 /** Font family preset for projection text */
 export type FontPresetKey = 'sans' | 'serif' | 'condensed' | 'rounded';
 
+/** Horizontal text alignment */
+export type TextAlign = 'left' | 'center' | 'right' | 'justify';
+
+/** Vertical text alignment */
+export type VerticalAlign = 'top' | 'center' | 'bottom';
+
 /** Theme configuration for projection display */
 export interface ThemeConfig {
   /** CSS background value (hex, gradient, or image URL) */
   background: string;
   /** Type of background */
   backgroundType: 'solid' | 'gradient' | 'image';
-  /** Font size offset from auto-calculated base (px) */
+  /** Font size offset from base (px) */
   fontSizeOffset: number;
   /** Selected font family preset */
   fontPreset: FontPresetKey;
+  /** Text color (hex) */
+  textColor: string;
+  /** Horizontal text alignment */
+  textAlign: TextAlign;
+  /** Vertical text alignment */
+  verticalAlign: VerticalAlign;
 }
 
 /** Current projection display mode */
@@ -83,4 +95,5 @@ export type VisualizadorAction =
   | { type: 'SET_AUDIO_PLAYING'; playing: boolean }
   | { type: 'FONT_SIZE_UP' }
   | { type: 'FONT_SIZE_DOWN' }
-  | { type: 'SET_FONT_PRESET'; preset: FontPresetKey };
+  | { type: 'SET_FONT_PRESET'; preset: FontPresetKey }
+  | { type: 'LOAD_THEME'; theme: ThemeConfig };

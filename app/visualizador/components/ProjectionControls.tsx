@@ -1,60 +1,94 @@
 'use client';
 
 /**
- * Controles de proyeccion: boton de proyectar, modos (Negro/Limpiar/Logo),
- * selector de fuente, y ajuste de tamano de texto.
+ * Controles de proyeccion: proyectar, modos, fuente, alineacion,
+ * colores, imagen de fondo, y tamano de texto.
  */
 
-import { Monitor, EyeOff, Type, ImageIcon, Minus, Plus } from 'lucide-react';
-import { Button } from '@/lib/shadcn/ui/button';
-import { Separator } from '@/lib/shadcn/ui/separator';
+import { useRef } from 'react';
 import {
+  Monitor, EyeOff, Type, ImageIcon, Minus, Plus,
+  AlignLeft, AlignCenter, AlignRight, AlignJustify,
+  ArrowUpToLine, ArrowDownToLine, Maximize2, Image, Palette,
+} from 'lucide-react';
+import {
+  Button,
+  Separator,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/lib/shadcn/ui';
-import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
   TooltipProvider,
-} from '@/lib/shadcn/ui/tooltip';
-import type { ProjectionMode, FontPresetKey } from '../lib/types';
+  Input,
+  Label,
+} from '@/lib/shadcn/ui';
+import type { ProjectionMode, FontPresetKey, TextAlign, VerticalAlign, ThemeConfig } from '../lib/types';
 import { FONT_PRESETS } from '../lib/theme-presets';
+import { cn } from '@/app/lib/shadcn/utils';
 
 interface ProjectionControlsProps {
   projectionOpen: boolean;
   projectionMode: ProjectionMode;
-  fontPreset: FontPresetKey;
+  theme: ThemeConfig;
   onProjectToggle: () => void;
   onBlack: () => void;
   onClear: () => void;
   onLogo: () => void;
   onFontSizeUp: () => void;
   onFontSizeDown: () => void;
-  onFontPresetChange: (preset: FontPresetKey) => void;
+  onThemeChange: (partial: Partial<ThemeConfig>) => void;
 }
 
 const PRESET_KEYS = Object.keys(FONT_PRESETS) as FontPresetKey[];
 
+const H_ALIGNS: { value: TextAlign; icon: typeof AlignLeft; label: string }[] = [
+  { value: 'left', icon: AlignLeft, label: 'Izquierda' },
+  { value: 'center', icon: AlignCenter, label: 'Centro' },
+  { value: 'right', icon: AlignRight, label: 'Derecha' },
+  { value: 'justify', icon: AlignJustify, label: 'Justificado' },
+];
+
+const V_ALIGNS: { value: VerticalAlign; icon: typeof ArrowUpToLine; label: string }[] = [
+  { value: 'top', icon: ArrowUpToLine, label: 'Arriba' },
+  { value: 'center', icon: Maximize2, label: 'Centro' },
+  { value: 'bottom', icon: ArrowDownToLine, label: 'Abajo' },
+];
+
 export default function ProjectionControls({
   projectionOpen,
   projectionMode,
-  fontPreset,
+  theme,
   onProjectToggle,
   onBlack,
   onClear,
   onLogo,
   onFontSizeUp,
   onFontSizeDown,
-  onFontPresetChange,
+  onThemeChange,
 }: ProjectionControlsProps) {
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      onThemeChange({ background: dataUrl, backgroundType: 'image' });
+    };
+    reader.readAsDataURL(file);
+    // Reset para poder seleccionar la misma imagen otra vez
+    e.target.value = '';
+  }
+
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex flex-col gap-2 p-4">
-        {/* Boton principal de proyectar/cerrar */}
+      <div className="flex flex-col gap-2 p-3 overflow-y-auto">
+        {/* Proyectar */}
         <Button
           variant={projectionOpen ? 'destructive' : 'default'}
           className="w-full"
@@ -67,64 +101,56 @@ export default function ProjectionControls({
 
         <Separator />
 
-        {/* Botones de modo: Negro, Limpiar, Logo */}
-        <div className="flex gap-2">
+        {/* Modos: Negro, Limpiar, Logo */}
+        <div className="flex gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant={projectionMode === 'black' ? 'secondary' : 'outline'}
                 size="sm"
                 onClick={onBlack}
-                aria-label="Negro"
-                className="flex-1"
+                className="flex-1 text-xs"
               >
-                <EyeOff className="mr-1 h-4 w-4" />
-                Negro
+                <EyeOff className="mr-1 h-3.5 w-3.5" /> Negro
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Negro (B)</TooltipContent>
+            <TooltipContent>B</TooltipContent>
           </Tooltip>
-
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant={projectionMode === 'clear' ? 'secondary' : 'outline'}
                 size="sm"
                 onClick={onClear}
-                aria-label="Limpiar"
-                className="flex-1"
+                className="flex-1 text-xs"
               >
-                <Type className="mr-1 h-4 w-4" />
-                Limpiar
+                <Type className="mr-1 h-3.5 w-3.5" /> Limpiar
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Limpiar (C)</TooltipContent>
+            <TooltipContent>C</TooltipContent>
           </Tooltip>
-
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant={projectionMode === 'logo' ? 'secondary' : 'outline'}
                 size="sm"
                 onClick={onLogo}
-                aria-label="Logo"
-                className="flex-1"
+                className="flex-1 text-xs"
               >
-                <ImageIcon className="mr-1 h-4 w-4" />
-                Logo
+                <ImageIcon className="mr-1 h-3.5 w-3.5" /> Logo
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Logo (L)</TooltipContent>
+            <TooltipContent>L</TooltipContent>
           </Tooltip>
         </div>
 
         <Separator />
 
-        {/* Selector de fuente */}
+        {/* Fuente */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground flex-shrink-0">Fuente:</span>
-          <Select value={fontPreset} onValueChange={(v) => onFontPresetChange(v as FontPresetKey)}>
-            <SelectTrigger className="h-8 text-xs flex-1">
+          <Label className="text-xs text-muted-foreground flex-shrink-0 w-14">Fuente</Label>
+          <Select value={theme.fontPreset} onValueChange={(v) => onThemeChange({ fontPreset: v as FontPresetKey })}>
+            <SelectTrigger className="h-7 text-xs flex-1">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -139,35 +165,126 @@ export default function ProjectionControls({
           </Select>
         </div>
 
-        {/* Botones de tamano de texto */}
-        <div className="flex gap-2 justify-center">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={onFontSizeDown}
-                aria-label="Reducir texto"
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Reducir texto (Ctrl+-)</TooltipContent>
-          </Tooltip>
+        {/* Tamano de texto */}
+        <div className="flex items-center gap-2">
+          <Label className="text-xs text-muted-foreground flex-shrink-0 w-14">Tamano</Label>
+          <div className="flex items-center gap-1 flex-1">
+            <Button variant="outline" size="icon" className="h-7 w-7" onClick={onFontSizeDown}>
+              <Minus className="h-3 w-3" />
+            </Button>
+            <span className="text-xs text-center w-10 tabular-nums">
+              {theme.fontSizeOffset >= 0 ? '+' : ''}{theme.fontSizeOffset}
+            </span>
+            <Button variant="outline" size="icon" className="h-7 w-7" onClick={onFontSizeUp}>
+              <Plus className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={onFontSizeUp}
-                aria-label="Aumentar texto"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Aumentar texto (Ctrl+=)</TooltipContent>
-          </Tooltip>
+        <Separator />
+
+        {/* Alineacion horizontal */}
+        <div className="flex items-center gap-2">
+          <Label className="text-xs text-muted-foreground flex-shrink-0 w-14">Horiz.</Label>
+          <div className="flex gap-0.5 flex-1">
+            {H_ALIGNS.map(({ value, icon: Icon, label }) => (
+              <Tooltip key={value}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={theme.textAlign === value ? 'secondary' : 'outline'}
+                    size="icon"
+                    className="h-7 w-7 flex-1"
+                    onClick={() => onThemeChange({ textAlign: value })}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{label}</TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+        </div>
+
+        {/* Alineacion vertical */}
+        <div className="flex items-center gap-2">
+          <Label className="text-xs text-muted-foreground flex-shrink-0 w-14">Vert.</Label>
+          <div className="flex gap-0.5 flex-1">
+            {V_ALIGNS.map(({ value, icon: Icon, label }) => (
+              <Tooltip key={value}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={theme.verticalAlign === value ? 'secondary' : 'outline'}
+                    size="icon"
+                    className="h-7 w-7 flex-1"
+                    onClick={() => onThemeChange({ verticalAlign: value })}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{label}</TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Colores */}
+        <div className="flex items-center gap-2">
+          <Label className="text-xs text-muted-foreground flex-shrink-0 w-14">Fondo</Label>
+          <div className="flex items-center gap-1 flex-1">
+            <input
+              type="color"
+              value={theme.backgroundType === 'solid' ? theme.background : '#1a1a2e'}
+              onChange={(e) => onThemeChange({ background: e.target.value, backgroundType: 'solid' })}
+              className="h-7 w-10 rounded border border-input cursor-pointer"
+              title="Color de fondo"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs flex-1"
+              onClick={() => imageInputRef.current?.click()}
+            >
+              <Image className="mr-1 h-3 w-3" /> Imagen
+            </Button>
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Label className="text-xs text-muted-foreground flex-shrink-0 w-14">Letra</Label>
+          <div className="flex items-center gap-1 flex-1">
+            <input
+              type="color"
+              value={theme.textColor ?? '#ffffff'}
+              onChange={(e) => onThemeChange({ textColor: e.target.value })}
+              className="h-7 w-10 rounded border border-input cursor-pointer"
+              title="Color de letra"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn('h-7 text-xs', theme.textColor === '#ffffff' && 'border-primary')}
+              onClick={() => onThemeChange({ textColor: '#ffffff' })}
+            >
+              Blanco
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn('h-7 text-xs', theme.textColor === '#f5e642' && 'border-primary')}
+              onClick={() => onThemeChange({ textColor: '#f5e642' })}
+            >
+              Amarillo
+            </Button>
+          </div>
         </div>
       </div>
     </TooltipProvider>

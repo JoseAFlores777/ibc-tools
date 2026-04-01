@@ -41,4 +41,7 @@ export const DEFAULT_THEME: ThemeConfig = {
   backgroundType: 'solid',
   fontSizeOffset: 0,
   fontPreset: 'sans',
+  textColor: '#ffffff',
+  textAlign: 'center',
+  verticalAlign: 'center',
 };
