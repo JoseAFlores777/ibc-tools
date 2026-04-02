@@ -5632,7 +5632,7 @@
           "readonly": false,
           "required": false,
           "searchable": true,
-          "sort": 10,
+          "sort": 11,
           "special": [
             "files"
           ],
@@ -5720,7 +5720,7 @@
           "readonly": false,
           "required": false,
           "searchable": true,
-          "sort": 9,
+          "sort": 10,
           "special": null,
           "translations": null,
           "validation": null,
@@ -5884,7 +5884,7 @@
           "readonly": false,
           "required": false,
           "searchable": true,
-          "sort": 8,
+          "sort": 9,
           "special": null,
           "translations": [
             {
@@ -6210,7 +6210,7 @@
           "readonly": false,
           "required": false,
           "searchable": true,
-          "sort": 7,
+          "sort": 8,
           "special": [
             "cast-boolean"
           ],
@@ -6817,6 +6817,54 @@
         },
         "schema": {
           "name": "dynamic_track_midi",
+          "table": "hymn",
+          "data_type": "uuid",
+          "default_value": null,
+          "max_length": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": true,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": "directus_files",
+          "foreign_key_column": "id"
+        }
+      },
+      {
+        "collection": "hymn",
+        "field": "musicxml",
+        "type": "uuid",
+        "meta": {
+          "collection": "hymn",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "musicxml",
+          "group": "materials",
+          "hidden": false,
+          "interface": "file",
+          "note": null,
+          "options": {
+            "folder": "704e6af5-6d2e-40aa-a719-13b7723a4a60"
+          },
+          "readonly": false,
+          "required": false,
+          "searchable": true,
+          "sort": 7,
+          "special": [
+            "file"
+          ],
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "full"
+        },
+        "schema": {
+          "name": "musicxml",
           "table": "hymn",
           "data_type": "uuid",
           "default_value": null,
@@ -11637,6 +11685,31 @@
           "foreign_key_table": "directus_files",
           "foreign_key_column": "id",
           "constraint_name": "hymn_dynamic_track_midi_foreign",
+          "on_update": "NO ACTION",
+          "on_delete": "SET NULL"
+        }
+      },
+      {
+        "collection": "hymn",
+        "field": "musicxml",
+        "related_collection": "directus_files",
+        "meta": {
+          "junction_field": null,
+          "many_collection": "hymn",
+          "many_field": "musicxml",
+          "one_allowed_collections": null,
+          "one_collection": "directus_files",
+          "one_collection_field": null,
+          "one_deselect_action": "nullify",
+          "one_field": null,
+          "sort_field": null
+        },
+        "schema": {
+          "table": "hymn",
+          "column": "musicxml",
+          "foreign_key_table": "directus_files",
+          "foreign_key_column": "id",
+          "constraint_name": "hymn_musicxml_foreign",
           "on_update": "NO ACTION",
           "on_delete": "SET NULL"
         }

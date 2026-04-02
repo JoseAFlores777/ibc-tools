@@ -93,22 +93,22 @@ export function useSpessaSynth() {
     cancelAnimationFrame(rafRef.current);
   }, []);
 
+  const sfBufferRef = useRef<ArrayBuffer | null>(null);
+
   /**
-   * Carga el SoundFont (desde cache IndexedDB o fetch con progreso),
-   * inicializa AudioContext, worklet, y synth.
+   * Pre-descarga el SoundFont (cache IndexedDB o fetch con progreso).
+   * Se puede llamar sin interaccion del usuario — no crea AudioContext.
    */
   const loadSoundFont = useCallback(async () => {
-    if (synthRef.current) return; // ya cargado
+    if (sfBufferRef.current || synthRef.current) return;
     setIsLoading(true);
     setError(null);
     setLoadProgress(0);
 
     try {
-      // 1. Intentar cache IndexedDB
       let sfBuffer = await getCachedSoundFont();
 
       if (!sfBuffer) {
-        // 2. Fetch con progreso
         const response = await fetch('/api/hymns/soundfont');
         if (!response.ok) throw new Error(`HTTP ${response.status} al descargar SoundFont`);
 
@@ -129,7 +129,6 @@ export function useSpessaSynth() {
           }
         }
 
-        // Combinar chunks en un solo ArrayBuffer
         const combined = new Uint8Array(received);
         let offset = 0;
         for (const chunk of chunks) {
@@ -138,7 +137,6 @@ export function useSpessaSynth() {
         }
         sfBuffer = combined.buffer;
 
-        // 3. Guardar en cache para la proxima vez
         await cacheSoundFont(sfBuffer).catch((e) =>
           console.warn('No se pudo cachear SoundFont en IndexedDB:', e),
         );
@@ -146,26 +144,47 @@ export function useSpessaSynth() {
         setLoadProgress(100);
       }
 
-      // 4. Crear AudioContext y cargar worklet
+      sfBufferRef.current = sfBuffer;
+      setIsLoading(false);
+    } catch (err) {
+      console.error('Error descargando SoundFont:', err);
+      setError(err instanceof Error ? err.message : 'Error al descargar SoundFont');
+      setIsLoading(false);
+    }
+  }, []);
+
+  /**
+   * Inicializa AudioContext, worklet y synth.
+   * DEBE llamarse desde interaccion del usuario (click en play).
+   */
+  const initSynth = useCallback(async () => {
+    if (synthRef.current) return;
+    const sfBuffer = sfBufferRef.current;
+    if (!sfBuffer) {
+      await loadSoundFont();
+      if (!sfBufferRef.current) return;
+      return initSynth();
+    }
+
+    try {
       const ctx = new AudioContext();
+      if (ctx.state === 'suspended') await ctx.resume();
       audioCtxRef.current = ctx;
       await ctx.audioWorklet.addModule('/spessasynth_processor.min.js');
 
-      // 5. Crear synth
       const { WorkletSynthesizer } = await import('spessasynth_lib');
       const synth = new WorkletSynthesizer(ctx);
+      synth.connect(ctx.destination);
       await synth.soundBankManager.addSoundBank(sfBuffer, 'main');
       await synth.isReady;
 
       synthRef.current = synth;
       setLoadProgress(100);
-      setIsLoading(false);
     } catch (err) {
-      console.error('Error cargando SoundFont:', err);
-      setError(err instanceof Error ? err.message : 'Error al cargar SoundFont');
-      setIsLoading(false);
+      console.error('Error inicializando synth:', err);
+      setError(err instanceof Error ? err.message : 'Error al inicializar audio');
     }
-  }, []);
+  }, [loadSoundFont]);
 
   /**
    * Carga un MIDI base64 (generado por Verovio) en el sequencer.
@@ -194,14 +213,17 @@ export function useSpessaSynth() {
           stopTimeLoop();
           onEndedRef.current?.();
         });
+
+        // Registrar evento de cambio de cancion para leer duracion real
+        // (loadNewSongList es asincrono — la duracion no esta disponible de inmediato)
+        seq.eventHandler.addEvent('songChange', 'ibc-song-change', () => {
+          setDuration(seq.duration);
+        });
       }
 
       const seq = sequencerRef.current;
-      seq.loadNewSongList([midiBytes.buffer]);
+      seq.loadNewSongList([{ binary: midiBytes.buffer }]);
 
-      // Leer duracion despues de cargar
-      // SpessaSynth duration esta en segundos
-      setDuration(seq.duration);
       setCurrentTime(0);
       setIsPlaying(false);
     } catch (err) {
@@ -245,6 +267,7 @@ export function useSpessaSynth() {
     loadProgress,
     error,
     loadSoundFont,
+    initSynth,
     loadMidi,
     play,
     pause,

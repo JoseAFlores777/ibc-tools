@@ -139,9 +139,9 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 07-01-PLAN.md -- Foundation: install packages, webpack WASM config, proxy routes, type extensions (Wave 1)
-- [ ] 07-02-PLAN.md -- Core hooks (useVerovio, useSpessaSynth, useScoreCursor) and MidiPlayer replacement (Wave 2)
-- [ ] 07-03-PLAN.md -- ScoreViewer component with toolbar/controls and HymnDetailModal integration (Wave 3)
+- [x] 07-01-PLAN.md -- Foundation: install packages, webpack WASM config, proxy routes, type extensions (Wave 1)
+- [x] 07-02-PLAN.md -- Core hooks (useVerovio, useSpessaSynth, useScoreCursor) and MidiPlayer replacement (Wave 2)
+- [x] 07-03-PLAN.md -- ScoreViewer component with toolbar/controls and HymnDetailModal integration (Wave 3)
 - [ ] 07-04-PLAN.md -- Cleanup (delete Tone.js/MidiTrackPlayer/Salamander) and human verification (Wave 4)
 
 ## Progress

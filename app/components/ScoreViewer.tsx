@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Loader2, ScrollText } from 'lucide-react';
 import { Skeleton, Separator } from '@/lib/shadcn/ui';
 import { cn } from '@/app/lib/shadcn/utils';
@@ -33,7 +33,6 @@ export default function ScoreViewer({ musicxmlFileId, midiFileId, className }: S
     error: verovioError,
     loadScore,
     renderPage,
-    getMidi,
     getPageCount,
     setScale: setVerovioScale,
   } = useVerovio();
@@ -45,8 +44,9 @@ export default function ScoreViewer({ musicxmlFileId, midiFileId, className }: S
     loadProgress,
     error: sfError,
     loadSoundFont,
+    initSynth,
     loadMidi,
-    play,
+    play: spessaPlay,
     pause,
     seek,
     duration,
@@ -66,6 +66,7 @@ export default function ScoreViewer({ musicxmlFileId, midiFileId, className }: S
   // ── Refs ──
   const containerRef = useRef<HTMLDivElement>(null);
   const scoreContainerRef = useRef<HTMLDivElement>(null);
+  const midiBase64Ref = useRef<string | null>(null);
 
   // ── Page change callback para useScoreCursor ──
   const handlePageChange = useCallback((page: number) => {
@@ -159,42 +160,33 @@ export default function ScoreViewer({ musicxmlFileId, midiFileId, className }: S
     return () => { cancelled = true; };
   }, [toolkit, verovioLoading, scoreLoaded, musicxmlFileId, loadScore, renderPage, getPageCount, loadSoundFont]);
 
-  // ── Cargar MIDI en sequencer cuando SoundFont esta listo ──
+  // ── Cargar MIDI del himno (Directus) en sequencer cuando SoundFont esta listo ──
   useEffect(() => {
-    if (!synth || !scoreLoaded || !toolkit) return;
+    if (!synth || !scoreLoaded) return;
 
-    // Intentar MIDI generado por Verovio primero
-    const midiBase64 = getMidi();
-    if (midiBase64) {
-      // Validar que el MIDI tiene header correcto (MThd = TWh0aA en base64)
-      if (midiBase64.startsWith('TVRoZA')) {
-        loadMidi(midiBase64);
-        return;
-      }
-      console.warn('Verovio renderToMIDI generó MIDI inválido, intentando MIDI de Directus...');
+    if (!midiFileId) {
+      console.warn('No hay archivo MIDI disponible para este himno');
+      return;
     }
 
-    // Fallback: usar el archivo MIDI original de Directus si existe
-    if (midiFileId) {
-      fetch(`/api/hymns/audio/${midiFileId}`)
-        .then((res) => {
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          return res.arrayBuffer();
-        })
-        .then((buf) => {
-          const bytes = new Uint8Array(buf);
-          let binary = '';
-          for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-          const base64 = btoa(binary);
-          if (base64.startsWith('TVRoZA')) {
-            loadMidi(base64);
-          } else {
-            console.warn('MIDI de Directus tampoco es válido');
-          }
-        })
-        .catch((err) => console.warn('No se pudo cargar MIDI de Directus:', err));
-    }
-  }, [synth, scoreLoaded, toolkit, getMidi, loadMidi]);
+    fetch(`/api/hymns/audio/${midiFileId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.arrayBuffer();
+      })
+      .then((buf) => {
+        const bytes = new Uint8Array(buf);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+        const base64 = btoa(binary);
+        if (base64.startsWith('TVRoZA')) {
+          loadMidi(base64);
+        } else {
+          console.warn('El archivo MIDI de Directus no tiene header válido');
+        }
+      })
+      .catch((err) => console.warn('No se pudo cargar MIDI de Directus:', err));
+  }, [synth, scoreLoaded, midiFileId, loadMidi]);
 
   // ── Zoom handlers ──
   const handleZoomIn = useCallback(() => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useCallback } from 'react';
+import { Suspense, useRef, useState, useCallback } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useWizardReducer } from '@/app/empaquetador/hooks/useWizardReducer';
 import WizardStepper from '@/app/empaquetador/components/WizardStepper';
@@ -18,6 +18,18 @@ import type { HymnSearchResult } from '@/app/interfaces/Hymn.interface';
 import { ToolSettingsButton, ToolWelcomeModal } from '@/app/components/LocalStorageWarning';
 
 export default function EmpaquetadorPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 rounded-full border-2 border-muted-foreground/20 border-t-primary animate-spin" />
+      </div>
+    }>
+      <EmpaquetadorContent />
+    </Suspense>
+  );
+}
+
+function EmpaquetadorContent() {
   const [state, dispatch] = useWizardReducer();
   const [showHistory, setShowHistory] = useState(false);
   const [loadingPackage, setLoadingPackage] = useState(false);

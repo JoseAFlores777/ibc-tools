@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import type { HymnSearchResult, HymnSearchField } from '@/app/interfaces/Hymn.interface';
 
 /** Filtros de audio disponibles */
@@ -38,9 +39,14 @@ export interface UseHymnSearchReturn {
 }
 
 export function useHymnSearch(): UseHymnSearchReturn {
-  const [query, setQuery] = useState('');
-  const [hymnal, setHymnal] = useState('');
-  const [category, setCategory] = useState('');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Inicializar desde URL search params
+  const [query, setQueryState] = useState(searchParams.get('q') ?? '');
+  const [hymnal, setHymnalState] = useState(searchParams.get('hymnal') ?? '');
+  const [category, setCategoryState] = useState(searchParams.get('category') ?? '');
   const [searchFields, setSearchFields] = useState<Set<HymnSearchField>>(
     new Set(['name']),
   );
@@ -52,6 +58,31 @@ export function useHymnSearch(): UseHymnSearchReturn {
   const [pageSize, setPageSize] = useState<PageSize>(30);
 
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Sincronizar estado con URL (sin recargar página)
+  const syncUrl = useCallback((q: string, h: string, c: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (q) params.set('q', q); else params.delete('q');
+    if (h) params.set('hymnal', h); else params.delete('hymnal');
+    if (c) params.set('category', c); else params.delete('category');
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(newUrl, { scroll: false });
+  }, [searchParams, pathname, router]);
+
+  const setQuery = useCallback((q: string) => {
+    setQueryState(q);
+    syncUrl(q, hymnal, category);
+  }, [syncUrl, hymnal, category]);
+
+  const setHymnal = useCallback((h: string) => {
+    setHymnalState(h);
+    syncUrl(query, h, category);
+  }, [syncUrl, query, category]);
+
+  const setCategory = useCallback((c: string) => {
+    setCategoryState(c);
+    syncUrl(query, hymnal, c);
+  }, [syncUrl, query, hymnal]);
 
   const toggleAudioFilter = (filter: AudioFilter) => {
     setAudioFilters((prev) => {

@@ -26,6 +26,17 @@ export async function GET(request: Request) {
       if (searchIn.length === 0) searchIn = undefined;
     }
 
+    // Buscar por ID directo (para restaurar himno desde URL)
+    const id = searchParams.get('id');
+    if (id) {
+      const results = await searchHymns({ query: undefined, limit: 500 });
+      const found = results.filter((h) => h.id === id);
+      return NextResponse.json(
+        { ok: true, data: found },
+        { headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate=60' } },
+      );
+    }
+
     const results = await searchHymns({
       query: q,
       hymnalId: hymnal,

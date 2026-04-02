@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Phase 7 context gathered
-last_updated: "2026-04-01T16:54:20.948Z"
-last_activity: "2026-04-01 - Completed quick task 260401-bkw: Show track name in AudioBar, proper download filenames, fix MIDI slider progress"
+stopped_at: Completed 07-04-PLAN.md Task 1, awaiting human verify for Task 2
+last_updated: "2026-04-01T19:56:53.676Z"
+last_activity: 2026-04-01
 progress:
   total_phases: 7
   completed_phases: 5
-  total_plans: 17
-  completed_plans: 16
+  total_plans: 21
+  completed_plans: 19
 ---
 
 # Project State
@@ -20,12 +20,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Cualquier hermano puede armar un paquete de himnos (letras impresas + pistas de audio) listo para usar en minutos, sin depender de nadie.
-**Current focus:** Phase 05 — implementa-feature-completo-de-impresi-n-de-himnos
+**Current focus:** Phase 07 — musicxml-score-viewer-with-verovio-and-spessasynth
 
 ## Current Position
 
-Phase: 05 (implementa-feature-completo-de-impresi-n-de-himnos) — EXECUTING
-Plan: 3 of 3
+Phase: 07 (musicxml-score-viewer-with-verovio-and-spessasynth) — EXECUTING
+Plan: 3 of 4
 
 ## Performance Metrics
 
@@ -58,6 +58,10 @@ Plan: 3 of 3
 | Phase 04 P03 | 2min 30s | 3 tasks | 5 files |
 | Phase 05 P01 | 3min 31s | 2 tasks | 8 files |
 | Phase 05 P02 | 6min | 2 tasks | 8 files |
+| Phase 07 P01 | 13min | 4 tasks | 11 files |
+| Phase 07 P02 | 9min | 2 tasks | 5 files |
+| Phase 07 P03 | 5min | 2 tasks | 5 files |
+| Phase 07 P04 | 2min 46s | 1 tasks | 29 files |
 
 ## Accumulated Context
 
@@ -87,6 +91,13 @@ Recent decisions affecting current work:
 - [Phase 05]: All new PackageRequest fields are optional with defaults for backward compatibility
 - [Phase 05]: Dynamic StyleSheet.create() inside component for font preset flexibility
 - [Phase 05]: Adamina italic guard: skip fontStyle italic for fonts without italic variant registered
+- [Phase 07]: Removed tone/@tonejs/midi since no imports remain; used postinstall for AudioWorklet processor copy
+- [Phase 07]: MusicXML proxy 24h cache, SoundFont proxy 7d immutable cache
+- [Phase 07]: IndexedDB SoundFont cache shared between useSpessaSynth and MidiPlayer (same DB/key)
+- [Phase 07]: useScoreCursor uses direct DOM manipulation for RAF performance per UI-SPEC
+- [Phase 07]: Verovio renderToMIDI called after loadData to build timing map (Pitfall 4 guard)
+- [Phase 07]: ScoreViewer uses Verovio-generated MIDI for timing accuracy, dynamic import with ssr:false for WASM
+- [Phase 07]: Pre-existing build errors (Turbopack/webpack ESM) are out of scope for cleanup plan
 
 ### Pending Todos
 
@@ -118,7 +129,7 @@ None yet.
 
 ## Session Continuity
 
-Last activity: 2026-04-01 - Completed quick task 260401-bkw: Show track name in AudioBar, proper download filenames, fix MIDI slider progress
-Last session: 2026-04-01T16:54:20.941Z
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-musicxml-score-viewer-with-verovio-and-spessasynth/07-CONTEXT.md
+Last activity: 2026-04-01
+Last session: 2026-04-01T19:56:53.673Z
+Stopped at: Completed 07-04-PLAN.md Task 1, awaiting human verify for Task 2
+Resume file: None

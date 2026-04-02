@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import type { HymnSearchResult } from '@/app/interfaces/Hymn.interface';
 import { useHymnSearch } from '@/app/hooks/useHymnSearch';
 import HymnDetailView from '@/app/empaquetador/components/HymnDetailModal';
@@ -63,13 +64,47 @@ export default function HymnExplorer({
     allResults, filteredResults, isLoading, error,
   } = useHymnSearch();
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [hymnals, setHymnals] = useState<Array<{ id: string; name: string }>>([]);
   const [categories, setCategories] = useState<Array<{ id: number; name: string }>>([]);
   const [filtersLoading, setFiltersLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(true);
   const [showOnlySelected, setShowOnlySelected] = useState(false);
-  const [detailHymn, setDetailHymn] = useState<HymnSearchResult | null>(null);
+  const [detailHymn, setDetailHymnState] = useState<HymnSearchResult | null>(null);
+  const [restoringHymn, setRestoringHymn] = useState(!!searchParams.get('hymnId'));
   const [sorting, setSorting] = useState<SortingState>([]);
+
+  // Sincronizar detailHymn con URL param "hymnId"
+  const setDetailHymn = useCallback((hymn: HymnSearchResult | null) => {
+    setDetailHymnState(hymn);
+    const params = new URLSearchParams(searchParams.toString());
+    if (hymn) params.set('hymnId', hymn.id);
+    else params.delete('hymnId');
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(newUrl, { scroll: false });
+  }, [searchParams, pathname, router]);
+
+  // Restaurar detailHymn desde URL al montar (si hay hymnId en la URL)
+  const hymnIdFromUrl = searchParams.get('hymnId');
+  useEffect(() => {
+    if (!hymnIdFromUrl || detailHymn) {
+      setRestoringHymn(false);
+      return;
+    }
+    setRestoringHymn(true);
+    fetch(`/api/hymns/search?id=${hymnIdFromUrl}`)
+      .then((r) => r.json())
+      .then((json) => {
+        const results = (json.data ?? []) as HymnSearchResult[];
+        const found = results.find((h) => h.id === hymnIdFromUrl);
+        if (found) setDetailHymnState(found);
+      })
+      .catch((err) => console.error('Error restaurando himno:', err))
+      .finally(() => setRestoringHymn(false));
+  }, [hymnIdFromUrl]);
 
   useEffect(() => {
     let cancelled = false;
@@ -220,6 +255,15 @@ export default function HymnExplorer({
     getPaginationRowModel: getPaginationRowModel(),
     initialState: { pagination: { pageSize: 30 } },
   });
+
+  // Mostrar loading mientras se restaura himno desde URL
+  if (restoringHymn) {
+    return (
+      <div className={cn(className, 'flex items-center justify-center')}>
+        <div className="h-8 w-8 rounded-full border-2 border-slate-200 border-t-primary animate-spin" />
+      </div>
+    );
+  }
 
   // Si estamos en detailView y showDetailView esta activo
   // Quitar padding del scroll container para que el sticky header quede en top-0 exacto

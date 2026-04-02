@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, Pause, Download, Loader2, Square, Volume2, VolumeX, Music } from 'lucide-react';
+import { Play, Pause, Download, Loader2, RotateCcw, Volume2, VolumeX, Music } from 'lucide-react';
 import { cn } from '@/app/lib/shadcn/utils';
 import type { AudioFileInfo } from '@/app/interfaces/Hymn.interface';
 
@@ -25,62 +25,77 @@ const VOICE_BY_CHANNEL: Record<number, string> = {
   0: 'Soprano', 1: 'Contralto', 2: 'Tenor', 3: 'Bajo',
 };
 
-const SF_DB_NAME = 'ibc-audio-cache';
-const SF_STORE_NAME = 'files';
-const SF_CACHE_KEY = 'ibc-soundfont-v1';
+// Sin multicolor — todas las voces usan la misma paleta neutral
 
-// ── IndexedDB helpers (mismas que useSpessaSynth) ──
-
-function openCacheDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(SF_DB_NAME, 1);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(SF_STORE_NAME)) {
-        db.createObjectStore(SF_STORE_NAME);
-      }
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-function getCachedSoundFont(): Promise<ArrayBuffer | null> {
-  return openCacheDB().then(
-    (db) =>
-      new Promise((resolve) => {
-        const tx = db.transaction(SF_STORE_NAME, 'readonly');
-        const store = tx.objectStore(SF_STORE_NAME);
-        const req = store.get(SF_CACHE_KEY);
-        req.onsuccess = () => resolve(req.result ?? null);
-        req.onerror = () => resolve(null);
-      }),
-  );
-}
-
-function cacheSoundFont(buffer: ArrayBuffer): Promise<void> {
-  return openCacheDB().then(
-    (db) =>
-      new Promise((resolve, reject) => {
-        const tx = db.transaction(SF_STORE_NAME, 'readwrite');
-        const store = tx.objectStore(SF_STORE_NAME);
-        const req = store.put(buffer, SF_CACHE_KEY);
-        req.onsuccess = () => resolve();
-        req.onerror = () => reject(req.error);
-      }),
-  );
-}
+const PIANO_SAMPLES: Record<string, string> = {
+  A0: 'A0.mp3', C1: 'C1.mp3', 'D#1': 'Ds1.mp3', 'F#1': 'Fs1.mp3',
+  A1: 'A1.mp3', C2: 'C2.mp3', 'D#2': 'Ds2.mp3', 'F#2': 'Fs2.mp3',
+  A2: 'A2.mp3', C3: 'C3.mp3', 'D#3': 'Ds3.mp3', 'F#3': 'Fs3.mp3',
+  A3: 'A3.mp3', C4: 'C4.mp3', 'D#4': 'Ds4.mp3', 'F#4': 'Fs4.mp3',
+  A4: 'A4.mp3', C5: 'C5.mp3', 'D#5': 'Ds5.mp3', 'F#5': 'Fs5.mp3',
+  A5: 'A5.mp3', C6: 'C6.mp3', 'D#6': 'Ds6.mp3', 'F#6': 'Fs6.mp3',
+  A6: 'A6.mp3', C7: 'C7.mp3', 'D#7': 'Ds7.mp3', C8: 'C8.mp3',
+};
 
 function fmt(s: number) {
   if (!s || isNaN(s)) return '0:00';
   return `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
 }
 
-/**
- * Reproductor MIDI usando SpessaSynth como motor.
- * Drop-in replacement para MidiTrackPlayer — misma interfaz visual,
- * motor interno cambiado de Tone.js a SpessaSynth.
- */
+/** Renderiza un track MIDI a AudioBuffer offline con Sampler Salamander */
+async function renderTrack(Tone: any, track: any, dur: number): Promise<AudioBuffer> {
+  const buf = await Tone.Offline(async (context: any) => {
+    const sampler: any = await new Promise((res: any) => {
+      const s = new Tone.Sampler({
+        urls: PIANO_SAMPLES, release: 1.2,
+        baseUrl: '/audio/salamander/', context,
+        onload: () => res(s),
+      }).toDestination();
+    });
+    track.notes.forEach((n: any) => {
+      sampler.triggerAttackRelease(n.name, n.duration, n.time, n.velocity);
+    });
+  }, dur);
+  return buf.get() as AudioBuffer;
+}
+
+/** Convierte AudioBuffer a WAV Blob para descarga */
+function audioBufferToWav(buffer: AudioBuffer): Blob {
+  const numCh = buffer.numberOfChannels;
+  const length = buffer.length * numCh * 2;
+  const sr = buffer.sampleRate;
+  const ab = new ArrayBuffer(44 + length);
+  const view = new DataView(ab);
+
+  const writeStr = (off: number, s: string) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + length, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numCh, true);
+  view.setUint32(24, sr, true);
+  view.setUint32(28, sr * numCh * 2, true);
+  view.setUint16(32, numCh * 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, length, true);
+
+  const channels = [];
+  for (let c = 0; c < numCh; c++) channels.push(buffer.getChannelData(c));
+
+  let off = 44;
+  for (let i = 0; i < buffer.length; i++) {
+    for (let c = 0; c < numCh; c++) {
+      const sample = Math.max(-1, Math.min(1, channels[c][i]));
+      view.setInt16(off, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+      off += 2;
+    }
+  }
+  return new Blob([ab], { type: 'audio/wav' });
+}
+
 export default function MidiPlayer({ field, fileInfo, label, colorClass, hymnName }: MidiPlayerProps) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'playing' | 'error'>('idle');
   const [progress, setProgress] = useState(0);
@@ -90,130 +105,71 @@ export default function MidiPlayer({ field, fileInfo, label, colorClass, hymnNam
   const [showTracks, setShowTracks] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('');
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const synthRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sequencerRef = useRef<any>(null);
+  const trackBuffersRef = useRef<AudioBuffer[]>([]);
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const gainNodesRef = useRef<GainNode[]>([]);
+  const sourceNodesRef = useRef<AudioBufferSourceNode[]>([]);
   const rafRef = useRef<number>(0);
+  const playStartRef = useRef(0);
+  const playOffsetRef = useRef(0);
   const durationRef = useRef(0);
+  // Ref para status actual (evita closures stale en handlers)
   const isPlayingRef = useRef(false);
-  const midiBufferRef = useRef<ArrayBuffer | null>(null);
 
   const audioUrl = `/api/hymns/audio/${fileInfo.id}`;
 
-  // Cleanup al desmontar
-  useEffect(() => {
-    return () => {
-      cancelAnimationFrame(rafRef.current);
-      try { sequencerRef.current?.pause(); } catch {}
-      try { audioCtxRef.current?.close(); } catch {}
-    };
-  }, []);
+  useEffect(() => () => { cancelAnimationFrame(rafRef.current); killSources(); }, []);
+
+  function killSources() {
+    sourceNodesRef.current.forEach((s) => {
+      s.onended = null;
+      try { s.stop(); } catch {}
+      try { s.disconnect(); } catch {}
+    });
+    sourceNodesRef.current = [];
+  }
+
+  function getCtx() {
+    if (!audioCtxRef.current) audioCtxRef.current = new AudioContext();
+    return audioCtxRef.current;
+  }
 
   // ── CARGA ──
   const loadMidi = useCallback(async () => {
-    if (sequencerRef.current) return;
+    if (trackBuffersRef.current.length > 0) return;
     setStatus('loading');
-    setLoadingMsg('Descargando SoundFont...');
-
+    setLoadingMsg('Descargando MIDI…');
     try {
-      // 1. Cargar SoundFont (cache o fetch)
-      let sfBuffer = await getCachedSoundFont();
+      const [Tone, { Midi }, res] = await Promise.all([
+        import('tone'), import('@tonejs/midi'), fetch(audioUrl),
+      ]);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      if (!sfBuffer) {
-        const sfRes = await fetch('/api/hymns/soundfont');
-        if (!sfRes.ok) throw new Error(`HTTP ${sfRes.status} al descargar SoundFont`);
+      setLoadingMsg('Parseando…');
+      const midi = new Midi(await res.arrayBuffer());
+      const midiDur = midi.duration + 2;
+      durationRef.current = midi.duration;
+      setDuration(midi.duration);
 
-        const contentLength = Number(sfRes.headers.get('content-length') ?? 0);
-        const reader = sfRes.body?.getReader();
-        if (!reader) throw new Error('No se pudo leer el stream de SoundFont');
+      const active = midi.tracks.filter((t: any) => t.notes.length > 0);
+      const infos: MidiTrackInfo[] = active.map((t: any, i: number) => ({
+        index: i,
+        name: VOICE_BY_CHANNEL[t.channel] ?? t.name ?? `Voz ${i + 1}`,
+        channel: t.channel, noteCount: t.notes.length, muted: false,
+      }));
+      setTracks(infos);
+      if (infos.length > 1) setShowTracks(true);
 
-        const chunks: Uint8Array[] = [];
-        let received = 0;
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          chunks.push(value);
-          received += value.length;
-          if (contentLength > 0) {
-            const pct = Math.round((received / contentLength) * 100);
-            setLoadingMsg(`SoundFont ${pct}%...`);
-          }
-        }
-        const combined = new Uint8Array(received);
-        let offset = 0;
-        for (const chunk of chunks) {
-          combined.set(chunk, offset);
-          offset += chunk.length;
-        }
-        sfBuffer = combined.buffer;
-        await cacheSoundFont(sfBuffer).catch((e) =>
-          console.warn('No se pudo cachear SoundFont:', e),
-        );
+      const buffers: AudioBuffer[] = [];
+      for (let i = 0; i < active.length; i++) {
+        setLoadingMsg(`Renderizando ${infos[i].name}… (${i + 1}/${active.length})`);
+        buffers.push(await renderTrack(Tone, active[i], midiDur));
       }
+      trackBuffersRef.current = buffers;
 
-      // 2. Crear AudioContext y worklet
-      setLoadingMsg('Inicializando audio...');
-      const ctx = new AudioContext();
-      audioCtxRef.current = ctx;
-      await ctx.audioWorklet.addModule('/spessasynth_processor.min.js');
-
-      // 3. Crear synth y cargar SoundFont
-      const { WorkletSynthesizer, Sequencer } = await import('spessasynth_lib');
-      const synth = new WorkletSynthesizer(ctx);
-      await synth.soundBankManager.addSoundBank(sfBuffer, 'main');
-      await synth.isReady;
-      synthRef.current = synth;
-
-      // 4. Descargar MIDI
-      setLoadingMsg('Descargando MIDI...');
-      const midiRes = await fetch(audioUrl);
-      if (!midiRes.ok) throw new Error(`HTTP ${midiRes.status}`);
-      const midiBuffer = await midiRes.arrayBuffer();
-      midiBufferRef.current = midiBuffer;
-
-      // 5. Crear sequencer y cargar MIDI
-      setLoadingMsg('Parseando MIDI...');
-      const seq = new Sequencer(synth);
-      sequencerRef.current = seq;
-      seq.loadNewSongList([midiBuffer]);
-
-      // Leer duracion
-      durationRef.current = seq.duration;
-      setDuration(seq.duration);
-
-      // Extraer info de tracks/canales para UI de voces
-      // SpessaSynth no expone tracks directamente como Tone.js,
-      // pero podemos inspeccionar los canales activos del synth
-      const trackInfos: MidiTrackInfo[] = [];
-      if (synth.channelProperties) {
-        for (let ch = 0; ch < synth.channelProperties.length; ch++) {
-          const props = synth.channelProperties[ch];
-          if (props) {
-            trackInfos.push({
-              index: ch,
-              name: VOICE_BY_CHANNEL[ch] ?? `Canal ${ch + 1}`,
-              channel: ch,
-              noteCount: 0,
-              muted: props.isMuted ?? false,
-            });
-          }
-        }
-      }
-      // Si hay mas de 1 canal activo, mostrar controles de voces
-      if (trackInfos.length > 1) {
-        setTracks(trackInfos);
-        setShowTracks(true);
-      }
-
-      // Registrar evento de fin
-      seq.eventHandler.addEvent('songEnded', 'midi-player-ended', () => {
-        cancelAnimationFrame(rafRef.current);
-        isPlayingRef.current = false;
-        setStatus('ready');
-        setProgress(0);
-        setCurrentTime(0);
+      const c = getCtx();
+      gainNodesRef.current = buffers.map(() => {
+        const g = c.createGain(); g.connect(c.destination); return g;
       });
 
       setLoadingMsg('');
@@ -225,84 +181,125 @@ export default function MidiPlayer({ field, fileInfo, label, colorClass, hymnNam
     }
   }, [audioUrl]);
 
-  // ── TICK (RAF) ──
-  const tick = useCallback(() => {
-    const seq = sequencerRef.current;
-    if (!seq || !durationRef.current) return;
-    const el = seq.currentHighResolutionTime;
-    setProgress(Math.min((el / durationRef.current) * 100, 100));
-    setCurrentTime(Math.min(el, durationRef.current));
-    if (el < durationRef.current && isPlayingRef.current) {
-      rafRef.current = requestAnimationFrame(tick);
+  // ── PLAY ──
+  const startPlayback = useCallback((offset: number) => {
+    const c = getCtx();
+    killSources();
+    const sources: AudioBufferSourceNode[] = [];
+    trackBuffersRef.current.forEach((buf, i) => {
+      const src = c.createBufferSource();
+      src.buffer = buf;
+      src.connect(gainNodesRef.current[i]);
+      src.start(0, offset);
+      sources.push(src);
+    });
+    sourceNodesRef.current = sources;
+    playStartRef.current = c.currentTime;
+    playOffsetRef.current = offset;
+
+    // Auto-stop al final natural
+    const theseSourcesRef = sources;
+    if (sources.length > 0) {
+      sources[0].onended = () => {
+        if (sourceNodesRef.current !== theseSourcesRef) return;
+        cancelAnimationFrame(rafRef.current);
+        isPlayingRef.current = false;
+        setStatus('ready');
+        setProgress(0);
+        setCurrentTime(0);
+        playOffsetRef.current = 0;
+      };
     }
   }, []);
 
-  // ── PLAY / PAUSE ──
+  const tick = useCallback(() => {
+    const c = audioCtxRef.current;
+    if (!c || !durationRef.current) return;
+    const el = playOffsetRef.current + (c.currentTime - playStartRef.current);
+    setProgress(Math.min((el / durationRef.current) * 100, 100));
+    setCurrentTime(Math.min(el, durationRef.current));
+    if (el < durationRef.current) rafRef.current = requestAnimationFrame(tick);
+  }, []);
+
   const play = useCallback(async () => {
     if (status === 'idle' || status === 'error') await loadMidi();
-    const seq = sequencerRef.current;
-    const ctx = audioCtxRef.current;
-    if (!seq) return;
-
-    if (ctx?.state === 'suspended') await ctx.resume();
+    if (trackBuffersRef.current.length === 0) return;
+    const c = getCtx();
+    if (c.state === 'suspended') await c.resume();
 
     if (isPlayingRef.current) {
       // Pause
       cancelAnimationFrame(rafRef.current);
-      seq.pause();
+      playOffsetRef.current += c.currentTime - playStartRef.current;
+      killSources();
       isPlayingRef.current = false;
       setStatus('ready');
       return;
     }
 
-    seq.play();
+    const off = playOffsetRef.current > 0 ? playOffsetRef.current : 0;
+    startPlayback(off);
     isPlayingRef.current = true;
     setStatus('playing');
     rafRef.current = requestAnimationFrame(tick);
-  }, [status, loadMidi, tick]);
+  }, [status, loadMidi, startPlayback, tick]);
 
-  // ── STOP ──
-  const stop = useCallback(() => {
-    const seq = sequencerRef.current;
-    if (!seq) return;
+  const restart = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
-    seq.pause();
-    seq.currentTime = 0;
-    isPlayingRef.current = false;
+    killSources();
+    playOffsetRef.current = 0;
     setProgress(0);
     setCurrentTime(0);
-    setStatus('ready');
-  }, []);
+    startPlayback(0);
+    isPlayingRef.current = true;
+    setStatus('playing');
+    rafRef.current = requestAnimationFrame(tick);
+  }, [startPlayback, tick]);
 
-  // ── SEEK ──
+  // Seek usa ref en vez de status para evitar closure stale
   const seek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const seq = sequencerRef.current;
-    if (!durationRef.current || !seq) return;
+    if (!durationRef.current || trackBuffersRef.current.length === 0) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
     const to = pct * durationRef.current;
+    const wasPlaying = isPlayingRef.current;
 
-    seq.currentTime = to;
+    cancelAnimationFrame(rafRef.current);
+    killSources();
+    playOffsetRef.current = to;
     setProgress(pct * 100);
     setCurrentTime(to);
-  }, []);
 
-  // ── MUTE ──
+    if (wasPlaying) {
+      startPlayback(to);
+      rafRef.current = requestAnimationFrame(tick);
+      // status ya es 'playing', isPlayingRef ya es true
+    }
+  }, [startPlayback, tick]);
+
   const toggleMute = useCallback((idx: number) => {
-    const synth = synthRef.current;
-    if (!synth) return;
-
     setTracks((prev) =>
       prev.map((t) => {
         if (t.index !== idx) return t;
         const muted = !t.muted;
-        // SpessaSynth: mutar/desmutar canal
-        if (synth.channelProperties && synth.channelProperties[idx]) {
-          synth.channelProperties[idx].isMuted = muted;
-        }
+        const g = gainNodesRef.current[idx];
+        if (g) g.gain.value = muted ? 0 : 1;
         return { ...t, muted };
       }),
     );
+  }, []);
+
+  /** Descarga un track individual como WAV */
+  const downloadTrack = useCallback((idx: number, name: string) => {
+    const buf = trackBuffersRef.current[idx];
+    if (!buf) return;
+    const blob = audioBufferToWav(buf);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = hymnName ? `${hymnName} - ${name}.wav` : `${name}.wav`;
+    a.click();
+    URL.revokeObjectURL(url);
   }, []);
 
   const isLoading = status === 'loading';
@@ -314,10 +311,10 @@ export default function MidiPlayer({ field, fileInfo, label, colorClass, hymnNam
       'rounded-xl border overflow-hidden transition-all duration-200',
       'bg-slate-50/80 border-slate-200/80 text-slate-700',
     )}>
-      {/* -- Controles -- */}
+      {/* ── Controles ── */}
       <div className="flex items-center gap-2.5 px-3 py-2.5">
         <button type="button" onClick={play} disabled={isLoading}
-          aria-label={isLoading ? 'Cargando...' : isPlaying ? 'Pausar' : 'Reproducir'}
+          aria-label={isLoading ? 'Cargando…' : isPlaying ? 'Pausar' : 'Reproducir'}
           className={cn(
             'h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200',
             isPlaying ? 'bg-primary text-white shadow-sm hover:bg-primary/90'
@@ -330,9 +327,9 @@ export default function MidiPlayer({ field, fileInfo, label, colorClass, hymnNam
         </button>
 
         {(isPlaying || isPaused) && (
-          <button type="button" onClick={stop} aria-label="Detener"
+          <button type="button" onClick={restart} aria-label="Reiniciar"
             className="h-7 w-7 rounded-full flex items-center justify-center flex-shrink-0 bg-slate-200/80 text-slate-500 hover:bg-slate-300/80 transition-colors">
-            <Square className="h-3 w-3" />
+            <RotateCcw className="h-3 w-3" />
           </button>
         )}
 
@@ -362,21 +359,21 @@ export default function MidiPlayer({ field, fileInfo, label, colorClass, hymnNam
           </div>
         </div>
 
-        <a href={audioUrl} download={fileInfo.filename_download || 'midi.mid'} aria-label="Descargar MIDI"
+        <a href={audioUrl} download={hymnName ? `${hymnName} - MIDI.mid` : (fileInfo.filename_download || 'midi.mid')} aria-label="Descargar MIDI"
           className="h-7 w-7 rounded-lg flex items-center justify-center flex-shrink-0 text-slate-400 hover:text-slate-600 hover:bg-slate-200/80 transition-all"
           onClick={(e) => e.stopPropagation()}>
           <Download className="h-3.5 w-3.5" />
         </a>
       </div>
 
-      {/* -- Voces -- */}
+      {/* ── Voces ── */}
       {tracks.length > 0 && (
         <div className="border-t border-slate-200/60">
           <button type="button" onClick={() => setShowTracks(!showTracks)}
             className="w-full flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium text-slate-400 hover:text-slate-600 transition-colors">
             <Music className="h-3 w-3" />
             <span>{tracks.length} {tracks.length === 1 ? 'voz' : 'voces'}</span>
-            <span className="ml-auto text-[9px]">{showTracks ? '\u25B2' : '\u25BC'}</span>
+            <span className="ml-auto text-[9px]">{showTracks ? '▲' : '▼'}</span>
           </button>
           {showTracks && (
             <div className="px-3 pb-2.5 grid grid-cols-2 gap-1.5">
@@ -396,6 +393,12 @@ export default function MidiPlayer({ field, fileInfo, label, colorClass, hymnNam
                   </button>
                   <span className={cn('font-medium truncate', t.muted && 'line-through')}>{t.name}</span>
                   <span className="text-[9px] opacity-40 tabular-nums flex-shrink-0">{t.noteCount}</span>
+                  <button type="button"
+                    onClick={() => downloadTrack(t.index, t.name)}
+                    aria-label={`Descargar ${t.name}`}
+                    className="ml-auto flex-shrink-0 text-slate-300 hover:text-slate-500 transition-colors">
+                    <Download className="h-3 w-3" />
+                  </button>
                 </div>
               ))}
             </div>
