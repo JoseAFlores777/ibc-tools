@@ -118,7 +118,12 @@ export default function MidiPlayer({ field, fileInfo, label, colorClass, hymnNam
 
   const audioUrl = `/api/hymns/audio/${fileInfo.id}`;
 
-  useEffect(() => () => { cancelAnimationFrame(rafRef.current); killSources(); }, []);
+  useEffect(() => () => {
+    cancelAnimationFrame(rafRef.current);
+    killSources();
+    audioCtxRef.current?.close().catch(() => {});
+    audioCtxRef.current = null;
+  }, []);
 
   function killSources() {
     sourceNodesRef.current.forEach((s) => {
@@ -256,26 +261,53 @@ export default function MidiPlayer({ field, fileInfo, label, colorClass, hymnNam
     rafRef.current = requestAnimationFrame(tick);
   }, [startPlayback, tick]);
 
-  // Seek usa ref en vez de status para evitar closure stale
-  const seek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!durationRef.current || trackBuffersRef.current.length === 0) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const to = pct * durationRef.current;
-    const wasPlaying = isPlayingRef.current;
+  // ── SEEK (pointer-based para soportar click + drag) ──
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
+  const wasPlayingBeforeDragRef = useRef(false);
 
-    cancelAnimationFrame(rafRef.current);
-    killSources();
+  const seekToClientX = useCallback((clientX: number) => {
+    const el = sliderRef.current;
+    if (!el || !durationRef.current || trackBuffersRef.current.length === 0) return;
+    const rect = el.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const to = pct * durationRef.current;
+
     playOffsetRef.current = to;
     setProgress(pct * 100);
     setCurrentTime(to);
+    return to;
+  }, []);
 
-    if (wasPlaying) {
+  const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!durationRef.current || trackBuffersRef.current.length === 0) return;
+    e.preventDefault();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    draggingRef.current = true;
+    wasPlayingBeforeDragRef.current = isPlayingRef.current;
+
+    // Pausar reproduccion durante drag
+    cancelAnimationFrame(rafRef.current);
+    killSources();
+
+    seekToClientX(e.clientX);
+  }, [seekToClientX]);
+
+  const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+    seekToClientX(e.clientX);
+  }, [seekToClientX]);
+
+  const onPointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    const to = seekToClientX(e.clientX);
+
+    if (wasPlayingBeforeDragRef.current && to !== undefined) {
       startPlayback(to);
       rafRef.current = requestAnimationFrame(tick);
-      // status ya es 'playing', isPlayingRef ya es true
     }
-  }, [startPlayback, tick]);
+  }, [seekToClientX, startPlayback, tick]);
 
   const toggleMute = useCallback((idx: number) => {
     setTracks((prev) =>
@@ -344,8 +376,9 @@ export default function MidiPlayer({ field, fileInfo, label, colorClass, hymnNam
               {fmt(currentTime)} / {fmt(duration)}
             </span>
           </div>
-          {/* Barra de progreso / seek */}
-          <div className="py-1.5 -my-1.5 cursor-pointer group" onClick={seek}
+          {/* Barra de progreso / seek (soporta click + drag) */}
+          <div ref={sliderRef} className="py-1.5 -my-1.5 cursor-pointer group touch-none select-none"
+            onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
             role="slider" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
             <div className="h-1.5 rounded-full bg-slate-200 group-hover:bg-slate-300 transition-colors">
               <div className="h-full rounded-full bg-primary transition-[width] duration-75 relative"

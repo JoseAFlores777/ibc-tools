@@ -563,7 +563,7 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
                   {availableAudio.map(([field, info]) =>
                     NON_PLAYABLE.has(field) ? (
                       <MidiPlayer
-                        key={field}
+                        key={`${hymn.id}-${field}`}
                         field={field}
                         fileInfo={info}
                         label={AUDIO_LABELS[field] ?? field}
@@ -701,7 +701,7 @@ export default function HymnDetailView({ hymn, onBack, results, onNavigate, isSe
                       {availableAudio.map(([field, info]) =>
                         NON_PLAYABLE.has(field) ? (
                           <MidiPlayer
-                            key={field}
+                            key={`${hymn.id}-${field}`}
                             field={field}
                             fileInfo={info}
                             label={AUDIO_LABELS[field] ?? field}
